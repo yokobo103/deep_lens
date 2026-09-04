@@ -835,3 +835,40 @@ body { overscroll-behavior: none; }
   .paleo-time-band .paleo-status strong { font-size: 9px; }
   .paleo-time-band .paleo-status small { font-size: 7px; line-height: 1.45; }
 }
+
+/* --- PBDB evidence layers ------------------------------------------------ */
+
+.fossil-legend--env { gap: 6px; padding: 12px 14px; border: 1px solid rgb(129 210 198 / 18%); background: rgb(4 15 19 / 78%); backdrop-filter: blur(10px); }
+.fossil-legend__title { color: #6f8b87; font: 750 7px ui-monospace, monospace; letter-spacing: .16em; }
+.fossil-legend__dot { width: 9px; height: 9px; border: 0; border-radius: 50%; }
+.fossil-legend--env i { width: 9px; height: 9px; border: 0; }
+.fossil-legend--env small { margin-top: 3px; color: #5f7a76; font: 600 7px ui-monospace, monospace; letter-spacing: .08em; }
+
+.strata-column {
+  position: absolute; z-index: 7; top: 108px; right: 30px; width: min(372px, calc(100vw - 60px));
+  max-height: calc(100vh - 180px); padding: 21px; overflow: auto;
+  border: 1px solid rgb(121 227 210 / 32%);
+  background: linear-gradient(145deg, rgb(11 31 35 / 96%), rgb(4 14 18 / 94%));
+  box-shadow: 0 20px 70px rgb(0 0 0 / 52%), inset 0 1px 0 rgb(255 255 255 / 5%);
+  backdrop-filter: blur(18px);
+}
+.strata-column::before { position: absolute; top: -1px; left: -1px; width: 72px; height: 2px; content: ""; background: #79e3d2; box-shadow: 0 0 12px #79e3d2; }
+.strata-column__place { margin: 0 0 14px; color: #effffc; font: 650 19px/1.15 ui-monospace, monospace; letter-spacing: .04em; }
+.strata-column__state { margin: 0; color: #8ca7a2; font: 500 10px/1.65 ui-monospace, monospace; }
+.strata-column__count { margin: 0 0 14px; color: #8ca7a2; font: 600 9px ui-monospace, monospace; letter-spacing: .06em; }
+.strata-column__count strong { color: #79e3d2; font-size: 13px; }
+.strata-column__bands { margin: 0; padding: 0; list-style: none; }
+.strata-band { display: grid; grid-template-columns: 46px 8px 1fr auto; align-items: stretch; gap: 10px; padding: 9px 0; }
+.strata-band__age { align-self: center; color: #7f9b9b; font: 650 9px ui-monospace, monospace; letter-spacing: .04em; text-align: right; }
+.strata-band__swatch { border-radius: 1px; }
+.strata-band__body { display: grid; gap: 2px; align-content: center; }
+.strata-band__body strong { color: #e7f6f2; font: 650 12px/1.25 ui-monospace, monospace; }
+.strata-band__body em { color: #6f8b87; font: 600 8px ui-monospace, monospace; font-style: normal; letter-spacing: .08em; }
+.strata-band__body small { color: #9db8b3; font: 600 8px ui-monospace, monospace; letter-spacing: .1em; }
+.strata-band__meta { display: grid; gap: 2px; align-content: center; justify-items: end; }
+.strata-band__meta b { color: #cfe6e1; font: 700 12px ui-monospace, monospace; }
+.strata-band__meta i { color: #5f7a76; font: 600 7px ui-monospace, monospace; font-style: normal; letter-spacing: .1em; }
+.strata-band__meta u { margin-top: 2px; color: #b69b6c; font: 650 8px ui-monospace, monospace; letter-spacing: .04em; text-decoration: none; }
+.strata-gap { margin: 2px 0 2px 56px; padding: 5px 0 5px 10px; border-left: 1px dashed rgb(129 210 198 / 30%); color: #6f8b87; font: 600 8px ui-monospace, monospace; letter-spacing: .06em; }
+.strata-column__note { margin: 16px 0 0; padding-top: 13px; border-top: 1px solid rgb(129 210 198 / 18%); color: #6f8b87; font: 500 8px/1.7 ui-monospace, monospace; }
+.strata-column__note strong { color: #9db8b3; font-weight: 700; }

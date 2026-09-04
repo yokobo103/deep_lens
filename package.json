@@ -9,7 +9,8 @@
     "verify:separation": "node tools/verify-separation.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "data:pbdb": "node tools/build-pbdb.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.1.0",

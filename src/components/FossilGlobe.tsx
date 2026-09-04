@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import * as CesiumRuntime from "cesium";
-import { Cartesian2, Cartesian3, Color, Credit, SceneTransforms, SingleTileImageryProvider, type ImageryLayer, type Viewer } from "cesium";
+import { Cartesian2, Cartesian3, Cartographic, Color, Credit, Math as CesiumMath, PointPrimitiveCollection, SceneTransforms, ScreenSpaceEventHandler, ScreenSpaceEventType, SingleTileImageryProvider, type ImageryLayer, type Viewer } from "cesium";
 import { ancientLifeRecords, type AncientLifeRecord, type AncientZoomLevel } from "../data/ancientLife";
+import { ENV_COLOR, loadStageSites } from "../data/pbdb";
 import type { FossilRecord } from "../data/fossils";
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { AncientLifeMarker } from "./AncientLifeMarker";
@@ -13,8 +14,17 @@ interface FossilGlobeProps {
   mode: FossilTimeMode;
   onSelect: () => void;
   onZoomLevelChange?: (level: AncientZoomLevel) => void;
+  /** Present mode: a click on the Earth, in modern degrees. */
+  onPickLocation?: (latitude: number, longitude: number) => void;
+  onSitesLoaded?: (count: number) => void;
   focusRequest?: number;
 }
+
+/**
+ * The fossil sites drawn on the ancient Earth. Cenomanian is the stage that
+ * contains the 95 Ma prototype; other stages exist in `public/data/pbdb/`.
+ */
+const ANCIENT_STAGE_ID = "cenomanian";
 
 interface PointLike {
   latitude: number;
@@ -36,7 +46,7 @@ const EllipsoidalOccluder = (CesiumRuntime as unknown as {
   EllipsoidalOccluder: new (ellipsoid: Viewer["scene"]["globe"]["ellipsoid"], cameraPosition?: Cartesian3) => EllipsoidalOccluderLike;
 }).EllipsoidalOccluder;
 
-export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, focusRequest = 0 }: FossilGlobeProps) {
+export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fossilMarkerRef = useRef<HTMLButtonElement>(null);
   const lifeMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -45,6 +55,8 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, focusRe
   const recordRef = useRef(record);
   const syncSurfaceRef = useRef<((nextMode: FossilTimeMode) => void) | null>(null);
   const onZoomLevelChangeRef = useRef(onZoomLevelChange);
+  const onPickLocationRef = useRef(onPickLocation);
+  const onSitesLoadedRef = useRef(onSitesLoaded);
   const zoomLevelRef = useRef<AncientZoomLevel>(1);
   const [zoomLevel, setZoomLevel] = useState<AncientZoomLevel>(1);
 
@@ -54,6 +66,8 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, focusRe
   }, [mode]);
   useEffect(() => { recordRef.current = record; }, [record]);
   useEffect(() => { onZoomLevelChangeRef.current = onZoomLevelChange; }, [onZoomLevelChange]);
+  useEffect(() => { onPickLocationRef.current = onPickLocation; }, [onPickLocation]);
+  useEffect(() => { onSitesLoadedRef.current = onSitesLoaded; }, [onSitesLoaded]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -83,8 +97,38 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, focusRe
       if (animationFrame) cancelAnimationFrame(animationFrame);
       animationFrame = 0;
     };
+
+    // The fossil record itself, placed where each site sat at the time. These
+    // points are the evidence for what was sea and what was land — the
+    // coastline image behind them is a continental outline, not a shoreline.
+    const sitePoints = viewer.scene.primitives.add(new PointPrimitiveCollection());
+    sitePoints.show = modeRef.current === "ancient";
+    void loadStageSites(ANCIENT_STAGE_ID).then((stage) => {
+      if (viewer.isDestroyed()) return;
+      for (const site of stage.sites) {
+        sitePoints.add({
+          position: Cartesian3.fromDegrees(site.paleoLng, site.paleoLat),
+          color: Color.fromCssColorString(ENV_COLOR[site.env]).withAlpha(0.9),
+          pixelSize: 4.5,
+        });
+      }
+      onSitesLoadedRef.current?.(stage.sites.length);
+    }).catch((error: unknown) => {
+      console.warn("PBDB sites could not be loaded", error);
+    });
+
+    const clickHandler = new ScreenSpaceEventHandler(viewer.scene.canvas);
+    clickHandler.setInputAction((movement: { position: Cartesian2 }) => {
+      if (modeRef.current !== "present") return;
+      const picked = viewer.camera.pickEllipsoid(movement.position, viewer.scene.globe.ellipsoid);
+      if (!picked) return;
+      const carto = Cartographic.fromCartesian(picked);
+      onPickLocationRef.current?.(CesiumMath.toDegrees(carto.latitude), CesiumMath.toDegrees(carto.longitude));
+    }, ScreenSpaceEventType.LEFT_CLICK);
+
     const syncSurface = (nextMode: FossilTimeMode) => {
       stopAnimation();
+      sitePoints.show = nextMode === "ancient";
       const currentBaseLayers = baseLayers();
       if (!ancientLayer) {
         for (const layer of currentBaseLayers) {
@@ -178,6 +222,7 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, focusRe
       viewer.scene.postRender.removeEventListener(updatePositions);
       viewer.camera.changed.removeEventListener(updateZoomLevel);
       viewer.imageryLayers.layerAdded.removeEventListener(onLayerAdded);
+      clickHandler.destroy();
       syncSurfaceRef.current = null;
       stopAnimation();
       if (paleoObjectUrl) URL.revokeObjectURL(paleoObjectUrl);
