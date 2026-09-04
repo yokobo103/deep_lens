@@ -9,10 +9,12 @@ import type { FossilTimeMode } from "./TimeModeToggle";
 import { AncientLifeMarker } from "./AncientLifeMarker";
 import { PresentTraceMarker } from "./PresentTraceMarker";
 import { createEarthViewer } from "../globe/cesium/createViewer";
+import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
 
 interface FossilGlobeProps {
   record: FossilRecord;
   mode: FossilTimeMode;
+  locale: Locale;
   showEvidence: boolean;
   onSelectTrace: (trace: PresentTraceRecord) => void;
   onSelectLife: (life: AncientLifeRecord) => void;
@@ -53,7 +55,7 @@ const EllipsoidalOccluder = (CesiumRuntime as unknown as {
 
 type TimeShiftDirection = "to-present" | "to-ancient";
 
-export function FossilGlobe({ record, mode, showEvidence, onSelectTrace, onSelectLife, focusLife, focusTrace, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
+export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace, onSelectLife, focusLife, focusTrace, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const traceMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
   const lifeMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -61,6 +63,8 @@ export function FossilGlobe({ record, mode, showEvidence, onSelectTrace, onSelec
   const sitePointsRef = useRef<PointPrimitiveCollection | null>(null);
   const modeRef = useRef(mode);
   const showEvidenceRef = useRef(showEvidence);
+  const focusLifeRef = useRef(focusLife);
+  const recordRef = useRef(record);
   const syncSurfaceRef = useRef<((nextMode: FossilTimeMode) => void) | null>(null);
   const onZoomLevelChangeRef = useRef(onZoomLevelChange);
   const onPickLocationRef = useRef(onPickLocation);
@@ -88,6 +92,8 @@ export function FossilGlobe({ record, mode, showEvidence, onSelectTrace, onSelec
   useEffect(() => { onZoomLevelChangeRef.current = onZoomLevelChange; }, [onZoomLevelChange]);
   useEffect(() => { onPickLocationRef.current = onPickLocation; }, [onPickLocation]);
   useEffect(() => { onSitesLoadedRef.current = onSitesLoaded; }, [onSitesLoaded]);
+  useEffect(() => { focusLifeRef.current = focusLife; }, [focusLife]);
+  useEffect(() => { recordRef.current = record; }, [record]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -217,7 +223,11 @@ export function FossilGlobe({ record, mode, showEvidence, onSelectTrace, onSelec
     const updatePositions = () => {
       for (const trace of presentTraceRecords) {
         const marker = traceMarkerRefs.current.get(trace.id);
-        if (marker) setLifeMarkerPosition(marker, { latitude: trace.presentLat, longitude: trace.presentLng });
+        const currentRecord = recordRef.current;
+        const point = trace.featured && focusLifeRef.current?.id === "spinosaurus"
+          ? { latitude: currentRecord.presentLat, longitude: currentRecord.presentLng }
+          : { latitude: trace.presentLat, longitude: trace.presentLng };
+        if (marker) setLifeMarkerPosition(marker, point);
       }
       for (const life of ancientLifeRecords) {
         const marker = lifeMarkerRefs.current.get(life.id);
@@ -247,38 +257,25 @@ export function FossilGlobe({ record, mode, showEvidence, onSelectTrace, onSelec
     const viewer = viewerRef.current;
     if (!viewer || focusRequest === 0) return;
     const point = mode === "present"
-      ? { latitude: focusTrace?.presentLat ?? record.presentLat, longitude: focusTrace?.presentLng ?? record.presentLng }
-      : { latitude: record.paleoLat, longitude: record.paleoLng };
+      ? focusLife?.id === "spinosaurus"
+        ? { latitude: record.presentLat, longitude: record.presentLng }
+        : { latitude: focusTrace?.presentLat ?? record.presentLat, longitude: focusTrace?.presentLng ?? record.presentLng }
+      : { latitude: focusLife?.lat ?? record.paleoLat, longitude: focusLife?.lng ?? record.paleoLng };
     viewer.camera.flyTo({
-      destination: Cartesian3.fromDegrees(point.longitude, point.latitude, mode === "present" ? 4_200_000 : 6_500_000),
-      duration: 1.1,
+      destination: Cartesian3.fromDegrees(point.longitude, point.latitude, mode === "present" ? 4_200_000 : focusLife?.recordType === "taxon" ? 3_600_000 : 6_500_000),
+      duration: 1.25,
     });
-  }, [focusRequest, focusTrace, mode, record]);
-
-  useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer || mode !== "ancient" || focusLife?.recordType !== "ecosystem") return;
-    viewer.camera.flyTo({
-      destination: Cartesian3.fromDegrees(focusLife.lng, focusLife.lat, 6_500_000),
-      duration: 1.0,
-      complete: () => {
-        if (viewer.isDestroyed()) return;
-        const nextLevel = getAncientZoomLevel(viewer.camera.positionCartographic.height);
-        zoomLevelRef.current = nextLevel;
-        if (sitePointsRef.current) sitePointsRef.current.show = showEvidenceRef.current && nextLevel >= 2;
-        setZoomLevel(nextLevel);
-        onZoomLevelChangeRef.current?.(nextLevel);
-      },
-    });
-  }, [focusLife, mode]);
+  }, [focusRequest, focusLife, focusTrace, mode, record]);
 
   const isAncient = mode === "ancient";
   const showAncientMarkers = isAncient || timeShift === "to-present";
   const showPresentMarkers = !isAncient || timeShift === "to-ancient";
+  const copy = fossilCopy[locale];
+  const trackingLabel = focusLife ? localizeLife(focusLife, locale).name : null;
 
   return (
     <div className="fossil-globe-stage">
-      <div ref={containerRef} className="earth-globe fossil-globe" aria-label="Interactive Earth globe" />
+      <div ref={containerRef} className="earth-globe fossil-globe" aria-label={copy.globeLabel} />
       <div className="fossil-globe-overlay">
         {presentTraceRecords.map((trace) => (
           <PresentTraceMarker
@@ -288,8 +285,11 @@ export function FossilGlobe({ record, mode, showEvidence, onSelectTrace, onSelec
               else traceMarkerRefs.current.delete(trace.id);
             }}
             record={trace}
+            locale={locale}
             isVisible={showPresentMarkers}
             isEntering={timeShift === "to-present"}
+            isSelected={focusTrace?.id === trace.id}
+            selectedTaxonName={focusLife?.recordType === "taxon" && focusLife.regionId === trace.regionId ? localizeLife(focusLife, locale).name : undefined}
             onClick={() => onSelectTrace(trace)}
           />
         ))}
@@ -301,17 +301,23 @@ export function FossilGlobe({ record, mode, showEvidence, onSelectTrace, onSelec
               else lifeMarkerRefs.current.delete(life.id);
             }}
             record={life}
+            locale={locale}
             isVisible={showAncientMarkers && zoomLevel >= life.minZoomLevel && (life.maxZoomLevel === undefined || zoomLevel <= life.maxZoomLevel)}
             showLabel={isAncient && (life.recordType === "ecosystem" || zoomLevel === 3)}
+            isSelected={focusLife?.id === life.id}
+            isEntering={timeShift === "to-ancient" && focusLife?.id === life.id}
             onClick={() => onSelectLife(life)}
           />
         ))}
       </div>
       {timeShift && (
         <div className={`fossil-time-shift fossil-time-shift--${timeShift}`} role="status" aria-live="polite">
-          <span>{timeShift === "to-present" ? "95 MA · LIVING WORLDS" : "PRESENT · FOSSIL TRACES"}</span>
-          <i aria-hidden="true">→</i>
-          <strong>{timeShift === "to-present" ? "PRESENT · FOSSIL TRACES" : "95 MA · LIVING WORLDS"}</strong>
+          <div>
+            <span>{timeShift === "to-present" ? copy.livingWorlds : copy.presentFossilTraces}</span>
+            <i aria-hidden="true">→</i>
+            <strong>{timeShift === "to-present" ? copy.presentFossilTraces : copy.livingWorlds}</strong>
+          </div>
+          {trackingLabel && <small>{copy.tracking} · {trackingLabel}</small>}
         </div>
       )}
     </div>

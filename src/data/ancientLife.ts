@@ -467,4 +467,4 @@ export const ancientLifeRecords: readonly AncientLifeRecord[] = [
   },
 ] as const;
 
-export const featuredAncientLife = ancientLifeRecords.find((record) => record.featured) ?? ancientLifeRecords[0];
+export const featuredAncientLife = ancientLifeRecords.find((record) => record.featured) ?? ancientLifeRecords[0]!;

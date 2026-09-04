@@ -539,6 +539,9 @@ body { overscroll-behavior: none; }
 .fossil-header__readout { display: grid; gap: 4px; text-align: right; }
 .fossil-header__readout span { color: #698582; font-size: 8px; letter-spacing: .12em; }
 .fossil-header__readout strong { color: #ffd690; font-size: 11px; letter-spacing: .11em; }
+.fossil-language-toggle { display: flex; gap: 3px; margin-left: 18px; padding: 3px; border: 1px solid rgb(129 210 198 / 20%); background: rgb(3 14 17 / 64%); }
+.fossil-language-toggle button { min-width: 30px; padding: 5px 6px; color: #637d79; border: 0; background: transparent; cursor: pointer; font: 750 7px ui-monospace, monospace; letter-spacing: .08em; }
+.fossil-language-toggle button[aria-pressed="true"] { color: #051512; background: #79e3d2; }
 .fossil-intro {
   position: absolute;
   z-index: 5;
@@ -597,6 +600,7 @@ body { overscroll-behavior: none; }
 .present-trace-marker.is-visible { transform: translate(-50%, -50%) scale(1); opacity: .94; pointer-events: auto; }
 .present-trace-marker:hover, .present-trace-marker:focus-visible { color: #ffe1a6; border-color: #ffd690; background: rgb(49 34 13 / 94%); outline: none; }
 .present-trace-marker.is-featured { border-color: rgb(255 214 144 / 72%); }
+.present-trace-marker.is-selected { color: #ffe4ae; border-color: #ffd690; box-shadow: 0 0 0 3px rgb(255 214 144 / 14%), 0 0 22px rgb(255 214 144 / 40%); }
 .present-trace-marker__icon { position: relative; z-index: 1; font-size: 17px; line-height: 1; }
 .present-trace-marker__label { display: grid; gap: 1px; text-align: left; }
 .present-trace-marker__label strong, .present-trace-marker__label small { max-width: 112px; overflow: hidden; font-family: ui-monospace, monospace; text-overflow: ellipsis; white-space: nowrap; }
@@ -604,13 +608,16 @@ body { overscroll-behavior: none; }
 .present-trace-marker__label small { color: #a89067; font-size: 6px; }
 .present-trace-marker__pulse { position: absolute; top: 50%; left: 17px; width: 22px; height: 22px; transform: translate(-50%, -50%) scale(.3); border: 1px solid #ffd690; border-radius: 50%; opacity: 0; pointer-events: none; }
 .present-trace-marker.is-entering .present-trace-marker__pulse { animation: fossil-trace-arrival .82s ease-out both; }
-.fossil-time-shift { position: absolute; z-index: 6; top: 50%; left: 50%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; transform: translate(-50%, -50%); color: #77918d; border: 1px solid rgb(121 227 210 / 25%); background: rgb(3 14 17 / 84%); box-shadow: 0 10px 36px rgb(0 0 0 / 42%); pointer-events: none; animation: fossil-time-shift .88s ease both; backdrop-filter: blur(10px); }
+.fossil-time-shift { position: absolute; z-index: 6; top: 50%; left: 50%; display: grid; justify-items: center; gap: 5px; padding: 9px 12px; transform: translate(-50%, -50%); color: #77918d; border: 1px solid rgb(121 227 210 / 25%); background: rgb(3 14 17 / 84%); box-shadow: 0 10px 36px rgb(0 0 0 / 42%); pointer-events: none; animation: fossil-time-shift .88s ease both; backdrop-filter: blur(10px); }
+.fossil-time-shift > div { display: flex; align-items: center; gap: 10px; }
 .fossil-time-shift span, .fossil-time-shift strong { font: 750 7px ui-monospace, monospace; letter-spacing: .1em; white-space: nowrap; }
 .fossil-time-shift strong { color: #ffd690; }
 .fossil-time-shift--to-ancient strong { color: #79e3d2; }
 .fossil-time-shift i { color: #7e928f; font-style: normal; }
+.fossil-time-shift small { max-width: 280px; overflow: hidden; color: #c9e7e1; font: 700 7px ui-monospace, monospace; letter-spacing: .06em; text-overflow: ellipsis; white-space: nowrap; }
 @keyframes fossil-trace-arrival { 0% { transform: translate(-50%, -50%) scale(.3); opacity: 0; } 30% { opacity: .9; } 100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; } }
 @keyframes fossil-time-shift { 0%, 100% { transform: translate(-50%, -50%) scale(.94); opacity: 0; } 18%, 76% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+@keyframes fossil-selected-arrival { 0% { transform: scale(.72); opacity: 0; } 35% { opacity: .95; } 100% { transform: scale(1.35); opacity: 0; } }
 .fossil-location-connection { position: absolute; height: 1px; transform-origin: 0 50%; border-top: 1px dashed rgb(255 214 144 / 82%); opacity: .9; }
 .fossil-ghost-marker { position: absolute; display: grid; place-items: center; width: 34px; height: 34px; transform: translate(-50%, -50%); color: #ffd690; border: 1px dashed rgb(255 214 144 / 62%); border-radius: 50%; background: rgb(20 20 14 / 62%); opacity: .78; font-size: 18px; }
 .fossil-ghost-marker span { position: absolute; top: 35px; color: #c3a16b; font: 800 6px ui-monospace, monospace; letter-spacing: .12em; }
@@ -622,6 +629,8 @@ body { overscroll-behavior: none; }
 .fossil-reopen { position: absolute; z-index: 7; top: 108px; right: 30px; padding: 12px 15px; color: #79e3d2; border: 1px solid rgb(121 227 210 / 38%); background: rgb(4 15 19 / 90%); cursor: pointer; font: 750 8px ui-monospace, monospace; letter-spacing: .08em; }
 .ancient-life-marker { position: absolute; display: grid; justify-items: center; gap: 3px; min-width: 42px; padding: 5px 6px; transform: translate(calc(-50% + var(--marker-offset-x, 0px)), calc(-100% + var(--marker-offset-y, 0px))) scale(.78); color: #a9eee0; border: 1px solid rgb(121 227 210 / 58%); background: rgb(4 28 31 / 88%); cursor: pointer; filter: drop-shadow(0 5px 12px rgb(0 0 0 / 40%)); opacity: 0; pointer-events: none; transition: opacity .42s ease, transform .42s ease, border-color .2s ease, background .2s ease; will-change: opacity, transform; }
 .ancient-life-marker.is-visible { transform: translate(calc(-50% + var(--marker-offset-x, 0px)), calc(-100% + var(--marker-offset-y, 0px))) scale(1); opacity: 1; pointer-events: auto; }
+.ancient-life-marker.is-selected { border-color: #fff0c9; box-shadow: 0 0 0 3px rgb(255 214 144 / 13%), 0 0 24px rgb(255 214 144 / 42%); }
+.ancient-life-marker.is-entering::before { position: absolute; inset: -5px; content: ""; border: 1px solid #ffd690; border-radius: 4px; pointer-events: none; animation: fossil-selected-arrival .82s ease-out both; }
 .ancient-life-marker[aria-disabled="true"] { pointer-events: none; }
 .ancient-life-marker.is-featured { min-width: 64px; color: #ffe0a5; border-color: rgb(255 214 144 / 86%); background: rgb(49 34 13 / 92%); cursor: pointer; }
 .ancient-life-marker--cluster, .ancient-life-marker--water { color: #ffd690; border-color: rgb(255 214 144 / 60%); background: rgb(24 34 30 / 88%); }
@@ -655,6 +664,7 @@ body { overscroll-behavior: none; }
   .fossil-brand__mark { width: 21px; height: 21px; font-size: 17px; }
   .fossil-header__readout span { font-size: 6px; }
   .fossil-header__readout strong { font-size: 8px; }
+  .fossil-language-toggle { position: absolute; top: 68px; right: 12px; margin: 0; }
   .fossil-intro { top: 82px; left: 14px; width: min(270px, calc(100vw - 28px)); padding: 11px 12px; }
   .fossil-intro h2 { font-size: 16px; }
   .fossil-intro > p:last-child { font-size: 8px; }
@@ -669,7 +679,8 @@ body { overscroll-behavior: none; }
   .fossil-back-ancient { top: auto; right: 12px; bottom: 110px; left: auto; padding: 10px 12px; }
   .present-trace-marker { gap: 4px; padding: 4px 6px; }
   .present-trace-marker__label small { display: none; }
-  .fossil-time-shift { top: 55%; gap: 7px; max-width: calc(100vw - 28px); padding: 8px 9px; }
+  .fossil-time-shift { top: 55%; gap: 5px; max-width: calc(100vw - 28px); padding: 8px 9px; }
+  .fossil-time-shift > div { gap: 7px; }
   .fossil-time-shift span, .fossil-time-shift strong { font-size: 6px; letter-spacing: .06em; }
 }
 

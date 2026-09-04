@@ -1,8 +1,10 @@
 import type { ColumnBand } from "../data/pbdb";
+import { fossilCopy, type Locale } from "../fossil/localization";
 
 interface PlaceContextPanelProps {
   lat: number;
   lng: number;
+  locale: Locale;
   bands: readonly ColumnBand[];
   loading: boolean;
   onClose: () => void;
@@ -13,25 +15,26 @@ function formatCoordinate(value: number, positive: string, negative: string) {
   return `${Math.abs(value).toFixed(1)}°${value >= 0 ? positive : negative}`;
 }
 
-export function PlaceContextPanel({ lat, lng, bands, loading, onClose, onOpenEvidence }: PlaceContextPanelProps) {
+export function PlaceContextPanel({ lat, lng, locale, bands, loading, onClose, onOpenEvidence }: PlaceContextPanelProps) {
+  const copy = fossilCopy[locale];
   const evidenceLabel = loading
-    ? "READING NEARBY EVIDENCE…"
+    ? copy.readingEvidence
     : bands.length > 0
-      ? `OPEN STRATA EVIDENCE · ${bands.length}`
-      : "NO NEARBY STRATA RECORD";
+      ? copy.openStrata(bands.length)
+      : copy.noNearbyStrata;
 
   return (
-    <aside className="place-context-panel" aria-label="Selected place">
-      <button type="button" className="fossil-info-panel__close" onClick={onClose} aria-label="Close selected place">×</button>
-      <p className="fossil-eyebrow">PLACE · PRESENT</p>
+    <aside className="place-context-panel" aria-label={copy.selectedPlace}>
+      <button type="button" className="fossil-info-panel__close" onClick={onClose} aria-label={copy.closePlace}>×</button>
+      <p className="fossil-eyebrow">{copy.place} · {copy.present}</p>
       <h2>
         {formatCoordinate(lat, "N", "S")} · {formatCoordinate(lng, "E", "W")}
       </h2>
-      <p>Keep the globe in view. Open the fossil record only when you want the evidence beneath this place.</p>
-      <div className="place-context-panel__axes" aria-label="Place context">
-        <span><small>TIME</small><strong>Present</strong></span>
-        <span><small>LIFE</small><strong>Traces</strong></span>
-        <span><small>ENVIRONMENT</small><strong>Recorded layers</strong></span>
+      <p>{copy.keepGlobeVisible}</p>
+      <div className="place-context-panel__axes" aria-label={copy.selectedPlace}>
+        <span><small>{copy.time}</small><strong>{copy.present}</strong></span>
+        <span><small>{copy.life}</small><strong>{copy.traces}</strong></span>
+        <span><small>{copy.environment}</small><strong>{copy.recordedLayers}</strong></span>
       </div>
       <button
         type="button"

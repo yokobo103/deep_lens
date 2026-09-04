@@ -1,13 +1,14 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FossilGlobe } from "../components/FossilGlobe";
 import { FossilInfoPanel } from "../components/FossilInfoPanel";
 import { PlaceContextPanel } from "../components/PlaceContextPanel";
 import { StrataColumn } from "../components/StrataColumn";
 import { TimeModeToggle, type FossilTimeMode } from "../components/TimeModeToggle";
-import { featuredAncientLife, type AncientLifeRecord, type AncientZoomLevel } from "../data/ancientLife";
+import { ancientLifeRecords, featuredAncientLife, type AncientLifeRecord, type AncientZoomLevel } from "../data/ancientLife";
 import { fossilRecords } from "../data/fossils";
 import { featuredPresentTrace, presentTraceRecords, type PresentTraceRecord } from "../data/presentTraces";
 import { buildColumn, loadFormations, ENV_COLOR, ENV_LABEL, ENV_ORDER, type ColumnBand } from "../data/pbdb";
+import { environmentLabel, fossilCopy, type Locale } from "./localization";
 
 /** How far from the clicked point a formation still counts as "here". */
 const COLUMN_RADIUS_KM = 200;
@@ -31,6 +32,22 @@ export function FossilPrototype() {
   const [columnLoading, setColumnLoading] = useState(false);
   const [showEvidence, setShowEvidence] = useState(false);
   const [showStrata, setShowStrata] = useState(false);
+  const [locale, setLocale] = useState<Locale>(() => {
+    try {
+      return window.localStorage.getItem("deep-lens-locale") === "en" ? "en" : "ja";
+    } catch {
+      return "ja";
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    try {
+      window.localStorage.setItem("deep-lens-locale", locale);
+    } catch {
+      // The language still works when storage is unavailable.
+    }
+  }, [locale]);
 
   const pickLocation = useCallback((lat: number, lng: number) => {
     setPlace({ lat, lng });
@@ -47,10 +64,20 @@ export function FossilPrototype() {
   }, []);
 
   if (!record || !featuredAncientLife || !featuredPresentTrace) return null;
+  const copy = fossilCopy[locale];
 
   const changeMode = (nextMode: FossilTimeMode) => {
+    if (nextMode === mode) return;
+    if (selected) {
+      if (nextMode === "present" && selectedLife) {
+        setSelectedTrace(presentTraceRecords.find((trace) => trace.regionId === selectedLife.regionId) ?? featuredPresentTrace);
+      }
+      if (nextMode === "ancient" && selectedTrace && selectedLife?.regionId !== selectedTrace.regionId) {
+        setSelectedLife(findRegionEcosystem(selectedTrace.regionId) ?? featuredAncientLife);
+      }
+      setFocusRequest((request) => request + 1);
+    }
     setMode(nextMode);
-    setSelected(false);
     setPlace(null);
     setShowStrata(false);
   };
@@ -67,13 +94,13 @@ export function FossilPrototype() {
 
   const backToAncient = () => {
     setMode("ancient");
-    setSelected(false);
+    setSelected(true);
     setPlace(null);
     setShowStrata(false);
     setFocusRequest((request) => request + 1);
   };
 
-  const zoomLabel = zoomLevel === 1 ? "WORLD VIEW" : zoomLevel === 2 ? "REGION VIEW" : "SPECIES VIEW";
+  const zoomLabel = zoomLevel === 1 ? copy.worldView : zoomLevel === 2 ? copy.regionView : copy.speciesView;
   const isAncient = mode === "ancient";
 
   return (
@@ -81,6 +108,7 @@ export function FossilPrototype() {
       <FossilGlobe
         record={record}
         mode={mode}
+        locale={locale}
         showEvidence={showEvidence}
         focusLife={selected ? selectedLife : null}
         focusTrace={selected ? selectedTrace : null}
@@ -88,6 +116,7 @@ export function FossilPrototype() {
         onSelectTrace={(trace) => {
           setSelected(true);
           setSelectedTrace(trace);
+          setSelectedLife(findRegionEcosystem(trace.regionId) ?? featuredAncientLife);
           setPlace(null);
           setShowStrata(false);
         }}
@@ -108,53 +137,58 @@ export function FossilPrototype() {
           <span className="fossil-brand__mark" aria-hidden="true">◌</span>
           <div>
             <p>DEEP LENS</p>
-            <h1>ANCIENT LIFE MAP</h1>
+            <h1>{locale === "ja" ? "古代生命マップ" : "ANCIENT LIFE MAP"}</h1>
           </div>
         </div>
         <div className="fossil-header__readout">
-          <span>{isAncient ? "95 MA · FOUR REGIONS" : "PRESENT · FOUR TRACES"}</span>
-          <strong>{mode === "present" ? "FOLLOW THE FOSSIL" : "EXPLORE THE LIVING EARTH"}</strong>
+          <span>{isAncient ? copy.fourAncientRegions : copy.fourPresentTraces}</span>
+          <strong>{mode === "present" ? copy.followFossil : copy.exploreLivingEarth}</strong>
         </div>
+        <nav className="fossil-language-toggle" aria-label={copy.language}>
+          <button type="button" aria-pressed={locale === "ja"} onClick={() => setLocale("ja")}>JA</button>
+          <button type="button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>EN</button>
+        </nav>
       </header>
 
-      <section className="fossil-intro" aria-label="Prototype concept">
+      <section className="fossil-intro" aria-label={locale === "ja" ? "プロトタイプのコンセプト" : "Prototype concept"}>
         {isAncient ? (
           <>
-            <p className="fossil-eyebrow">ANCIENT EARTH · 95 MA</p>
-            <h2>Who lived here — <em>then</em>?</h2>
-            <p>Turn the globe. One time window, four very different worlds.</p>
+            <p className="fossil-eyebrow">{copy.ancientEarth}</p>
+            <h2>{copy.ancientQuestionBefore} <em>{copy.ancientQuestionEmphasis}</em></h2>
+            <p>{copy.ancientIntro}</p>
           </>
         ) : (
           <>
-            <p className="fossil-eyebrow">PRESENT EARTH</p>
-            <h2>Find what remains — <em>now</em></h2>
-            <p>Choose a fossil trace, or tap the Earth to inspect the evidence beneath a place.</p>
+            <p className="fossil-eyebrow">{copy.presentEarth}</p>
+            <h2>{copy.presentQuestionBefore} <em>{copy.presentQuestionEmphasis}</em></h2>
+            <p>{copy.presentIntro}</p>
           </>
         )}
       </section>
 
       {!selected && !place && (
-        <section className="fossil-axis-strip" aria-label="Current exploration axes">
-          <div><span>PLACE</span><strong>{isAncient ? "4 regions" : "4 trace regions"}</strong></div>
-          <div><span>TIME</span><strong>{isAncient ? "95 Ma" : "Present"}</strong></div>
-          <div><span>LIFE</span><strong>{isAncient ? "Regional biotas" : "Fossil traces"}</strong></div>
-          <div><span>ENVIRONMENT</span><strong>{isAncient ? "Sea · rivers · land" : "Recorded layers"}</strong></div>
+        <section className="fossil-axis-strip" aria-label={locale === "ja" ? "現在の探索軸" : "Current exploration axes"}>
+          <div><span>{copy.place}</span><strong>{isAncient ? copy.fourRegions : copy.fourTraceRegions}</strong></div>
+          <div><span>{copy.time}</span><strong>{isAncient ? "95 Ma" : copy.present}</strong></div>
+          <div><span>{copy.life}</span><strong>{isAncient ? copy.regionalBiotas : copy.fossilTraces}</strong></div>
+          <div><span>{copy.environment}</span><strong>{isAncient ? copy.environmentsAncient : copy.recordedLayers}</strong></div>
         </section>
       )}
 
       <div className="fossil-mode-dock">
-        <span className="fossil-dock-label">TIME MODE</span>
-        <TimeModeToggle mode={mode} onChange={changeMode} />
-        <span className="fossil-dock-status">{mode === "present" ? "PRESENT · 4 TRACE REGIONS" : `95 MA · ${zoomLabel}`}</span>
+        <span className="fossil-dock-label">{copy.timeMode}</span>
+        <TimeModeToggle mode={mode} locale={locale} onChange={changeMode} />
+        <span className="fossil-dock-status">{mode === "present" ? `${copy.present} · ${copy.fourTraceRegions}` : `95 MA · ${zoomLabel}`}</span>
       </div>
 
-      {selected && selectedLife && selectedTrace && <FossilInfoPanel record={record} mode={mode} life={selectedLife} trace={selectedTrace} onClose={() => setSelected(false)} onSeeFossilsToday={seeFossilsToday} onBackToAncient={backToAncient} />}
-      {!selected && !place && mode === "present" && <button type="button" className="fossil-reopen" onClick={() => { setSelectedTrace(featuredPresentTrace); setSelected(true); }}>SHOW INFO · FOSSIL TRACES</button>}
+      {selected && selectedLife && selectedTrace && <FossilInfoPanel record={record} mode={mode} locale={locale} life={selectedLife} trace={selectedTrace} onClose={() => setSelected(false)} onSeeFossilsToday={seeFossilsToday} onBackToAncient={backToAncient} />}
+      {!selected && !place && mode === "present" && <button type="button" className="fossil-reopen" onClick={() => { setSelectedTrace(featuredPresentTrace); setSelectedLife(findRegionEcosystem(featuredPresentTrace.regionId) ?? featuredAncientLife); setSelected(true); }}>{copy.showTraceInfo}</button>}
 
       {place && !showStrata && (
         <PlaceContextPanel
           lat={place.lat}
           lng={place.lng}
+          locale={locale}
           bands={bands}
           loading={columnLoading}
           onClose={() => {
@@ -169,6 +203,7 @@ export function FossilPrototype() {
         <StrataColumn
           lat={place.lat}
           lng={place.lng}
+          locale={locale}
           radiusKm={COLUMN_RADIUS_KM}
           bands={bands}
           loading={columnLoading}
@@ -183,29 +218,33 @@ export function FossilPrototype() {
           aria-pressed={showEvidence}
           onClick={() => setShowEvidence((visible) => !visible)}
         >
-          <span>{showEvidence ? "EVIDENCE LAYER · ON" : "OPTIONAL EVIDENCE"}</span>
-          <strong>{showEvidence ? "HIDE PBDB DOTS" : "SHOW PBDB DOTS"}</strong>
-          <small>{showEvidence && siteCount > 0 ? `${siteCount.toLocaleString()} fossil sites · zoom in` : "Life stays in the foreground"}</small>
+          <span>{showEvidence ? copy.evidenceOn : copy.optionalEvidence}</span>
+          <strong>{showEvidence ? copy.hidePbdb : copy.showPbdb}</strong>
+          <small>{showEvidence && siteCount > 0 ? copy.fossilSitesZoom(siteCount) : copy.evidenceHint}</small>
         </button>
       )}
 
       {isAncient && showEvidence && !selected ? (
-        <div className="fossil-legend fossil-legend--env fossil-legend--evidence" aria-label="Environment legend">
-          <span className="fossil-legend__title">RECORDED ENVIRONMENT</span>
+        <div className="fossil-legend fossil-legend--env fossil-legend--evidence" aria-label={copy.recordedEnvironment}>
+          <span className="fossil-legend__title">{copy.recordedEnvironment}</span>
           {ENV_ORDER.map((env) => (
             <span key={env}>
               <i className="fossil-legend__dot" style={{ background: ENV_COLOR[env] }} aria-hidden="true" />
-              {ENV_LABEL[env]}
+              {environmentLabel(locale, ENV_LABEL[env])}
             </span>
           ))}
         </div>
       ) : !isAncient ? (
-        <div className="fossil-legend" aria-label="Marker legend">
-          <span><i className="fossil-legend__bone">🦴</i>Modern fossil-record region</span>
+        <div className="fossil-legend" aria-label={locale === "ja" ? "マーカー凡例" : "Marker legend"}>
+          <span><i className="fossil-legend__bone">🦴</i>{copy.modernTraceRegion}</span>
         </div>
       ) : null}
 
-      {mode === "present" && <button type="button" className="fossil-back-ancient" onClick={backToAncient}>BACK TO 95 MA</button>}
+      {mode === "present" && <button type="button" className="fossil-back-ancient" onClick={backToAncient}>{copy.backToAncient}</button>}
     </main>
   );
+}
+
+function findRegionEcosystem(regionId: string) {
+  return ancientLifeRecords.find((life) => life.regionId === regionId && life.recordType === "ecosystem");
 }

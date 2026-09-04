@@ -3,10 +3,12 @@ import type { AncientLifeRecord } from "../data/ancientLife";
 import type { PresentTraceRecord } from "../data/presentTraces";
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { LifeIcon } from "./LifeIcon";
+import { fossilCopy, localizeLife, localizeTrace, type Locale } from "../fossil/localization";
 
 interface FossilInfoPanelProps {
   record: FossilRecord;
   mode: FossilTimeMode;
+  locale: Locale;
   life: AncientLifeRecord;
   trace: PresentTraceRecord;
   onClose: () => void;
@@ -14,80 +16,95 @@ interface FossilInfoPanelProps {
   onBackToAncient: () => void;
 }
 
-export function FossilInfoPanel({ record, mode, life, trace, onClose, onSeeFossilsToday, onBackToAncient }: FossilInfoPanelProps) {
+export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, onSeeFossilsToday, onBackToAncient }: FossilInfoPanelProps) {
   const ancient = mode === "ancient";
-  const title = ancient ? life.name : trace.name;
+  const copy = fossilCopy[locale];
+  const lifeText = localizeLife(life, locale);
+  const traceText = localizeTrace(trace, locale);
+  const selectedTaxon = life.recordType === "taxon" && life.regionId === trace.regionId;
+  const taxonSpecificTrace = life.id === "spinosaurus";
+  const title = ancient
+    ? lifeText.name
+    : selectedTaxon
+      ? taxonSpecificTrace
+        ? locale === "ja" ? `${lifeText.name}の化石記録` : `${lifeText.name} fossil record`
+        : locale === "ja" ? `${lifeText.name}に関連する地域記録` : `Regional record linked to ${lifeText.name}`
+      : traceText.name;
+  const presentLat = taxonSpecificTrace ? record.presentLat : trace.presentLat;
+  const presentLng = taxonSpecificTrace ? record.presentLng : trace.presentLng;
+  const paleoLat = taxonSpecificTrace ? record.paleoLat : trace.paleoLat;
+  const paleoLng = taxonSpecificTrace ? record.paleoLng : trace.paleoLng;
 
   return (
     <aside className="fossil-info-panel" aria-label={`${title} information`}>
-      <button type="button" className="fossil-info-panel__close" onClick={onClose} aria-label="Close information">×</button>
-      <p className="fossil-eyebrow">{ancient ? `${life.recordType === "ecosystem" ? "REGIONAL WORLD" : "ANCIENT LIFE"} · CENOMANIAN` : "FOSSIL DISCOVERY · PRESENT"}</p>
+      <button type="button" className="fossil-info-panel__close" onClick={onClose} aria-label={copy.closeInfo}>×</button>
+      <p className="fossil-eyebrow">{ancient ? `${life.recordType === "ecosystem" ? copy.regionalWorld : copy.ancientLife} · ${locale === "ja" ? "セノマニアン期" : "CENOMANIAN"}` : copy.fossilDiscovery}</p>
       <div className="fossil-info-panel__title-row">
         <span className="fossil-info-panel__species-mark" aria-hidden="true">{ancient ? <LifeIcon iconType={life.iconType} /> : "🦴"}</span>
         <div>
           <h2>{title}</h2>
-          <p>{ancient ? `${life.regionLabel} · ${life.category}` : `${trace.placeLabel} · ${record.ageLabel} rocks`}</p>
+          <p>{ancient ? `${lifeText.regionLabel} · ${lifeText.category}` : `${traceText.placeLabel} · ${record.ageLabel}${locale === "ja" ? "の岩石" : " rocks"}`}</p>
         </div>
       </div>
 
       {ancient ? (
         <div className="fossil-location-compare">
           <div className="is-current">
-            <span>PLACE · RECONSTRUCTED</span>
-            <strong>{life.regionLabel}</strong>
+            <span>{copy.reconstructedPlace}</span>
+            <strong>{lifeText.regionLabel}</strong>
             <small>{formatCoordinate(life.lat, "N", "S")} · {formatCoordinate(life.lng, "E", "W")}</small>
           </div>
           <div>
-            <span>ROCK RECORD</span>
-            <strong>{life.formationLabel}</strong>
-            <small>Cenomanian window · ~100.5–93.9 Ma</small>
+            <span>{copy.rockRecord}</span>
+            <strong>{lifeText.formationLabel}</strong>
+            <small>{copy.cenomanianWindow}</small>
           </div>
         </div>
       ) : (
         <div className="fossil-location-compare">
           <div className="is-current">
-            <span>NOW · DISCOVERY</span>
-            <strong>{trace.formationLabel} · {trace.placeLabel}</strong>
-            <small>{formatCoordinate(trace.presentLat, "N", "S")} · {formatCoordinate(trace.presentLng, "E", "W")}</small>
+            <span>{copy.nowDiscovery}</span>
+            <strong>{traceText.formationLabel} · {traceText.placeLabel}</strong>
+            <small>{formatCoordinate(presentLat, "N", "S")} · {formatCoordinate(presentLng, "E", "W")}</small>
           </div>
           <div>
-            <span>THEN · RECONSTRUCTED REGION</span>
-            <strong>95 Ma · {trace.formationLabel}</strong>
-            <small>{formatCoordinate(trace.paleoLat, "N", "S")} · {formatCoordinate(trace.paleoLng, "E", "W")}</small>
+            <span>{copy.thenRegion}</span>
+            <strong>95 Ma · {traceText.formationLabel}</strong>
+            <small>{formatCoordinate(paleoLat, "N", "S")} · {formatCoordinate(paleoLng, "E", "W")}</small>
           </div>
         </div>
       )}
 
       {ancient ? (
         <>
-          <p className="fossil-info-panel__summary">{life.description}</p>
+          <p className="fossil-info-panel__summary">{lifeText.description}</p>
           <div className="fossil-ecosystem-note">
-            <span>RECORDED ENVIRONMENT</span>
-            <strong>{life.environment}</strong>
-            <small>{life.occurrenceCount.toLocaleString()} PBDB occurrence {life.occurrenceCount === 1 ? "record" : "records"} in this selection · not an abundance estimate</small>
+            <span>{copy.recordedEnvironmentPanel}</span>
+            <strong>{lifeText.environment}</strong>
+            <small>{copy.occurrenceSummary(life.occurrenceCount)}</small>
           </div>
           <p className="fossil-evidence-source">
-            <span>DATA SOURCE</span>
-            <a href={life.sourceUrl} target="_blank" rel="noreferrer">{life.sourceLabel}</a>
-            <small>{life.coordinateNote}</small>
+            <span>{copy.dataSource}</span>
+            <a href={life.sourceUrl} target="_blank" rel="noreferrer">{lifeText.sourceLabel}</a>
+            <small>{lifeText.coordinateNote}</small>
           </p>
-          {life.featured && <button type="button" className="fossil-panel-action" onClick={onSeeFossilsToday}>SEE FOSSILS TODAY</button>}
+          <button type="button" className="fossil-panel-action" onClick={onSeeFossilsToday}>{copy.seeFossilsToday}</button>
         </>
       ) : (
         <>
-          <p className="fossil-info-panel__summary">{trace.description}</p>
+          <p className="fossil-info-panel__summary">{taxonSpecificTrace ? locale === "ja" ? "Spinosaurus aegyptiacusは、現在のモロッコに露出するセノマニアン期のケムケム層群から記録されています。" : record.summary : traceText.description}</p>
           <div className="fossil-ecosystem-note">
-            <span>PBDB RECORD SUMMARY</span>
-            <strong>{trace.siteCount.toLocaleString()} sites · {trace.occurrenceCount.toLocaleString()} occurrences</strong>
-            <small>Counts describe records in this prototype selection, not the abundance of ancient life.</small>
+            <span>{copy.pbdbSummary}</span>
+            <strong>{taxonSpecificTrace ? locale === "ja" ? "Spinosaurusの記録 17件" : "17 Spinosaurus occurrence records" : copy.sitesAndOccurrences(trace.siteCount, trace.occurrenceCount)}</strong>
+            <small>{copy.recordCountNote}</small>
           </div>
           <p className="fossil-evidence-source">
-            <span>DATA SOURCE</span>
-            <a href={trace.sourceUrl} target="_blank" rel="noreferrer">{trace.sourceLabel}</a>
-            <small>{trace.coordinateNote}</small>
+            <span>{copy.dataSource}</span>
+            <a href={taxonSpecificTrace ? record.sourceUrl : trace.sourceUrl} target="_blank" rel="noreferrer">{taxonSpecificTrace ? locale === "ja" ? "古生物学データベース · Spinosaurus記録" : record.sourceLabel : traceText.sourceLabel}</a>
+            <small>{taxonSpecificTrace ? locale === "ja" ? "現代座標はSpinosaurus aegyptiacusの記録地点、古座標はPBDB PALEOMAP（Scotese）の17件の中心です。" : record.coordinateNote : traceText.coordinateNote}</small>
           </p>
-          <p className="fossil-callout">Present shows quiet traces where the rocks are found today. Return to 95 Ma to see the living region on the reconstructed Earth.</p>
-          <button type="button" className="fossil-panel-action fossil-panel-action--quiet" onClick={onBackToAncient}>BACK TO 95 MA</button>
+          <p className="fossil-callout">{copy.presentCallout}</p>
+          <button type="button" className="fossil-panel-action fossil-panel-action--quiet" onClick={onBackToAncient}>{copy.backToAncient}</button>
         </>
       )}
     </aside>

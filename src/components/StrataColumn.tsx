@@ -1,8 +1,10 @@
 import { ENV_COLOR, ENV_LABEL, type ColumnBand } from "../data/pbdb";
+import { environmentLabel, fossilCopy, type Locale } from "../fossil/localization";
 
 interface StrataColumnProps {
   lat: number;
   lng: number;
+  locale: Locale;
   radiusKm: number;
   bands: ColumnBand[];
   loading: boolean;
@@ -16,32 +18,32 @@ function formatCoordinate(value: number, positive: string, negative: string) {
   return `${Math.abs(value).toFixed(1)}°${value >= 0 ? positive : negative}`;
 }
 
-export function StrataColumn({ lat, lng, radiusKm, bands, loading, onClose }: StrataColumnProps) {
+export function StrataColumn({ lat, lng, locale, radiusKm, bands, loading, onClose }: StrataColumnProps) {
   // `bands` arrives youngest first, which stacks the oldest at the bottom —
   // the way a real column is read.
   const stacked = bands;
+  const copy = fossilCopy[locale];
 
   return (
-    <aside className="strata-column" aria-label="Stratigraphic column for the selected place">
-      <button type="button" className="fossil-info-panel__close" onClick={onClose} aria-label="Close column">×</button>
-      <p className="fossil-eyebrow">THIS PLACE, THROUGH TIME</p>
+    <aside className="strata-column" aria-label={copy.strataThroughTime}>
+      <button type="button" className="fossil-info-panel__close" onClick={onClose} aria-label={copy.closeInfo}>×</button>
+      <p className="fossil-eyebrow">{copy.strataThroughTime}</p>
       <h2 className="strata-column__place">
         {formatCoordinate(lat, "N", "S")} {formatCoordinate(lng, "E", "W")}
       </h2>
 
-      {loading && <p className="strata-column__state">Reading the record…</p>}
+      {loading && <p className="strata-column__state">{copy.readingRecord}</p>}
 
       {!loading && stacked.length === 0 && (
         <p className="strata-column__state">
-          No fossil-bearing formation is recorded within {radiusKm} km of this point, in the Late Jurassic
-          to Cretaceous. That is a gap in the record, not an empty world.
+          {copy.noFormation(radiusKm)}
         </p>
       )}
 
       {!loading && stacked.length > 0 && (
         <>
           <p className="strata-column__count">
-            <strong>{stacked.length}</strong> formations with recorded fossils within {radiusKm} km
+            {copy.formationsNearby(stacked.length, radiusKm)}
           </p>
           <ol className="strata-column__bands">
             {stacked.map((band, index) => {
@@ -54,27 +56,24 @@ export function StrataColumn({ lat, lng, radiusKm, bands, loading, onClose }: St
                     <span className="strata-band__swatch" style={{ background: ENV_COLOR[band.dominantEnv] }} aria-hidden="true" />
                     <span className="strata-band__body">
                       <strong>{band.formation}</strong>
-                      {band.group && <em>{band.group} Group</em>}
-                      <small>{ENV_LABEL[band.dominantEnv]}</small>
+                      {band.group && <em>{band.group} {copy.group}</em>}
+                      <small>{environmentLabel(locale, ENV_LABEL[band.dominantEnv])}</small>
                     </span>
                     <span className="strata-band__meta">
                       <b>{band.count}</b>
-                      <i>records</i>
-                      <u>{formatCoordinate(band.paleoLat, "N", "S")} then</u>
+                      <i>{copy.records}</i>
+                      <u>{formatCoordinate(band.paleoLat, "N", "S")} {copy.thenShort}</u>
                     </span>
                   </div>
                   {gap >= GAP_MA && (
-                    <div className="strata-gap">no record here for about {Math.round(gap)} Myr</div>
+                    <div className="strata-gap">{copy.noRecordFor(Math.round(gap))}</div>
                   )}
                 </li>
               );
             })}
           </ol>
           <p className="strata-column__note">
-            EVIDENCE ONLY · NO AI INTERPRETATION. Each band is a formation that someone dug and published.
-            <strong>Records</strong> counts published occurrences, not animals — it follows collecting effort
-            as much as it follows life. Environments are the ones recorded with the fossils.
-            Positions are placed by the centre of each formation's recorded sites.
+            {copy.evidenceOnly}
           </p>
         </>
       )}
