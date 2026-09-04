@@ -11,8 +11,12 @@ const denylistedPaths = [
   "src/components/ShareButton.tsx", "src/components/Timeline.tsx", "src/components/WhyHerePanel.tsx",
   "src/components/mission", "src/data/demo", "src/assets", "public/og-earth-lens.jpg",
   "tools/build-geo.mjs", "tools/verify-borders.mjs", "tools/check-external-links.mjs",
-  "tools/mobile-layout-audit.mjs", "tools/build-stickers.py", ".github/workflows/deploy.yml",
+  "tools/mobile-layout-audit.mjs", "tools/build-stickers.py",
 ];
+// `.github/workflows/deploy.yml` was on this list while Deep Lens had no
+// deployment of its own. It now has one, written for this repo, so the path is
+// no longer a signal of inheritance — the forbidden-text check below is what
+// catches an EARTH LENS workflow if one is ever copied back in.
 const forbiddenImports = /(?:missions|lenses|why-here|i18n|share)\//;
 const forbiddenText = ["EARTH LENS", "earth-lens", "Earth Lens"];
 const failures = [];
