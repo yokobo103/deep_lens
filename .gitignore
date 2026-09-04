@@ -1,13 +1,6 @@
-.venv/
-.venv*/
-venv/
-venv*/
 node_modules/
-__pycache__/
-.DS_Store
-*.log
-.env
-.env.local
 dist/
-.next/
-build/
+.vite/
+*.local
+*.log
+.cache/
