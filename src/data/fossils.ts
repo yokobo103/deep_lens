@@ -10,21 +10,30 @@ export type FossilRecord = {
   presentPlaceLabel: string;
   paleoPlaceLabel: string;
   summary: string;
+  sourceLabel: string;
+  sourceUrl: string;
+  coordinateNote: string;
 };
 
-/** PoC coordinates: the paleo point is an illustrative point placed on the local 100 Ma land proxy. */
+/**
+ * The ancient point is the centroid of PBDB GPlates paleocoordinates for
+ * Spinosaurus aegyptiacus occurrences in the Cenomanian Kem Kem Group.
+ */
 export const fossilRecords: readonly FossilRecord[] = [
   {
     id: "spinosaurus-kem-kem",
     taxon: "Spinosaurus",
-    periodLabel: "Late Cretaceous",
-    ageLabel: "95 Ma",
+    periodLabel: "Cenomanian",
+    ageLabel: "~95–100 Ma",
     presentLat: 31.2,
     presentLng: -5.6,
-    paleoLat: 19.5,
-    paleoLng: -5.5,
+    paleoLat: 25.77,
+    paleoLng: 7.48,
     presentPlaceLabel: "Morocco · Kem Kem Beds",
-    paleoPlaceLabel: "North Africa · reconstructed land",
-    summary: "A large semi-aquatic predator known from fossil-bearing rocks in Morocco. This prototype compares the discovery point today with the approximate position of that land at 95 Ma.",
+    paleoPlaceLabel: "Kem Kem Group · PBDB reconstruction",
+    summary: "Spinosaurus aegyptiacus is recorded from the Cenomanian Kem Kem Group of Morocco. The ancient marker uses the centroid of PBDB reconstructed occurrence positions rather than the former illustrative point.",
+    sourceLabel: "Paleobiology Database · Kem Kem Group occurrences",
+    sourceUrl: "https://paleobiodb.org/data1.2/occs/list.json?strat=Kem%20Kem&interval=Cenomanian&show=class,ident,phylo,loc,paleoloc,strat,env,time&limit=1000&datainfo",
+    coordinateNote: "PBDB GPlates paleocoordinate centroid for 17 Spinosaurus aegyptiacus occurrence records; accessed 2026-09-04.",
   },
 ] as const;

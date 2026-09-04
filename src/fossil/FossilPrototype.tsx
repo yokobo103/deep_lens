@@ -4,7 +4,7 @@ import { FossilInfoPanel } from "../components/FossilInfoPanel";
 import { PlaceContextPanel } from "../components/PlaceContextPanel";
 import { StrataColumn } from "../components/StrataColumn";
 import { TimeModeToggle, type FossilTimeMode } from "../components/TimeModeToggle";
-import { featuredAncientLife, type AncientZoomLevel } from "../data/ancientLife";
+import { featuredAncientLife, type AncientLifeRecord, type AncientZoomLevel } from "../data/ancientLife";
 import { fossilRecords } from "../data/fossils";
 import { buildColumn, loadFormations, ENV_COLOR, ENV_LABEL, ENV_ORDER, type ColumnBand } from "../data/pbdb";
 
@@ -20,6 +20,7 @@ export function FossilPrototype() {
   const record = fossilRecords[0];
   const [mode, setMode] = useState<FossilTimeMode>("ancient");
   const [selected, setSelected] = useState(false);
+  const [selectedLife, setSelectedLife] = useState<AncientLifeRecord | null>(featuredAncientLife ?? null);
   const [zoomLevel, setZoomLevel] = useState<AncientZoomLevel>(1);
   const [focusRequest, setFocusRequest] = useState(0);
   const [siteCount, setSiteCount] = useState(0);
@@ -55,6 +56,7 @@ export function FossilPrototype() {
   const seeFossilsToday = () => {
     setMode("present");
     setSelected(true);
+    setSelectedLife(featuredAncientLife ?? null);
     setPlace(null);
     setShowStrata(false);
     setFocusRequest((request) => request + 1);
@@ -77,9 +79,17 @@ export function FossilPrototype() {
         record={record}
         mode={mode}
         showEvidence={showEvidence}
+        focusLife={selected ? selectedLife : null}
         focusRequest={focusRequest}
         onSelect={() => {
           setSelected(true);
+          setSelectedLife(featuredAncientLife ?? null);
+          setPlace(null);
+          setShowStrata(false);
+        }}
+        onSelectLife={(life) => {
+          setSelected(true);
+          setSelectedLife(life);
           setPlace(null);
           setShowStrata(false);
         }}
@@ -97,7 +107,7 @@ export function FossilPrototype() {
           </div>
         </div>
         <div className="fossil-header__readout">
-          <span>{isAncient ? "95 MA · NORTH AFRICA" : "PRESENT · FOSSIL TRACE"}</span>
+          <span>{isAncient ? "95 MA · FOUR REGIONS" : "PRESENT · FOSSIL TRACE"}</span>
           <strong>{mode === "present" ? "FOLLOW THE FOSSIL" : "EXPLORE THE LIVING EARTH"}</strong>
         </div>
       </header>
@@ -107,7 +117,7 @@ export function FossilPrototype() {
           <>
             <p className="fossil-eyebrow">ANCIENT EARTH · 95 MA</p>
             <h2>Who lived here — <em>then</em>?</h2>
-            <p>Turn the globe. Zoom until a Cretaceous ecosystem begins to appear.</p>
+            <p>Turn the globe. One time window, four very different worlds.</p>
           </>
         ) : (
           <>
@@ -120,10 +130,10 @@ export function FossilPrototype() {
 
       {!selected && !place && (
         <section className="fossil-axis-strip" aria-label="Current exploration axes">
-          <div><span>PLACE</span><strong>{isAncient ? "North Africa" : "Morocco"}</strong></div>
+          <div><span>PLACE</span><strong>{isAncient ? "4 regions" : "Morocco"}</strong></div>
           <div><span>TIME</span><strong>{isAncient ? "95 Ma" : "Present"}</strong></div>
-          <div><span>LIFE</span><strong>{isAncient ? "Ecosystem" : "Fossil trace"}</strong></div>
-          <div><span>ENVIRONMENT</span><strong>{isAncient ? "Rivers · lagoons" : "Recorded layers"}</strong></div>
+          <div><span>LIFE</span><strong>{isAncient ? "Regional biotas" : "Fossil trace"}</strong></div>
+          <div><span>ENVIRONMENT</span><strong>{isAncient ? "Sea · rivers · land" : "Recorded layers"}</strong></div>
         </section>
       )}
 
@@ -133,8 +143,8 @@ export function FossilPrototype() {
         <span className="fossil-dock-status">{mode === "present" ? "PRESENT · PICK A PLACE" : `95 MA · ${zoomLabel}`}</span>
       </div>
 
-      {selected && <FossilInfoPanel record={record} mode={mode} life={featuredAncientLife} onClose={() => setSelected(false)} onSeeFossilsToday={seeFossilsToday} onBackToAncient={backToAncient} />}
-      {!selected && !place && mode === "present" && <button type="button" className="fossil-reopen" onClick={() => setSelected(true)}>SHOW INFO · {record.taxon}</button>}
+      {selected && selectedLife && <FossilInfoPanel record={record} mode={mode} life={selectedLife} onClose={() => setSelected(false)} onSeeFossilsToday={seeFossilsToday} onBackToAncient={backToAncient} />}
+      {!selected && !place && mode === "present" && <button type="button" className="fossil-reopen" onClick={() => { setSelectedLife(featuredAncientLife ?? null); setSelected(true); }}>SHOW INFO · {record.taxon}</button>}
 
       {place && !showStrata && (
         <PlaceContextPanel

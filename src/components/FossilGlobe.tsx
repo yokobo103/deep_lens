@@ -14,6 +14,8 @@ interface FossilGlobeProps {
   mode: FossilTimeMode;
   showEvidence: boolean;
   onSelect: () => void;
+  onSelectLife: (life: AncientLifeRecord) => void;
+  focusLife?: AncientLifeRecord | null;
   onZoomLevelChange?: (level: AncientZoomLevel) => void;
   /** Present mode: a click on the Earth, in modern degrees. */
   onPickLocation?: (latitude: number, longitude: number) => void;
@@ -47,7 +49,7 @@ const EllipsoidalOccluder = (CesiumRuntime as unknown as {
   EllipsoidalOccluder: new (ellipsoid: Viewer["scene"]["globe"]["ellipsoid"], cameraPosition?: Cartesian3) => EllipsoidalOccluderLike;
 }).EllipsoidalOccluder;
 
-export function FossilGlobe({ record, mode, showEvidence, onSelect, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
+export function FossilGlobe({ record, mode, showEvidence, onSelect, onSelectLife, focusLife, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fossilMarkerRef = useRef<HTMLButtonElement>(null);
   const lifeMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -255,6 +257,23 @@ export function FossilGlobe({ record, mode, showEvidence, onSelect, onZoomLevelC
     });
   }, [focusRequest, mode, record]);
 
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || mode !== "ancient" || focusLife?.recordType !== "ecosystem") return;
+    viewer.camera.flyTo({
+      destination: Cartesian3.fromDegrees(focusLife.lng, focusLife.lat, 6_500_000),
+      duration: 1.0,
+      complete: () => {
+        if (viewer.isDestroyed()) return;
+        const nextLevel = getAncientZoomLevel(viewer.camera.positionCartographic.height);
+        zoomLevelRef.current = nextLevel;
+        if (sitePointsRef.current) sitePointsRef.current.show = showEvidenceRef.current && nextLevel >= 2;
+        setZoomLevel(nextLevel);
+        onZoomLevelChangeRef.current?.(nextLevel);
+      },
+    });
+  }, [focusLife, mode]);
+
   const isAncient = mode === "ancient";
 
   return (
@@ -270,9 +289,9 @@ export function FossilGlobe({ record, mode, showEvidence, onSelect, onZoomLevelC
               else lifeMarkerRefs.current.delete(life.id);
             }}
             record={life}
-            isVisible={isAncient && zoomLevel >= life.minZoomLevel}
-            showLabel={isAncient && zoomLevel === 3}
-            onClick={life.featured ? onSelect : undefined}
+            isVisible={isAncient && zoomLevel >= life.minZoomLevel && (life.maxZoomLevel === undefined || zoomLevel <= life.maxZoomLevel)}
+            showLabel={isAncient && (life.recordType === "ecosystem" || zoomLevel === 3)}
+            onClick={() => onSelectLife(life)}
           />
         ))}
       </div>
