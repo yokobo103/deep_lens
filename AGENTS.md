@@ -17,6 +17,7 @@ Deep Lensの主役・4軸・避ける方向・Earth Lensとの境界はこの文
 
 - Deep Lensは現代座標を古座標へ動かす。
 - `paleo-coastlines-*.json` は大陸の輪郭であり汀線ではない。海陸判定には使わない。
+- 95 Ma PoCの海陸は`paleodem-95.png`を正本とし、重ねる古座標はPBDBの`pgm=scotese`へ統一する。
 - provenance（source / URL / license / updated / confidence / demo・real）を失わない。
 - illustrativeなハードコードと実データを混同しない。
 

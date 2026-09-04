@@ -89,7 +89,6 @@ export function FossilGlobe({ record, mode, showEvidence, onSelect, onSelectLife
     const windowPosition = new Cartesian2();
     const occluder = new EllipsoidalOccluder(viewer.scene.globe.ellipsoid, viewer.camera.positionWC);
     let ancientLayer: ImageryLayer | null = null;
-    let paleoObjectUrl: string | null = null;
     let animationFrame = 0;
 
     const baseLayers = () => Array.from({ length: viewer.imageryLayers.length }, (_, index) => viewer.imageryLayers.get(index))
@@ -109,9 +108,9 @@ export function FossilGlobe({ record, mode, showEvidence, onSelect, onSelectLife
       animationFrame = 0;
     };
 
-    // The fossil record itself, placed where each site sat at the time. These
-    // points are the evidence for what was sea and what was land — the
-    // coastline image behind them is a continental outline, not a shoreline.
+    // The fossil record itself, placed with the same PALEOMAP reconstruction
+    // family as the PaleoDEM surface. Environment classes remain evidence from
+    // the collection record, not a claim that the raster is exact at site scale.
     const sitePoints = viewer.scene.primitives.add(new PointPrimitiveCollection());
     sitePointsRef.current = sitePoints;
     sitePoints.show = modeRef.current === "ancient" && showEvidenceRef.current && zoomLevelRef.current >= 2;
@@ -181,12 +180,10 @@ export function FossilGlobe({ record, mode, showEvidence, onSelect, onSelectLife
     syncSurfaceRef.current = syncSurface;
     const onLayerAdded = () => syncSurface(modeRef.current);
     viewer.imageryLayers.layerAdded.addEventListener(onLayerAdded);
-    void loadPaleoImageryProvider().then(({ provider, objectUrl }) => {
+    void loadPaleoImageryProvider().then((provider) => {
       if (viewer.isDestroyed()) {
-        URL.revokeObjectURL(objectUrl);
         return;
       }
-      paleoObjectUrl = objectUrl;
       ancientLayer = viewer.imageryLayers.addImageryProvider(provider);
       showSurfaceImmediately(modeRef.current);
     }).catch((error: unknown) => {
@@ -238,7 +235,6 @@ export function FossilGlobe({ record, mode, showEvidence, onSelect, onSelectLife
       clickHandler.destroy();
       syncSurfaceRef.current = null;
       stopAnimation();
-      if (paleoObjectUrl) URL.revokeObjectURL(paleoObjectUrl);
       sitePointsRef.current = null;
       viewerRef.current = null;
       viewer.destroy();
@@ -305,71 +301,10 @@ function getAncientZoomLevel(cameraHeight: number): AncientZoomLevel {
   return 1;
 }
 
-interface PaleoGeoJson {
-  type: "FeatureCollection";
-  features: Array<{
-    geometry?: { type?: string; coordinates?: number[][][] };
-  }>;
-}
-
-async function loadPaleoImageryProvider(): Promise<{ provider: SingleTileImageryProvider; objectUrl: string }> {
-  const response = await fetch(`${import.meta.env.BASE_URL}geo/paleo-coastlines-100.json`);
-  if (!response.ok) throw new Error(`Paleo texture source unavailable (${response.status})`);
-  const data = await response.json() as PaleoGeoJson;
-  const canvas = createPaleoTextureCanvas(data);
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((result) => result ? resolve(result) : reject(new Error("Could not encode paleo texture")), "image/png");
+async function loadPaleoImageryProvider(): Promise<SingleTileImageryProvider> {
+  return SingleTileImageryProvider.fromUrl(`${import.meta.env.BASE_URL}geo/paleodem-95.png`, {
+    credit: new Credit("Deep Lens / Scotese & Wright (2018) PALEOMAP PaleoDEM · 95 Ma · CC BY 4.0"),
   });
-  const objectUrl = URL.createObjectURL(blob);
-  try {
-    const provider = await SingleTileImageryProvider.fromUrl(objectUrl, { credit: new Credit("Deep Lens / EarthByte reconstructed coastlines · ~100 Ma proxy for 95 Ma") });
-    return { provider, objectUrl };
-  } catch (error) {
-    URL.revokeObjectURL(objectUrl);
-    throw error;
-  }
-}
-
-function createPaleoTextureCanvas(data: PaleoGeoJson): HTMLCanvasElement {
-  const width = 2048;
-  const height = 1024;
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Could not create paleo texture canvas");
-  context.fillStyle = "#102c31";
-  context.fillRect(0, 0, width, height);
-  context.strokeStyle = "rgb(110 141 136 / 14%)";
-  context.lineWidth = 2;
-  context.beginPath();
-  context.moveTo(0, height / 2);
-  context.lineTo(width, height / 2);
-  context.moveTo(width / 2, 0);
-  context.lineTo(width / 2, height);
-  context.stroke();
-  context.fillStyle = "#9a734c";
-  context.strokeStyle = "rgb(227 182 109 / 90%)";
-  context.lineWidth = 2;
-  for (const feature of data.features) {
-    const ring = feature.geometry?.type === "Polygon" ? feature.geometry.coordinates?.[0] : undefined;
-    if (!ring || ring.length < 4) continue;
-    context.beginPath();
-    ring.forEach((point, index) => {
-      const longitude = point[0];
-      const latitude = point[1];
-      if (longitude === undefined || latitude === undefined || !Number.isFinite(longitude) || !Number.isFinite(latitude)) return;
-      const x = ((longitude + 180) / 360) * width;
-      const y = ((90 - latitude) / 180) * height;
-      if (index === 0) context.moveTo(x, y); else context.lineTo(x, y);
-    });
-    context.closePath();
-    context.fill();
-    context.stroke();
-  }
-  context.strokeStyle = "rgb(255 214 144 / 18%)";
-  context.strokeRect(2, 2, width - 4, height - 4);
-  return canvas;
 }
 
 function projectPoint(viewer: Viewer, occluder: EllipsoidalOccluderLike, point: PointLike, windowPosition: Cartesian2): ProjectedPoint {

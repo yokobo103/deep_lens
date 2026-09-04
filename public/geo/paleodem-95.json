@@ -1,0 +1,12 @@
+{
+  "title": "PALEOMAP PaleoDEM · 95 Ma time slice",
+  "source": "Scotese & Wright (2018) PALEOMAP PaleoDEMs",
+  "sourceUrl": "https://www.earthbyte.org/paleodem-resource-scotese-and-wright-2018/",
+  "sourceGrid": "Map22_PALEOMAP_1deg_Mid-Cretaceous_95Ma.nc",
+  "sourceGridAgeMa": 97.2,
+  "displayAgeMa": 95,
+  "resolutionDegrees": 1,
+  "license": "CC BY 4.0",
+  "renderedAsset": "paleodem-95.png",
+  "rendering": "Elevation-derived palette: deep ocean, shallow water, lowland, upland"
+}

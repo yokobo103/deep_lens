@@ -16,7 +16,7 @@ export type FossilRecord = {
 };
 
 /**
- * The ancient point is the centroid of PBDB GPlates paleocoordinates for
+ * The ancient point is the centroid of PBDB PALEOMAP paleocoordinates for
  * Spinosaurus aegyptiacus occurrences in the Cenomanian Kem Kem Group.
  */
 export const fossilRecords: readonly FossilRecord[] = [
@@ -27,13 +27,13 @@ export const fossilRecords: readonly FossilRecord[] = [
     ageLabel: "~95–100 Ma",
     presentLat: 31.2,
     presentLng: -5.6,
-    paleoLat: 25.77,
-    paleoLng: 7.48,
+    paleoLat: 17.96,
+    paleoLng: -4.24,
     presentPlaceLabel: "Morocco · Kem Kem Beds",
     paleoPlaceLabel: "Kem Kem Group · PBDB reconstruction",
-    summary: "Spinosaurus aegyptiacus is recorded from the Cenomanian Kem Kem Group of Morocco. The ancient marker uses the centroid of PBDB reconstructed occurrence positions rather than the former illustrative point.",
+    summary: "Spinosaurus aegyptiacus is recorded from the Cenomanian Kem Kem Group of Morocco. The ancient marker and 95 Ma surface now use the same PALEOMAP reconstruction family.",
     sourceLabel: "Paleobiology Database · Kem Kem Group occurrences",
-    sourceUrl: "https://paleobiodb.org/data1.2/occs/list.json?strat=Kem%20Kem&interval=Cenomanian&show=class,ident,phylo,loc,paleoloc,strat,env,time&limit=1000&datainfo",
-    coordinateNote: "PBDB GPlates paleocoordinate centroid for 17 Spinosaurus aegyptiacus occurrence records; accessed 2026-09-04.",
+    sourceUrl: "https://paleobiodb.org/data1.2/occs/list.json?strat=Kem%20Kem&interval=Cenomanian&show=class,ident,phylo,loc,paleoloc,strat,env,time&pgm=scotese&limit=1000&datainfo",
+    coordinateNote: "PBDB PALEOMAP (Scotese) paleocoordinate centroid for 17 Spinosaurus aegyptiacus occurrence records; accessed 2026-09-04.",
   },
 ] as const;
