@@ -12,6 +12,7 @@ import { createEarthViewer } from "../globe/cesium/createViewer";
 interface FossilGlobeProps {
   record: FossilRecord;
   mode: FossilTimeMode;
+  showEvidence: boolean;
   onSelect: () => void;
   onZoomLevelChange?: (level: AncientZoomLevel) => void;
   /** Present mode: a click on the Earth, in modern degrees. */
@@ -46,12 +47,14 @@ const EllipsoidalOccluder = (CesiumRuntime as unknown as {
   EllipsoidalOccluder: new (ellipsoid: Viewer["scene"]["globe"]["ellipsoid"], cameraPosition?: Cartesian3) => EllipsoidalOccluderLike;
 }).EllipsoidalOccluder;
 
-export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
+export function FossilGlobe({ record, mode, showEvidence, onSelect, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fossilMarkerRef = useRef<HTMLButtonElement>(null);
   const lifeMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
   const viewerRef = useRef<Viewer | null>(null);
+  const sitePointsRef = useRef<PointPrimitiveCollection | null>(null);
   const modeRef = useRef(mode);
+  const showEvidenceRef = useRef(showEvidence);
   const recordRef = useRef(record);
   const syncSurfaceRef = useRef<((nextMode: FossilTimeMode) => void) | null>(null);
   const onZoomLevelChangeRef = useRef(onZoomLevelChange);
@@ -64,6 +67,12 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, onPickL
     modeRef.current = mode;
     syncSurfaceRef.current?.(mode);
   }, [mode]);
+  useEffect(() => {
+    showEvidenceRef.current = showEvidence;
+    if (sitePointsRef.current) {
+      sitePointsRef.current.show = mode === "ancient" && showEvidence && zoomLevelRef.current >= 2;
+    }
+  }, [mode, showEvidence]);
   useEffect(() => { recordRef.current = record; }, [record]);
   useEffect(() => { onZoomLevelChangeRef.current = onZoomLevelChange; }, [onZoomLevelChange]);
   useEffect(() => { onPickLocationRef.current = onPickLocation; }, [onPickLocation]);
@@ -102,14 +111,15 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, onPickL
     // points are the evidence for what was sea and what was land — the
     // coastline image behind them is a continental outline, not a shoreline.
     const sitePoints = viewer.scene.primitives.add(new PointPrimitiveCollection());
-    sitePoints.show = modeRef.current === "ancient";
+    sitePointsRef.current = sitePoints;
+    sitePoints.show = modeRef.current === "ancient" && showEvidenceRef.current && zoomLevelRef.current >= 2;
     void loadStageSites(ANCIENT_STAGE_ID).then((stage) => {
       if (viewer.isDestroyed()) return;
       for (const site of stage.sites) {
         sitePoints.add({
           position: Cartesian3.fromDegrees(site.paleoLng, site.paleoLat),
-          color: Color.fromCssColorString(ENV_COLOR[site.env]).withAlpha(0.9),
-          pixelSize: 4.5,
+          color: Color.fromCssColorString(ENV_COLOR[site.env]).withAlpha(0.46),
+          pixelSize: 3,
         });
       }
       onSitesLoadedRef.current?.(stage.sites.length);
@@ -128,7 +138,7 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, onPickL
 
     const syncSurface = (nextMode: FossilTimeMode) => {
       stopAnimation();
-      sitePoints.show = nextMode === "ancient";
+      sitePoints.show = nextMode === "ancient" && showEvidenceRef.current && zoomLevelRef.current >= 2;
       const currentBaseLayers = baseLayers();
       if (!ancientLayer) {
         for (const layer of currentBaseLayers) {
@@ -199,6 +209,7 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, onPickL
       const nextLevel = getAncientZoomLevel(viewer.camera.positionCartographic.height);
       if (nextLevel === zoomLevelRef.current) return;
       zoomLevelRef.current = nextLevel;
+      sitePoints.show = modeRef.current === "ancient" && showEvidenceRef.current && nextLevel >= 2;
       setZoomLevel(nextLevel);
       onZoomLevelChangeRef.current?.(nextLevel);
     };
@@ -226,6 +237,7 @@ export function FossilGlobe({ record, mode, onSelect, onZoomLevelChange, onPickL
       syncSurfaceRef.current = null;
       stopAnimation();
       if (paleoObjectUrl) URL.revokeObjectURL(paleoObjectUrl);
+      sitePointsRef.current = null;
       viewerRef.current = null;
       viewer.destroy();
     };
