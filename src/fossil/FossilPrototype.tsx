@@ -181,7 +181,7 @@ export function FossilPrototype() {
         <span className="fossil-dock-status">{mode === "present" ? `${copy.present} · ${copy.fourTraceRegions}` : `95 MA · ${zoomLabel}`}</span>
       </div>
 
-      {selected && selectedLife && selectedTrace && <FossilInfoPanel record={record} mode={mode} locale={locale} life={selectedLife} trace={selectedTrace} onClose={() => setSelected(false)} onSeeFossilsToday={seeFossilsToday} onBackToAncient={backToAncient} />}
+      {selected && selectedLife && selectedTrace && <FossilInfoPanel key={`${mode}-${selectedLife.id}-${selectedTrace.id}`} record={record} mode={mode} locale={locale} life={selectedLife} trace={selectedTrace} onClose={() => setSelected(false)} onSeeFossilsToday={seeFossilsToday} onBackToAncient={backToAncient} />}
       {!selected && !place && mode === "present" && <button type="button" className="fossil-reopen" onClick={() => { setSelectedTrace(featuredPresentTrace); setSelectedLife(findRegionEcosystem(featuredPresentTrace.regionId) ?? featuredAncientLife); setSelected(true); }}>{copy.showTraceInfo}</button>}
 
       {place && !showStrata && (
@@ -240,7 +240,7 @@ export function FossilPrototype() {
         </div>
       ) : null}
 
-      {mode === "present" && <button type="button" className="fossil-back-ancient" onClick={backToAncient}>{copy.backToAncient}</button>}
+      {mode === "present" && !selected && <button type="button" className="fossil-back-ancient" onClick={backToAncient}>{copy.backToAncient}</button>}
     </main>
   );
 }

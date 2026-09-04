@@ -1,3 +1,4 @@
+import { useEffect, useId, useState } from "react";
 import type { FossilRecord } from "../data/fossils";
 import type { AncientLifeRecord } from "../data/ancientLife";
 import type { PresentTraceRecord } from "../data/presentTraces";
@@ -17,6 +18,9 @@ interface FossilInfoPanelProps {
 }
 
 export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, onSeeFossilsToday, onBackToAncient }: FossilInfoPanelProps) {
+  const isMobile = useMobileLayout();
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+  const detailId = useId();
   const ancient = mode === "ancient";
   const copy = fossilCopy[locale];
   const lifeText = localizeLife(life, locale);
@@ -34,10 +38,21 @@ export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, on
   const presentLng = taxonSpecificTrace ? record.presentLng : trace.presentLng;
   const paleoLat = taxonSpecificTrace ? record.paleoLat : trace.paleoLat;
   const paleoLng = taxonSpecificTrace ? record.paleoLng : trace.paleoLng;
+  const showDetails = !isMobile || mobileExpanded;
 
   return (
-    <aside className="fossil-info-panel" aria-label={`${title} information`}>
+    <aside className={`fossil-info-panel${mobileExpanded ? " is-mobile-expanded" : " is-mobile-collapsed"}`} aria-label={`${title} information`}>
       <button type="button" className="fossil-info-panel__close" onClick={onClose} aria-label={copy.closeInfo}>×</button>
+      <button
+        type="button"
+        className="fossil-info-panel__toggle"
+        aria-expanded={showDetails}
+        aria-controls={detailId}
+        onClick={() => setMobileExpanded((expanded) => !expanded)}
+      >
+        <span>{mobileExpanded ? copy.hideDetails : copy.showDetails}</span>
+        <i aria-hidden="true">⌃</i>
+      </button>
       <p className="fossil-eyebrow">{ancient ? `${life.recordType === "ecosystem" ? copy.regionalWorld : copy.ancientLife} · ${locale === "ja" ? "セノマニアン期" : "CENOMANIAN"}` : copy.fossilDiscovery}</p>
       <div className="fossil-info-panel__title-row">
         <span className="fossil-info-panel__species-mark" aria-hidden="true">{ancient ? <LifeIcon iconType={life.iconType} /> : "🦴"}</span>
@@ -47,6 +62,7 @@ export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, on
         </div>
       </div>
 
+      {showDetails && <div id={detailId} className="fossil-info-panel__details">
       {ancient ? (
         <div className="fossil-location-compare">
           <div className="is-current">
@@ -107,8 +123,24 @@ export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, on
           <button type="button" className="fossil-panel-action fossil-panel-action--quiet" onClick={onBackToAncient}>{copy.backToAncient}</button>
         </>
       )}
+      </div>}
     </aside>
   );
+}
+
+function useMobileLayout() {
+  const query = "(max-width: 820px)";
+  const [matches, setMatches] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const update = () => setMatches(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  return matches;
 }
 
 function formatCoordinate(value: number, positive: string, negative: string) {
