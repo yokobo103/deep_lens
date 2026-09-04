@@ -592,6 +592,25 @@ body { overscroll-behavior: none; }
 .fossil-marker--life { color: #79e3d2; border: 1px solid rgb(121 227 210 / 72%); background: rgb(5 36 36 / 90%); }
 .fossil-marker__icon { font-size: 24px; line-height: 1; }
 .fossil-marker__label { font: 800 7px ui-monospace, monospace; letter-spacing: .1em; white-space: nowrap; }
+.present-trace-marker { position: absolute; display: flex; align-items: center; gap: 7px; min-width: 34px; padding: 5px 7px; transform: translate(-50%, -50%) scale(.72); color: #d9bc86; border: 1px solid rgb(217 188 134 / 45%); border-radius: 18px; background: rgb(31 24 15 / 86%); box-shadow: 0 7px 18px rgb(0 0 0 / 38%); cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .44s ease, transform .44s ease, border-color .2s ease, background .2s ease; will-change: opacity, transform; }
+.present-trace-marker::after { position: absolute; top: 100%; left: 50%; width: 1px; height: 9px; content: ""; background: currentColor; opacity: .65; }
+.present-trace-marker.is-visible { transform: translate(-50%, -50%) scale(1); opacity: .94; pointer-events: auto; }
+.present-trace-marker:hover, .present-trace-marker:focus-visible { color: #ffe1a6; border-color: #ffd690; background: rgb(49 34 13 / 94%); outline: none; }
+.present-trace-marker.is-featured { border-color: rgb(255 214 144 / 72%); }
+.present-trace-marker__icon { position: relative; z-index: 1; font-size: 17px; line-height: 1; }
+.present-trace-marker__label { display: grid; gap: 1px; text-align: left; }
+.present-trace-marker__label strong, .present-trace-marker__label small { max-width: 112px; overflow: hidden; font-family: ui-monospace, monospace; text-overflow: ellipsis; white-space: nowrap; }
+.present-trace-marker__label strong { color: #ffe2aa; font-size: 7px; letter-spacing: .09em; text-transform: uppercase; }
+.present-trace-marker__label small { color: #a89067; font-size: 6px; }
+.present-trace-marker__pulse { position: absolute; top: 50%; left: 17px; width: 22px; height: 22px; transform: translate(-50%, -50%) scale(.3); border: 1px solid #ffd690; border-radius: 50%; opacity: 0; pointer-events: none; }
+.present-trace-marker.is-entering .present-trace-marker__pulse { animation: fossil-trace-arrival .82s ease-out both; }
+.fossil-time-shift { position: absolute; z-index: 6; top: 50%; left: 50%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; transform: translate(-50%, -50%); color: #77918d; border: 1px solid rgb(121 227 210 / 25%); background: rgb(3 14 17 / 84%); box-shadow: 0 10px 36px rgb(0 0 0 / 42%); pointer-events: none; animation: fossil-time-shift .88s ease both; backdrop-filter: blur(10px); }
+.fossil-time-shift span, .fossil-time-shift strong { font: 750 7px ui-monospace, monospace; letter-spacing: .1em; white-space: nowrap; }
+.fossil-time-shift strong { color: #ffd690; }
+.fossil-time-shift--to-ancient strong { color: #79e3d2; }
+.fossil-time-shift i { color: #7e928f; font-style: normal; }
+@keyframes fossil-trace-arrival { 0% { transform: translate(-50%, -50%) scale(.3); opacity: 0; } 30% { opacity: .9; } 100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; } }
+@keyframes fossil-time-shift { 0%, 100% { transform: translate(-50%, -50%) scale(.94); opacity: 0; } 18%, 76% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 .fossil-location-connection { position: absolute; height: 1px; transform-origin: 0 50%; border-top: 1px dashed rgb(255 214 144 / 82%); opacity: .9; }
 .fossil-ghost-marker { position: absolute; display: grid; place-items: center; width: 34px; height: 34px; transform: translate(-50%, -50%); color: #ffd690; border: 1px dashed rgb(255 214 144 / 62%); border-radius: 50%; background: rgb(20 20 14 / 62%); opacity: .78; font-size: 18px; }
 .fossil-ghost-marker span { position: absolute; top: 35px; color: #c3a16b; font: 800 6px ui-monospace, monospace; letter-spacing: .12em; }
@@ -648,6 +667,10 @@ body { overscroll-behavior: none; }
   .fossil-legend i { width: 18px; height: 18px; font-size: 12px; }
   .fossil-reopen { top: auto; right: auto; bottom: 110px; left: 12px; }
   .fossil-back-ancient { top: auto; right: 12px; bottom: 110px; left: auto; padding: 10px 12px; }
+  .present-trace-marker { gap: 4px; padding: 4px 6px; }
+  .present-trace-marker__label small { display: none; }
+  .fossil-time-shift { top: 55%; gap: 7px; max-width: calc(100vw - 28px); padding: 8px 9px; }
+  .fossil-time-shift span, .fossil-time-shift strong { font-size: 6px; letter-spacing: .06em; }
 }
 
 @media (max-width: 540px) {

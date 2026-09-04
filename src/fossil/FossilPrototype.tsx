@@ -6,6 +6,7 @@ import { StrataColumn } from "../components/StrataColumn";
 import { TimeModeToggle, type FossilTimeMode } from "../components/TimeModeToggle";
 import { featuredAncientLife, type AncientLifeRecord, type AncientZoomLevel } from "../data/ancientLife";
 import { fossilRecords } from "../data/fossils";
+import { featuredPresentTrace, presentTraceRecords, type PresentTraceRecord } from "../data/presentTraces";
 import { buildColumn, loadFormations, ENV_COLOR, ENV_LABEL, ENV_ORDER, type ColumnBand } from "../data/pbdb";
 
 /** How far from the clicked point a formation still counts as "here". */
@@ -21,6 +22,7 @@ export function FossilPrototype() {
   const [mode, setMode] = useState<FossilTimeMode>("ancient");
   const [selected, setSelected] = useState(false);
   const [selectedLife, setSelectedLife] = useState<AncientLifeRecord | null>(featuredAncientLife ?? null);
+  const [selectedTrace, setSelectedTrace] = useState<PresentTraceRecord | null>(featuredPresentTrace ?? null);
   const [zoomLevel, setZoomLevel] = useState<AncientZoomLevel>(1);
   const [focusRequest, setFocusRequest] = useState(0);
   const [siteCount, setSiteCount] = useState(0);
@@ -44,7 +46,7 @@ export function FossilPrototype() {
       .finally(() => setColumnLoading(false));
   }, []);
 
-  if (!record || !featuredAncientLife) return null;
+  if (!record || !featuredAncientLife || !featuredPresentTrace) return null;
 
   const changeMode = (nextMode: FossilTimeMode) => {
     setMode(nextMode);
@@ -54,9 +56,10 @@ export function FossilPrototype() {
   };
 
   const seeFossilsToday = () => {
+    const matchingTrace = presentTraceRecords.find((trace) => trace.regionId === selectedLife?.regionId) ?? featuredPresentTrace;
     setMode("present");
     setSelected(true);
-    setSelectedLife(featuredAncientLife ?? null);
+    setSelectedTrace(matchingTrace);
     setPlace(null);
     setShowStrata(false);
     setFocusRequest((request) => request + 1);
@@ -80,16 +83,18 @@ export function FossilPrototype() {
         mode={mode}
         showEvidence={showEvidence}
         focusLife={selected ? selectedLife : null}
+        focusTrace={selected ? selectedTrace : null}
         focusRequest={focusRequest}
-        onSelect={() => {
+        onSelectTrace={(trace) => {
           setSelected(true);
-          setSelectedLife(featuredAncientLife ?? null);
+          setSelectedTrace(trace);
           setPlace(null);
           setShowStrata(false);
         }}
         onSelectLife={(life) => {
           setSelected(true);
           setSelectedLife(life);
+          setSelectedTrace(presentTraceRecords.find((trace) => trace.regionId === life.regionId) ?? featuredPresentTrace);
           setPlace(null);
           setShowStrata(false);
         }}
@@ -107,7 +112,7 @@ export function FossilPrototype() {
           </div>
         </div>
         <div className="fossil-header__readout">
-          <span>{isAncient ? "95 MA · FOUR REGIONS" : "PRESENT · FOSSIL TRACE"}</span>
+          <span>{isAncient ? "95 MA · FOUR REGIONS" : "PRESENT · FOUR TRACES"}</span>
           <strong>{mode === "present" ? "FOLLOW THE FOSSIL" : "EXPLORE THE LIVING EARTH"}</strong>
         </div>
       </header>
@@ -130,9 +135,9 @@ export function FossilPrototype() {
 
       {!selected && !place && (
         <section className="fossil-axis-strip" aria-label="Current exploration axes">
-          <div><span>PLACE</span><strong>{isAncient ? "4 regions" : "Morocco"}</strong></div>
+          <div><span>PLACE</span><strong>{isAncient ? "4 regions" : "4 trace regions"}</strong></div>
           <div><span>TIME</span><strong>{isAncient ? "95 Ma" : "Present"}</strong></div>
-          <div><span>LIFE</span><strong>{isAncient ? "Regional biotas" : "Fossil trace"}</strong></div>
+          <div><span>LIFE</span><strong>{isAncient ? "Regional biotas" : "Fossil traces"}</strong></div>
           <div><span>ENVIRONMENT</span><strong>{isAncient ? "Sea · rivers · land" : "Recorded layers"}</strong></div>
         </section>
       )}
@@ -140,11 +145,11 @@ export function FossilPrototype() {
       <div className="fossil-mode-dock">
         <span className="fossil-dock-label">TIME MODE</span>
         <TimeModeToggle mode={mode} onChange={changeMode} />
-        <span className="fossil-dock-status">{mode === "present" ? "PRESENT · PICK A PLACE" : `95 MA · ${zoomLabel}`}</span>
+        <span className="fossil-dock-status">{mode === "present" ? "PRESENT · 4 TRACE REGIONS" : `95 MA · ${zoomLabel}`}</span>
       </div>
 
-      {selected && selectedLife && <FossilInfoPanel record={record} mode={mode} life={selectedLife} onClose={() => setSelected(false)} onSeeFossilsToday={seeFossilsToday} onBackToAncient={backToAncient} />}
-      {!selected && !place && mode === "present" && <button type="button" className="fossil-reopen" onClick={() => { setSelectedLife(featuredAncientLife ?? null); setSelected(true); }}>SHOW INFO · {record.taxon}</button>}
+      {selected && selectedLife && selectedTrace && <FossilInfoPanel record={record} mode={mode} life={selectedLife} trace={selectedTrace} onClose={() => setSelected(false)} onSeeFossilsToday={seeFossilsToday} onBackToAncient={backToAncient} />}
+      {!selected && !place && mode === "present" && <button type="button" className="fossil-reopen" onClick={() => { setSelectedTrace(featuredPresentTrace); setSelected(true); }}>SHOW INFO · FOSSIL TRACES</button>}
 
       {place && !showStrata && (
         <PlaceContextPanel
@@ -196,7 +201,7 @@ export function FossilPrototype() {
         </div>
       ) : !isAncient ? (
         <div className="fossil-legend" aria-label="Marker legend">
-          <span><i className="fossil-legend__bone">🦴</i>Fossil discovery site</span>
+          <span><i className="fossil-legend__bone">🦴</i>Modern fossil-record region</span>
         </div>
       ) : null}
 

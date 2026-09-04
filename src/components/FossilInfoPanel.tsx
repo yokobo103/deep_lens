@@ -1,5 +1,6 @@
 import type { FossilRecord } from "../data/fossils";
 import type { AncientLifeRecord } from "../data/ancientLife";
+import type { PresentTraceRecord } from "../data/presentTraces";
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { LifeIcon } from "./LifeIcon";
 
@@ -7,14 +8,15 @@ interface FossilInfoPanelProps {
   record: FossilRecord;
   mode: FossilTimeMode;
   life: AncientLifeRecord;
+  trace: PresentTraceRecord;
   onClose: () => void;
   onSeeFossilsToday: () => void;
   onBackToAncient: () => void;
 }
 
-export function FossilInfoPanel({ record, mode, life, onClose, onSeeFossilsToday, onBackToAncient }: FossilInfoPanelProps) {
+export function FossilInfoPanel({ record, mode, life, trace, onClose, onSeeFossilsToday, onBackToAncient }: FossilInfoPanelProps) {
   const ancient = mode === "ancient";
-  const title = ancient ? life.name : record.taxon;
+  const title = ancient ? life.name : trace.name;
 
   return (
     <aside className="fossil-info-panel" aria-label={`${title} information`}>
@@ -24,7 +26,7 @@ export function FossilInfoPanel({ record, mode, life, onClose, onSeeFossilsToday
         <span className="fossil-info-panel__species-mark" aria-hidden="true">{ancient ? <LifeIcon iconType={life.iconType} /> : "🦴"}</span>
         <div>
           <h2>{title}</h2>
-          <p>{ancient ? `${life.regionLabel} · ${life.category}` : `${record.periodLabel} · ${record.ageLabel}`}</p>
+          <p>{ancient ? `${life.regionLabel} · ${life.category}` : `${trace.placeLabel} · ${record.ageLabel} rocks`}</p>
         </div>
       </div>
 
@@ -45,13 +47,13 @@ export function FossilInfoPanel({ record, mode, life, onClose, onSeeFossilsToday
         <div className="fossil-location-compare">
           <div className="is-current">
             <span>NOW · DISCOVERY</span>
-            <strong>{record.presentPlaceLabel}</strong>
-            <small>{formatCoordinate(record.presentLat, "N", "S")} · {formatCoordinate(record.presentLng, "E", "W")}</small>
+            <strong>{trace.formationLabel} · {trace.placeLabel}</strong>
+            <small>{formatCoordinate(trace.presentLat, "N", "S")} · {formatCoordinate(trace.presentLng, "E", "W")}</small>
           </div>
           <div>
-            <span>THEN · LAND POSITION</span>
-            <strong>{record.paleoPlaceLabel}</strong>
-            <small>{formatCoordinate(record.paleoLat, "N", "S")} · {formatCoordinate(record.paleoLng, "E", "W")}</small>
+            <span>THEN · RECONSTRUCTED REGION</span>
+            <strong>95 Ma · {trace.formationLabel}</strong>
+            <small>{formatCoordinate(trace.paleoLat, "N", "S")} · {formatCoordinate(trace.paleoLng, "E", "W")}</small>
           </div>
         </div>
       )}
@@ -73,13 +75,18 @@ export function FossilInfoPanel({ record, mode, life, onClose, onSeeFossilsToday
         </>
       ) : (
         <>
-          <p className="fossil-info-panel__summary">{record.summary}</p>
+          <p className="fossil-info-panel__summary">{trace.description}</p>
+          <div className="fossil-ecosystem-note">
+            <span>PBDB RECORD SUMMARY</span>
+            <strong>{trace.siteCount.toLocaleString()} sites · {trace.occurrenceCount.toLocaleString()} occurrences</strong>
+            <small>Counts describe records in this prototype selection, not the abundance of ancient life.</small>
+          </div>
           <p className="fossil-evidence-source">
             <span>DATA SOURCE</span>
-            <a href={record.sourceUrl} target="_blank" rel="noreferrer">{record.sourceLabel}</a>
-            <small>{record.coordinateNote}</small>
+            <a href={trace.sourceUrl} target="_blank" rel="noreferrer">{trace.sourceLabel}</a>
+            <small>{trace.coordinateNote}</small>
           </p>
-          <p className="fossil-callout">Present shows the bone at its modern discovery point. The ancient life markers are hidden in this quieter fossil view.</p>
+          <p className="fossil-callout">Present shows quiet traces where the rocks are found today. Return to 95 Ma to see the living region on the reconstructed Earth.</p>
           <button type="button" className="fossil-panel-action fossil-panel-action--quiet" onClick={onBackToAncient}>BACK TO 95 MA</button>
         </>
       )}
