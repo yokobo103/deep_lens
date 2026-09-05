@@ -7,6 +7,8 @@
   "displayAgeMa": 95,
   "resolutionDegrees": 1,
   "license": "CC BY 4.0",
-  "renderedAsset": "paleodem-95.png",
-  "rendering": "Elevation-derived palette: deep ocean, shallow water, lowland, upland"
+  "renderedAsset": "paleodem-95.webp",
+  "rendering": "Elevation-derived palette with hillshade, a shoreline drawn as the 0 m boundary of the field, and depth lines at -200/-1000/-3000 m. Every feature is derived from the 1-degree grid; the render adds legibility, not resolution.",
+  "renderedSize": "4096x2048",
+  "resolutionNote": "The source is 1x1 degree (about 111 km per cell). The output image is larger than the grid so the coastline and relief can be drawn cleanly; it does not carry finer data than 1 degree."
 }

@@ -494,8 +494,8 @@ function getAncientZoomLevel(cameraHeight: number): AncientZoomLevel {
 }
 
 async function loadPaleoImageryProvider(): Promise<SingleTileImageryProvider> {
-  return SingleTileImageryProvider.fromUrl(`${import.meta.env.BASE_URL}geo/paleodem-95.png`, {
-    credit: new Credit("Deep Lens / Scotese & Wright (2018) PALEOMAP PaleoDEM · 95 Ma · CC BY 4.0"),
+  return SingleTileImageryProvider.fromUrl(`${import.meta.env.BASE_URL}geo/paleodem-95.webp`, {
+    credit: new Credit("Deep Lens / Scotese & Wright (2018) PALEOMAP PaleoDEM · 95 Ma · 1° grid · CC BY 4.0"),
   });
 }
 
