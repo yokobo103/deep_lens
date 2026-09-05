@@ -1,40 +1,9 @@
 import { useEffect, useState } from "react";
 import { GateGlobe } from "./GateGlobe";
 import { gateById, gatesInBand, bandById, hubs, hubIdOf, type GateDefinition, type Hub } from "../data/gates";
-import { loadGateManifest, type GateSummary } from "../data/gateData";
-
-export type Locale = "ja" | "en";
-
-const copy = {
-  ja: {
-    title: "地球に眠る過去への入り口",
-    globe: "地球儀。回すとゲートが見つかる",
-    hint: "地球を回して、入り口を見つけよう",
-    gates: (n: number) => `${n}の入り口`,
-    ages: "この場所の時代",
-    sites: "地点",
-    records: "記録",
-    named: "種",
-    alsoHere: "同じ場所の別の時代",
-    alsoThen: "同じ時代の別の世界",
-    enter: "この世界に入る",
-    close: "閉じる",
-  },
-  en: {
-    title: "Ways into the Earth's past",
-    globe: "Globe. Turn it to find gates",
-    hint: "Turn the Earth and find a way in",
-    gates: (n: number) => `${n} ways in`,
-    ages: "Ages at this place",
-    sites: "sites",
-    records: "records",
-    named: "named",
-    alsoHere: "Another age, same place",
-    alsoThen: "Another world, same age",
-    enter: "Enter this world",
-    close: "Close",
-  },
-} as const;
+import { loadGateManifest, loadGate, type GateDetail, type GateSummary } from "../data/gateData";
+import { WorldPanel } from "./WorldPanel";
+import { hubCopy, type Locale } from "./copy";
 
 /**
  * The present-day Earth as a hub: gates on it, and nothing else.
@@ -54,7 +23,18 @@ export function GateHub() {
   });
   const [gates, setGates] = useState<GateSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [enteredId, setEnteredId] = useState<string | null>(null);
+  const [world, setWorld] = useState<GateDetail | null>(null);
   const allHubs = hubs();
+
+  const enterGate = (id: string | null) => {
+    setEnteredId(id);
+    setWorld(null);
+    if (!id) return;
+    loadGate(id)
+      .then((detail) => setWorld((current) => (current?.id === detail.id ? current : detail)))
+      .catch((error: unknown) => console.warn("World could not be loaded", error));
+  };
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -71,7 +51,7 @@ export function GateHub() {
       .catch((error: unknown) => console.warn("Gates could not be loaded", error));
   }, []);
 
-  const text = copy[locale];
+  const text = hubCopy[locale];
   const selected = selectedId ? gates.find((gate) => gate.id === selectedId) : undefined;
   const definition = selectedId ? gateById(selectedId) : undefined;
   const selectedHub = definition ? allHubs.find((hub) => hub.id === hubIdOf(definition)) : undefined;
@@ -79,6 +59,18 @@ export function GateHub() {
   // A hub stands where its most recent gate stands. The places barely move
   // between a hub's ages — that is what makes them one hub — so the youngest
   // record is simply the best surveyed.
+  const entered = enteredId ? gateById(enteredId) : undefined;
+  const enteredBand = entered ? bandById(entered.band) : undefined;
+
+  // Inside a world the globe carries that Earth's gates at the positions they
+  // held then — which is what makes pulling back worth doing.
+  const bandPoints = entered
+    ? [entered, ...gatesInBand(entered.band, entered.id)].flatMap((gate) => {
+        const summary = gates.find((entry) => entry.id === gate.id);
+        return summary ? [{ id: gate.id, lat: summary.paleoLat, lng: summary.paleoLng }] : [];
+      })
+    : [];
+
   const hubPoints = allHubs.flatMap((hub) => {
     const youngest = [...hub.gates].sort((a, b) => a.ageMa.to - b.ageMa.to)[0];
     const summary = youngest ? gates.find((gate) => gate.id === youngest.id) : undefined;
@@ -89,8 +81,32 @@ export function GateHub() {
     <main className="gate-hub">
       <GateGlobe
         ariaLabel={text.globe}
-        points={hubPoints}
+        terrain={enteredBand ? {
+          url: `${import.meta.env.BASE_URL}geo/paleodem-${enteredBand.terrainMa}.webp`,
+          credit: `Scotese & Wright (2018) PALEOMAP PaleoDEM · ${enteredBand.terrainMa} Ma · 1° grid · CC BY 4.0`,
+        } : null}
+        focus={world ? { lat: world.paleoLat, lng: world.paleoLng, height: 9_000_000 } : null}
+        points={entered ? bandPoints : hubPoints}
         renderPoint={(point) => {
+          if (entered) {
+            const neighbour = gateById(point.id);
+            if (!neighbour) return null;
+            const isHere = neighbour.id === entered.id;
+            return (
+              <button
+                key={point.id}
+                data-globe-point={point.id}
+                type="button"
+                className={`gate-marker${isHere ? " is-here" : ""}`}
+                onClick={() => enterGate(neighbour.id)}
+                aria-label={neighbour.name[locale]}
+              >
+                <span className="gate-marker__ring" aria-hidden="true" />
+                <span className="gate-marker__core" aria-hidden="true" />
+                <span className="gate-marker__label">{isHere ? `${neighbour.name[locale]} · ${text.here}` : neighbour.name[locale]}</span>
+              </button>
+            );
+          }
           const hub = allHubs.find((entry) => entry.id === point.id);
           if (!hub) return null;
           const isSelected = selectedHub?.id === hub.id;
@@ -125,14 +141,14 @@ export function GateHub() {
         </nav>
       </header>
 
-      {!selected && (
+      {!selected && !entered && (
         <p className="gate-hint">
           {text.hint}
-          <small>{text.gates(hubPoints.length)}</small>
+          <small>{text.ways(hubPoints.length)}</small>
         </p>
       )}
 
-      {selected && definition && (
+      {!entered && selected && definition && (
         <GateCard
           gate={definition}
           hub={selectedHub}
@@ -140,7 +156,21 @@ export function GateHub() {
           locale={locale}
           onClose={() => setSelectedId(null)}
           onGoTo={setSelectedId}
+          onEnter={() => { enterGate(definition.id); setSelectedId(null); }}
         />
+      )}
+
+      {entered && world && (
+        <WorldPanel
+          gate={entered}
+          detail={world}
+          locale={locale}
+          onLeave={() => enterGate(null)}
+        />
+      )}
+
+      {entered && enteredBand && (
+        <p className="world-age">{enteredBand.label[locale]}</p>
       )}
     </main>
   );
@@ -153,6 +183,7 @@ interface GateCardProps {
   locale: Locale;
   onClose: () => void;
   onGoTo: (id: string) => void;
+  onEnter: () => void;
 }
 
 /**
@@ -160,16 +191,12 @@ interface GateCardProps {
  * The counts are here because they are the honest size of the record; the cast
  * belongs inside the world, not on its front door.
  */
-function GateCard({ gate, hub, summary, locale, onClose, onGoTo }: GateCardProps) {
-  const text = copy[locale];
+function GateCard({ gate, hub, summary, locale, onClose, onGoTo, onEnter }: GateCardProps) {
+  const text = hubCopy[locale];
   const band = bandById(gate.band);
-  const alsoThen = gatesInBand(gate.band, gate.id);
   // A hub's own ages are shown as a choice at the top rather than as a link at
   // the bottom: at this place, these are the worlds, and one of them is open.
   const ages = (hub?.gates ?? []).length > 1 ? hub!.gates : [];
-  const alsoHere = ages.length > 0
-    ? []
-    : (gate.alsoAtThisPlace ?? []).map(gateById).filter((entry): entry is GateDefinition => Boolean(entry));
 
   return (
     <aside className="gate-card" aria-label={gate.name[locale]}>
@@ -202,27 +229,8 @@ function GateCard({ gate, hub, summary, locale, onClose, onGoTo }: GateCardProps
         <b>{summary.cast}</b> {text.named}
       </p>
 
-      <button type="button" className="gate-card__enter">{text.enter}</button>
+      <button type="button" className="gate-card__enter" onClick={onEnter}>{text.enter}</button>
 
-      {alsoHere.length > 0 && (
-        <GateLinks title={text.alsoHere} gates={alsoHere} locale={locale} onGoTo={onGoTo} />
-      )}
-      {alsoThen.length > 0 && (
-        <GateLinks title={text.alsoThen} gates={alsoThen} locale={locale} onGoTo={onGoTo} />
-      )}
     </aside>
-  );
-}
-
-function GateLinks({ title, gates, locale, onGoTo }: { title: string; gates: GateDefinition[]; locale: Locale; onGoTo: (id: string) => void }) {
-  return (
-    <div className="gate-links">
-      <span>{title}</span>
-      {gates.map((gate) => (
-        <button key={gate.id} type="button" onClick={() => onGoTo(gate.id)}>
-          {gate.name[locale]}
-        </button>
-      ))}
-    </div>
   );
 }

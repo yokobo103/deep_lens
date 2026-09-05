@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import * as CesiumRuntime from "cesium";
-import { Cartesian2, Cartesian3, Color, SceneTransforms, type Viewer } from "cesium";
+import { Cartesian2, Cartesian3, Color, Credit, SceneTransforms, SingleTileImageryProvider, type ImageryLayer, type Viewer } from "cesium";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 
 export interface GlobePoint {
@@ -19,6 +19,13 @@ interface GateGlobeProps {
    */
   renderPoint: (point: GlobePoint) => ReactNode;
   ariaLabel: string;
+  /**
+   * A reconstructed Earth to lay over the present one, or nothing for today.
+   * One texture per band, so entering any world of an age loads the same file.
+   */
+  terrain?: { url: string; credit: string } | null;
+  /** Where to look. Changing this flies the camera. */
+  focus?: { lat: number; lng: number; height: number } | null;
 }
 
 interface OccluderLike {
@@ -43,15 +50,18 @@ const EllipsoidalOccluder = (CesiumRuntime as unknown as {
  * that map while rendering; a query inside the effect keeps all of it on one
  * side of the render, and the caller only has to label its own markup.
  */
-export function GateGlobe({ points, renderPoint, ariaLabel }: GateGlobeProps) {
+export function GateGlobe({ points, renderPoint, ariaLabel, terrain = null, focus = null }: GateGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<Viewer | null>(null);
+  const terrainLayerRef = useRef<ImageryLayer | null>(null);
   const pointsRef = useRef(points);
   useEffect(() => { pointsRef.current = points; }, [points]);
 
   useEffect(() => {
     if (!containerRef.current) return;
     const viewer = createEarthViewer(containerRef.current);
+    viewerRef.current = viewer;
     viewer.scene.globe.baseColor = Color.fromCssColorString("#08191b");
     viewer.camera.setView({ destination: Cartesian3.fromDegrees(10, 22, 14_500_000) });
     const windowPosition = new Cartesian2();
@@ -83,9 +93,42 @@ export function GateGlobe({ points, renderPoint, ariaLabel }: GateGlobeProps) {
     return () => {
       window.removeEventListener("resize", place);
       viewer.scene.postRender.removeEventListener(place);
+      terrainLayerRef.current = null;
+      viewerRef.current = null;
       viewer.destroy();
     };
   }, []);
+
+  // The reconstructed Earth is a layer over the present one rather than a
+  // replacement for it, so the present is always underneath and coming back
+  // costs nothing.
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer) return;
+    let cancelled = false;
+    const existing = terrainLayerRef.current;
+    if (existing) {
+      viewer.imageryLayers.remove(existing, true);
+      terrainLayerRef.current = null;
+    }
+    if (!terrain) return;
+    void SingleTileImageryProvider.fromUrl(terrain.url, { credit: new Credit(terrain.credit) })
+      .then((provider) => {
+        if (cancelled || viewer.isDestroyed()) return;
+        terrainLayerRef.current = viewer.imageryLayers.addImageryProvider(provider);
+      })
+      .catch((error: unknown) => console.warn("Reconstructed Earth could not be loaded", error));
+    return () => { cancelled = true; };
+  }, [terrain]);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || !focus) return;
+    viewer.camera.flyTo({
+      destination: Cartesian3.fromDegrees(focus.lng, focus.lat, focus.height),
+      duration: 1.4,
+    });
+  }, [focus]);
 
   return (
     <div className="gate-globe-stage">

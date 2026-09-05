@@ -1,0 +1,38 @@
+export type Locale = "ja" | "en";
+
+export const hubCopy = {
+  ja: {
+    title: "地球に眠る過去への入り口",
+    globe: "地球儀。回すとゲートが見つかる",
+    hint: "地球を回して、入り口を見つけよう",
+    ways: (n: number) => `${n}の入り口`,
+    sites: "地点",
+    records: "記録",
+    named: "種",
+    ages: "この場所の時代",
+    alsoThen: "同じ時代の別の世界",
+    enter: "この世界に入る",
+    leave: "現代へ戻る",
+    close: "閉じる",
+    cast: (n: number) => `記録されている${n}種のうち`,
+    castNote: "記録の多い順。数は発表された記録の件数で、生きものの数ではありません。",
+    here: "いまここ",
+  },
+  en: {
+    title: "Ways into the Earth's past",
+    globe: "Globe. Turn it to find gates",
+    hint: "Turn the Earth and find a way in",
+    ways: (n: number) => `${n} ways in`,
+    sites: "sites",
+    records: "records",
+    named: "named",
+    ages: "Ages at this place",
+    alsoThen: "Another world, same age",
+    enter: "Enter this world",
+    leave: "Back to the present",
+    close: "Close",
+    cast: (n: number) => `of ${n} species recorded`,
+    castNote: "Most recorded first. Counts are published records, not numbers of animals.",
+    here: "You are here",
+  },
+} as const;
