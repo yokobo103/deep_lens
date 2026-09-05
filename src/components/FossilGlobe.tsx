@@ -12,7 +12,7 @@ import { PresentSpeciesMarker } from "./PresentSpeciesMarker";
 import { DriftGhost, DriftMarker, DriftTarget } from "./DriftMarker";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
-import { DRIFT_BEATS, DRIFT_TRAIL_LIMIT, DRIFT_TRAIL_SAMPLES, DRIFT_TRAVEL_HEIGHT, driftDistanceKm, interpolateDrift, trailLiftMetres, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
+import { DRIFT_BEATS, DRIFT_TRAIL_SAMPLES, DRIFT_TRAVEL_HEIGHT, interpolateDrift, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
 
 interface FossilGlobeProps {
   record: FossilRecord;
@@ -372,39 +372,6 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     points.show = true;
   }, [focusLife, taxonTraces, mode, drift]);
 
-  // The one line. Drawn between the creature's home and its modern find-spot,
-  // arcing over the surface so it reads as a link rather than a border.
-  useEffect(() => {
-    const link = linkRef.current;
-    const linkEnd = linkEndRef.current;
-    if (!link || !linkEnd) return;
-    link.removeAll();
-    linkEnd.removeAll();
-    const trace = focusLife?.recordType === "taxon" ? taxonTraces[focusLife.id] : undefined;
-    if (!focusLife || !trace || drift) return;
-    const from = { lat: focusLife.lat, lng: focusLife.lng };
-    const to = { lat: trace.lat, lng: trace.lng };
-    const lift = trailLiftMetres(driftDistanceKm(from, to));
-    const positions = Array.from({ length: 48 }, (_, step) => {
-      const fraction = step / 47;
-      const point = interpolateDrift(from, to, fraction);
-      return Cartesian3.fromDegrees(point.lng, point.lat, Math.sin(fraction * Math.PI) * lift);
-    });
-    link.add({
-      positions,
-      width: 3.4,
-      material: Material.fromType("Color", { color: Color.fromCssColorString("#4a9cff").withAlpha(0.92) }),
-    });
-    const far = mode === "ancient" ? to : from;
-    linkEnd.add({
-      position: Cartesian3.fromDegrees(far.lng, far.lat),
-      color: Color.fromCssColorString("#4a9cff"),
-      outlineColor: Color.fromCssColorString("#06202e").withAlpha(0.9),
-      outlineWidth: 2,
-      pixelSize: 11,
-    });
-  }, [focusLife, taxonTraces, drift, mode]);
-
   // The drift. Everything here happens in one rAF loop so the beats stay in
   // order: hold, then the world swaps while the point travels, then the
   // creature becomes bone, then the camera finally comes down. Playing them at
@@ -463,30 +430,27 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       }
       swarm.show = true;
     }
-    if (trails && journeys.length > 0) {
-      const stride = Math.max(1, Math.ceil(journeys.length / DRIFT_TRAIL_LIMIT));
-      for (let index = 0; index < journeys.length; index += stride) {
-        const journey = journeys[index]!;
-        const lift = trailLiftMetres(driftDistanceKm(journey.from, journey.to));
-        const positions = Array.from({ length: DRIFT_TRAIL_SAMPLES }, (_, step) => {
-          const fraction = step / (DRIFT_TRAIL_SAMPLES - 1);
-          const point = interpolateDrift(journey.from, journey.to, fraction);
-          return Cartesian3.fromDegrees(point.lng, point.lat, Math.sin(fraction * Math.PI) * lift);
-        });
-        trails.add({
-          positions,
-          width: 1.4,
-          material: Material.fromType("Color", { color: Color.fromCssColorString("#ffd690").withAlpha(0) }),
-        });
-      }
-      trails.show = true;
-    }
-    const setTrailAlpha = (alpha: number) => {
-      if (!trails) return;
-      for (let index = 0; index < trails.length; index += 1) {
-        const line = trails.get(index);
-        (line.material.uniforms as { color: Color }).color = Color.fromCssColorString("#ffd690").withAlpha(alpha);
-      }
+    // One line, growing from the icon you are leaving towards the icon you are
+    // arriving at. Straight rather than arched, and in the globe's own cyan, so
+    // it belongs to the scene instead of being drawn on top of it.
+    const linkEnd = linkEndRef.current;
+    linkEnd?.removeAll();
+    const link = linkRef.current;
+    link?.removeAll();
+    const drawLink = (progress: number, alpha: number) => {
+      if (!link) return;
+      link.removeAll();
+      if (progress <= 0.01) return;
+      const samples = Math.max(2, Math.round(DRIFT_TRAIL_SAMPLES * progress));
+      const positions = Array.from({ length: samples }, (_, step) => {
+        const point = interpolateDrift(drift.from, drift.to, (step / (samples - 1)) * progress);
+        return Cartesian3.fromDegrees(point.lng, point.lat, 24_000);
+      });
+      link.add({
+        positions,
+        width: 2,
+        material: Material.fromType("Color", { color: Color.fromCssColorString("#79e3d2").withAlpha(alpha) }),
+      });
     };
 
     // A hidden tab pauses requestAnimationFrame, so a drift started just before
@@ -502,6 +466,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       }
       marker?.classList.add("is-morphed");
       trailsRef.current?.removeAll();
+      linkRef.current?.removeAll();
       driftPointRef.current = { ...drift.to };
       viewer.camera.setView({
         destination: Cartesian3.fromDegrees(drift.to.lng, drift.to.lat, settleHeight),
@@ -535,7 +500,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
           }
         }
         // In by the time the crossing is a third done, out again as it lands.
-        setTrailAlpha(Math.min(raw / 0.3, 1) * (1 - Math.max(0, (raw - 0.75) / 0.25)) * 0.5);
+        drawLink(t, 0.55 + 0.3 * Math.min(1, raw / 0.4));
 
         // Rise away from the surface for the crossing, then come back down
         // during the settle beat. The pull-back is what lets the whole
@@ -568,6 +533,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       finished = true;
       window.clearTimeout(safety);
       trailsRef.current?.removeAll();
+      linkRef.current?.removeAll();
       driftPointRef.current = { ...drift.to };
       onDriftPhaseRef.current?.("done");
     };
@@ -577,6 +543,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       finished = true;
       window.clearTimeout(safety);
       trailsRef.current?.removeAll();
+      linkRef.current?.removeAll();
       if (frame) cancelAnimationFrame(frame);
     };
   }, [drift, locale]);
@@ -623,8 +590,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
               locale={locale}
               isVisible={showPresentMarkers && zoomLevel >= 2}
               isSelected={focusLife?.id === life.id}
-              showLabel={zoomLevel >= 2}
-              spread={speciesSpread(life, taxonTraces)}
+              showLabel={focusLife?.id === life.id}
               onClick={() => onSelectLife(life)}
             />
           );
@@ -639,7 +605,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
             record={life}
             locale={locale}
             isVisible={showAncientMarkers && zoomLevel >= life.minZoomLevel && (life.maxZoomLevel === undefined || zoomLevel <= life.maxZoomLevel)}
-            showLabel={isAncient && (life.recordType === "ecosystem" || zoomLevel === 3)}
+            showLabel={isAncient && (life.recordType === "ecosystem" || focusLife?.id === life.id)}
             isSelected={focusLife?.id === life.id}
             isEntering={timeShift === "to-ancient" && focusLife?.id === life.id}
             onClick={() => onSelectLife(life)}
@@ -686,24 +652,6 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       )}
     </div>
   );
-}
-
-/**
- * Species from one region land within a degree or two of each other, so their
- * markers stack. This pushes them apart on screen only — around a small circle
- * in a fixed order, so the same creature always sits in the same place rather
- * than jumping about between renders.
- */
-const SPREAD_STEP = 32;
-function speciesSpread(life: AncientLifeRecord, traces: Record<string, TaxonTrace>): readonly [number, number] {
-  const region = traces[life.id]?.region;
-  const siblings = ancientLifeRecords.filter((other) => traces[other.id]?.region === region);
-  if (siblings.length < 2) return [0, 0];
-  const index = siblings.findIndex((other) => other.id === life.id);
-  // Stacked, not scattered: these labels are wide, so pushing them around a
-  // circle still leaves them overlapping. A ladder with a slight zigzag keeps
-  // every name readable.
-  return [index % 2 === 0 ? -20 : 20, (index - (siblings.length - 1) / 2) * SPREAD_STEP];
 }
 
 function getAncientZoomLevel(cameraHeight: number): AncientZoomLevel {

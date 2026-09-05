@@ -1,4 +1,4 @@
-import { forwardRef, type CSSProperties } from "react";
+import { forwardRef } from "react";
 import type { AncientLifeRecord } from "../data/ancientLife";
 import type { TaxonTrace } from "../data/pbdb";
 import { LifeIcon } from "./LifeIcon";
@@ -11,8 +11,6 @@ interface PresentSpeciesMarkerProps {
   isVisible: boolean;
   isSelected: boolean;
   showLabel: boolean;
-  /** Screen-space declutter only; the anchor stays the real locality. */
-  spread: readonly [x: number, y: number];
   onClick?: () => void;
 }
 
@@ -22,7 +20,7 @@ interface PresentSpeciesMarkerProps {
  * same Spinosaurus here — which is the entire point of moving between the two.
  */
 export const PresentSpeciesMarker = forwardRef<HTMLButtonElement, PresentSpeciesMarkerProps>(
-  function PresentSpeciesMarker({ record, trace, locale, isVisible, isSelected, showLabel, spread, onClick }, ref) {
+  function PresentSpeciesMarker({ record, trace, locale, isVisible, isSelected, showLabel, onClick }, ref) {
     const text = localizeLife(record, locale);
     return (
       <button
@@ -33,7 +31,6 @@ export const PresentSpeciesMarker = forwardRef<HTMLButtonElement, PresentSpecies
         aria-label={`${text.name} — ${trace.sites}`}
         aria-hidden={!isVisible}
         tabIndex={isVisible ? 0 : -1}
-        style={{ "--spread-x": `${spread[0]}px`, "--spread-y": `${spread[1]}px` } as CSSProperties}
       >
         <span className="present-species-marker__icon"><LifeIcon iconType={record.iconType} tone="trace" /></span>
         {showLabel && <span className="present-species-marker__label"><strong>{text.name}</strong></span>}

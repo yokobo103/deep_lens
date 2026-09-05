@@ -1,4 +1,4 @@
-import { forwardRef, type CSSProperties } from "react";
+import { forwardRef } from "react";
 import type { AncientLifeRecord } from "../data/ancientLife";
 import { LifeIcon } from "./LifeIcon";
 import { localizeLife, type Locale } from "../fossil/localization";
@@ -25,10 +25,6 @@ export const AncientLifeMarker = forwardRef<HTMLButtonElement, AncientLifeMarker
       aria-disabled={!onClick}
       aria-hidden={!isVisible}
       tabIndex={isVisible ? 0 : -1}
-      style={{
-        "--marker-offset-x": `${record.markerOffset?.[0] ?? 0}px`,
-        "--marker-offset-y": `${record.markerOffset?.[1] ?? 0}px`,
-      } as CSSProperties}
     >
       <span className="ancient-life-marker__icon"><LifeIcon iconType={record.iconType} /></span>
       {showLabel && <span className="ancient-life-marker__label">{text.name}</span>}
