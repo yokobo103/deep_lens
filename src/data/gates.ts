@@ -29,6 +29,8 @@ export interface GateQuery {
 
 export interface GateDefinition {
   id: string;
+  /** The way in on the present Earth. Defaults to the gate's own id. */
+  hub?: string;
   /** The band this gate stands in. Gates in one band share a terrain. */
   band: string;
   query: GateQuery;
@@ -42,6 +44,19 @@ export interface GateDefinition {
   /** Gates reachable from this one without returning to the present. */
   alsoAtThisPlace?: string[];
   featured?: boolean;
+}
+
+/**
+ * Where a gate stands on the present-day Earth. Gates that share a hub are the
+ * same place seen at different ages, so the globe shows one way in and the
+ * choice of age is made after arriving. Fezouata and Kem Kem are 150 km apart
+ * in southern Morocco: two markers there sit on top of each other, and pushing
+ * them apart would be drawing a difference that does not exist.
+ */
+export interface HubDefinition {
+  id: string;
+  name: { ja: string; en: string };
+  place: { ja: string; en: string };
 }
 
 export interface BandDefinition {
@@ -61,6 +76,10 @@ export const bandDefinitions: readonly BandDefinition[] = [
   { id: "late-cretaceous", terrainMa: 70, label: { ja: "白亜紀後期 · 約70 Ma", en: "Late Cretaceous · ~70 Ma" } },
   { id: "mid-cretaceous", terrainMa: 95, label: { ja: "白亜紀中期 · 約95 Ma", en: "Mid Cretaceous · ~95 Ma" } },
   { id: "early-ordovician", terrainMa: 475, label: { ja: "オルドビス紀前期 · 約475 Ma", en: "Early Ordovician · ~475 Ma" } },
+];
+
+export const hubDefinitions: readonly HubDefinition[] = [
+  { id: "morocco", name: { ja: "モロッコ", en: "Morocco" }, place: { ja: "北アフリカ", en: "North Africa" } },
 ];
 
 export const gateDefinitions: readonly GateDefinition[] = [
@@ -108,6 +127,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
   },
   {
     id: "kem-kem",
+    hub: "morocco",
     band: "mid-cretaceous",
     query: { stratum: "Kem Kem" },
     ageMa: { from: 100, to: 93 },
@@ -129,6 +149,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
   },
   {
     id: "fezouata",
+    hub: "morocco",
     band: "early-ordovician",
     query: { stratum: "Fezouata" },
     ageMa: { from: 485, to: 470 },
@@ -151,4 +172,38 @@ export function bandById(id: string): BandDefinition | undefined {
 /** The other gates standing on the same Earth as this one. */
 export function gatesInBand(bandId: string, exceptId?: string): GateDefinition[] {
   return gateDefinitions.filter((gate) => gate.band === bandId && gate.id !== exceptId);
+}
+
+export function hubIdOf(gate: GateDefinition): string {
+  return gate.hub ?? gate.id;
+}
+
+export interface Hub {
+  id: string;
+  name: { ja: string; en: string };
+  place: { ja: string; en: string };
+  gates: GateDefinition[];
+}
+
+/**
+ * The ways in, one per place. A hub with several gates is one marker offering
+ * several ages; a hub with one is that gate.
+ */
+export function hubs(): Hub[] {
+  const grouped = new Map<string, GateDefinition[]>();
+  for (const gate of gateDefinitions) {
+    const id = hubIdOf(gate);
+    grouped.set(id, [...(grouped.get(id) ?? []), gate]);
+  }
+  return [...grouped.entries()].map(([id, gates]) => {
+    const named = hubDefinitions.find((hub) => hub.id === id);
+    return {
+      id,
+      name: named?.name ?? gates[0]!.name,
+      place: named?.place ?? gates[0]!.place,
+      // Oldest first: arriving at a place and being offered its deepest age
+      // first is the direction this app reads in.
+      gates: [...gates].sort((a, b) => b.ageMa.from - a.ageMa.from),
+    };
+  });
 }

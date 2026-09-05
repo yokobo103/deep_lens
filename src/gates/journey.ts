@@ -1,11 +1,13 @@
 /**
- * The drift: the one move that carries a place from the world it lived in to
- * the world it is found in. The place does not go anywhere — the Earth does.
- * The camera stays on the point, a ghost stays where the point used to be, and
- * the distance between them is the whole argument of this app.
+ * The journey: the move that carries a place from the world it lived in to the
+ * world it is found in. The place does not go anywhere — the Earth does. The
+ * camera stays on the point, a mark stays where the point used to be, and the
+ * distance between them is the whole argument of this app.
+ *
+ * Kept through the move to gates because entering a world is the same move:
+ * one place, two ages, and the ground between them.
  */
 
-import type { FossilTimeMode } from "../components/TimeModeToggle";
 
 export interface DriftPoint {
   lat: number;
@@ -18,7 +20,6 @@ export interface DriftPlan {
   /** Bumped on every request so a repeat of the same journey still runs. */
   key: number;
   direction: "to-present" | "to-ancient";
-  targetMode: FossilTimeMode;
   /**
    * The creature being carried, if it is a single taxon. Held here rather than
    * read from the selection, because starting a drift clears the selection to
