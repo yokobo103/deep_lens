@@ -987,3 +987,80 @@ body { overscroll-behavior: none; }
   .fossil-legend--evidence { right: auto; bottom: 164px; left: 12px; max-width: 190px; }
   .place-context-panel { top: auto; right: 10px; bottom: 122px; left: 10px; width: auto; padding: 16px; }
 }
+
+/* --- Drift: one place carried between two worlds ------------------------- */
+
+.drift-marker {
+  position: absolute; z-index: 8; display: grid; justify-items: center; gap: 6px;
+  transform: translate(-50%, -50%); pointer-events: none; will-change: left, top;
+}
+.drift-marker__ring {
+  position: absolute; top: 50%; left: 50%; width: 74px; height: 74px; transform: translate(-50%, -50%);
+  border: 1px solid rgb(255 214 144 / 45%); border-radius: 50%;
+  box-shadow: 0 0 26px rgb(255 214 144 / 22%), inset 0 0 18px rgb(255 214 144 / 10%);
+  animation: drift-ring 1.6s ease-out infinite;
+}
+@keyframes drift-ring {
+  0% { transform: translate(-50%, -50%) scale(.72); opacity: .9; }
+  100% { transform: translate(-50%, -50%) scale(1.35); opacity: 0; }
+}
+.drift-marker__faces { position: relative; display: grid; place-items: center; width: 44px; height: 44px; }
+.drift-marker__face {
+  position: absolute; font-size: 30px; line-height: 1;
+  filter: drop-shadow(0 4px 12px rgb(0 0 0 / 55%));
+  transition: opacity .38s ease, transform .38s ease;
+}
+.drift-marker__face--to { opacity: 0; transform: scale(.6) rotate(-14deg); }
+.drift-marker.is-morphed .drift-marker__face--from { opacity: 0; transform: scale(.6) rotate(14deg); }
+.drift-marker.is-morphed .drift-marker__face--to { opacity: 1; transform: scale(1) rotate(0deg); }
+.drift-marker__labels { position: relative; display: grid; place-items: center; min-height: 14px; }
+.drift-marker__label {
+  position: absolute; padding: 3px 8px; white-space: nowrap;
+  color: #ffe0a5; border: 1px solid rgb(255 214 144 / 40%); background: rgb(12 26 24 / 88%);
+  font: 750 8px ui-monospace, monospace; letter-spacing: .06em;
+  transition: opacity .38s ease;
+}
+.drift-marker__label--to { opacity: 0; }
+.drift-marker.is-morphed .drift-marker__label--from { opacity: 0; }
+.drift-marker.is-morphed .drift-marker__label--to { opacity: 1; }
+
+.drift-ghost {
+  position: absolute; z-index: 7; display: grid; justify-items: center; gap: 3px;
+  transform: translate(-50%, -50%); pointer-events: none; will-change: left, top, opacity;
+}
+.drift-ghost__icon { font-size: 22px; line-height: 1; opacity: .5; filter: grayscale(1); }
+.drift-ghost small {
+  padding: 2px 6px; color: #7f9b9b; border: 1px dashed rgb(129 210 198 / 32%);
+  font: 700 7px ui-monospace, monospace; letter-spacing: .1em; white-space: nowrap;
+}
+
+.drift-readout {
+  position: absolute; z-index: 9; bottom: 104px; left: 50%; transform: translateX(-50%);
+  display: grid; justify-items: center; gap: 4px; padding: 13px 22px; text-align: center;
+  border: 1px solid rgb(255 214 144 / 30%); background: rgb(6 18 20 / 88%); backdrop-filter: blur(14px);
+  animation: drift-readout-in .3s ease-out both;
+}
+@keyframes drift-readout-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.drift-readout__ages { display: flex; align-items: center; gap: 9px; color: #7f9b9b; font: 700 8px ui-monospace, monospace; letter-spacing: .16em; }
+.drift-readout__ages i { color: rgb(255 214 144 / 70%); font-style: normal; }
+.drift-readout__ages strong { color: #ffd690; font: 750 8px ui-monospace, monospace; letter-spacing: .16em; }
+.drift-readout__line { display: flex; align-items: baseline; gap: 8px; margin: 0; }
+.drift-readout__line span { min-width: 62px; color: #effffc; font: 650 19px/1 ui-monospace, monospace; letter-spacing: .02em; text-align: right; }
+.drift-readout__line em { color: #8ca7a2; font: 600 8px ui-monospace, monospace; font-style: normal; letter-spacing: .08em; }
+.drift-readout__line--distance span { color: #ffd690; }
+.drift-readout small { margin-top: 2px; color: #6f8b87; font: 500 8px ui-monospace, monospace; }
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-marker__ring { animation: none; opacity: .35; }
+  .drift-readout { animation: none; }
+}
+
+/* During a drift only the travelling place matters; the rest steps back. */
+.fossil-poc--drifting .fossil-intro,
+.fossil-poc--drifting .fossil-axis-strip,
+.fossil-poc--drifting .fossil-legend,
+.fossil-poc--drifting .fossil-evidence-toggle,
+.fossil-poc--drifting .fossil-header__readout,
+.fossil-poc--drifting .fossil-mode-dock {
+  opacity: .18; transition: opacity .32s ease; pointer-events: none;
+}

@@ -8,8 +8,10 @@ import { presentTraceRecords, type PresentTraceRecord } from "../data/presentTra
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { AncientLifeMarker } from "./AncientLifeMarker";
 import { PresentTraceMarker } from "./PresentTraceMarker";
+import { DriftGhost, DriftMarker } from "./DriftMarker";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
+import { DRIFT_BEATS, DRIFT_TRAVEL_HEIGHT, formatLatitude, interpolateDrift, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
 
 interface FossilGlobeProps {
   record: FossilRecord;
@@ -20,6 +22,9 @@ interface FossilGlobeProps {
   onSelectLife: (life: AncientLifeRecord) => void;
   focusLife?: AncientLifeRecord | null;
   focusTrace?: PresentTraceRecord | null;
+  /** A time shift to play out. Null while the globe is at rest. */
+  drift?: DriftPlan | null;
+  onDriftPhase?: (phase: DriftPhase) => void;
   onZoomLevelChange?: (level: AncientZoomLevel) => void;
   /** Present mode: a click on the Earth, in modern degrees. */
   onPickLocation?: (latitude: number, longitude: number) => void;
@@ -55,7 +60,7 @@ const EllipsoidalOccluder = (CesiumRuntime as unknown as {
 
 type TimeShiftDirection = "to-present" | "to-ancient";
 
-export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace, onSelectLife, focusLife, focusTrace, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
+export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace, onSelectLife, focusLife, focusTrace, drift = null, onDriftPhase, onZoomLevelChange, onPickLocation, onSitesLoaded, focusRequest = 0 }: FossilGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const traceMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
   const lifeMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -72,6 +77,18 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   const zoomLevelRef = useRef<AncientZoomLevel>(1);
   const [zoomLevel, setZoomLevel] = useState<AncientZoomLevel>(1);
   const [timeShift, setTimeShift] = useState<TimeShiftDirection | null>(null);
+
+  // Drift plumbing. The readout is written straight into the DOM each frame:
+  // re-rendering React sixty times a second to animate two numbers is not worth
+  // the frames it costs on the globe.
+  const driftMarkerRef = useRef<HTMLDivElement>(null);
+  const driftGhostRef = useRef<HTMLDivElement>(null);
+  const driftLatRef = useRef<HTMLSpanElement>(null);
+  const driftDistanceRef = useRef<HTMLSpanElement>(null);
+  const driftPointRef = useRef<DriftPoint | null>(null);
+  const driftGhostPointRef = useRef<DriftPoint | null>(null);
+  const onDriftPhaseRef = useRef(onDriftPhase);
+  useEffect(() => { onDriftPhaseRef.current = onDriftPhase; }, [onDriftPhase]);
 
   useEffect(() => {
     const previousMode = modeRef.current;
@@ -233,6 +250,14 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
         const marker = lifeMarkerRefs.current.get(life.id);
         if (marker) setLifeMarkerPosition(marker, { latitude: life.lat, longitude: life.lng });
       }
+      const driftPoint = driftPointRef.current;
+      if (driftPoint && driftMarkerRef.current) {
+        setLifeMarkerPosition(driftMarkerRef.current, { latitude: driftPoint.lat, longitude: driftPoint.lng });
+      }
+      const ghostPoint = driftGhostPointRef.current;
+      if (ghostPoint && driftGhostRef.current) {
+        setLifeMarkerPosition(driftGhostRef.current, { latitude: ghostPoint.lat, longitude: ghostPoint.lng });
+      }
     };
 
     viewer.scene.postRender.addEventListener(updatePositions);
@@ -267,9 +292,117 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     });
   }, [focusRequest, focusLife, focusTrace, mode, record]);
 
+  // The drift. Everything here happens in one rAF loop so the beats stay in
+  // order: hold, then the world swaps while the point travels, then the
+  // creature becomes bone, then the camera finally comes down. Playing them at
+  // once is what made the old switch unreadable.
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || !drift) {
+      driftPointRef.current = null;
+      driftGhostPointRef.current = null;
+      return;
+    }
+
+    driftPointRef.current = { ...drift.from };
+    driftGhostPointRef.current = { ...drift.from };
+    const marker = driftMarkerRef.current;
+    marker?.classList.remove("is-morphed");
+
+    const startHeight = viewer.camera.positionCartographic.height;
+    const settleHeight = drift.targetMode === "present" ? 4_200_000 : 6_500_000;
+    const start = performance.now();
+    let frame = 0;
+    let swapped = false;
+    let morphed = false;
+
+    const ease = (t: number) => t * t * (3 - 2 * t);
+    let finished = false;
+
+    // A hidden tab pauses requestAnimationFrame, so a drift started just before
+    // the user looks away would freeze with the card withheld and no way back.
+    // The timer lands the journey regardless of whether any frame ever ran.
+    const land = () => {
+      if (finished) return;
+      finished = true;
+      if (frame) cancelAnimationFrame(frame);
+      if (!swapped) {
+        swapped = true;
+        onDriftPhaseRef.current?.("swap");
+      }
+      marker?.classList.add("is-morphed");
+      driftPointRef.current = { ...drift.to };
+      viewer.camera.setView({
+        destination: Cartesian3.fromDegrees(drift.to.lng, drift.to.lat, settleHeight),
+        orientation: { heading: 0, pitch: -CesiumMath.PI_OVER_TWO, roll: 0 },
+      });
+      onDriftPhaseRef.current?.("done");
+    };
+    const safety = window.setTimeout(land, DRIFT_BEATS.settleEnd + 900);
+
+    const step = (now: number) => {
+      if (finished) return;
+      const elapsed = now - start;
+
+      if (!swapped && elapsed >= DRIFT_BEATS.hold) {
+        swapped = true;
+        onDriftPhaseRef.current?.("swap");
+      }
+
+      if (elapsed >= DRIFT_BEATS.hold && elapsed < DRIFT_BEATS.settleEnd) {
+        const travelSpan = DRIFT_BEATS.travelEnd - DRIFT_BEATS.hold;
+        const raw = Math.min(1, (elapsed - DRIFT_BEATS.hold) / travelSpan);
+        const t = ease(raw);
+        const point = interpolateDrift(drift.from, drift.to, t);
+        driftPointRef.current = point;
+
+        // Rise away from the surface for the crossing, then come back down
+        // during the settle beat. The pull-back is what lets the whole
+        // continent move inside the frame.
+        const lifted = Math.min(1, raw / 0.35);
+        const settleRaw = Math.max(0, (elapsed - DRIFT_BEATS.morphEnd) / (DRIFT_BEATS.settleEnd - DRIFT_BEATS.morphEnd));
+        const height = settleRaw > 0
+          ? DRIFT_TRAVEL_HEIGHT + (settleHeight - DRIFT_TRAVEL_HEIGHT) * ease(Math.min(1, settleRaw))
+          : startHeight + (DRIFT_TRAVEL_HEIGHT - startHeight) * ease(lifted);
+        viewer.camera.setView({
+          destination: Cartesian3.fromDegrees(point.lng, point.lat, height),
+          orientation: { heading: 0, pitch: -CesiumMath.PI_OVER_TWO, roll: 0 },
+        });
+
+        if (driftGhostRef.current) driftGhostRef.current.style.opacity = `${Math.max(0, 1 - raw * 1.35)}`;
+        if (driftLatRef.current) driftLatRef.current.textContent = formatLatitude(point.lat, locale);
+        if (driftDistanceRef.current) {
+          driftDistanceRef.current.textContent = Math.round(drift.distanceKm * t).toLocaleString();
+        }
+      }
+
+      if (!morphed && elapsed >= DRIFT_BEATS.travelEnd) {
+        morphed = true;
+        marker?.classList.add("is-morphed");
+      }
+
+      if (elapsed < DRIFT_BEATS.settleEnd) {
+        frame = requestAnimationFrame(step);
+        return;
+      }
+      finished = true;
+      window.clearTimeout(safety);
+      driftPointRef.current = { ...drift.to };
+      onDriftPhaseRef.current?.("done");
+    };
+
+    frame = requestAnimationFrame(step);
+    return () => {
+      finished = true;
+      window.clearTimeout(safety);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [drift, locale]);
+
   const isAncient = mode === "ancient";
-  const showAncientMarkers = isAncient || timeShift === "to-present";
-  const showPresentMarkers = !isAncient || timeShift === "to-ancient";
+  const isDrifting = drift !== null;
+  const showAncientMarkers = (isAncient || timeShift === "to-present") && !isDrifting;
+  const showPresentMarkers = (!isAncient || timeShift === "to-ancient") && !isDrifting;
   const copy = fossilCopy[locale];
   const trackingLabel = focusLife ? localizeLife(focusLife, locale).name : null;
 
@@ -309,8 +442,38 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
             onClick={() => onSelectLife(life)}
           />
         ))}
+        {drift && (
+          <>
+            <DriftGhost ref={driftGhostRef} icon={drift.fromIcon} label={drift.fromAgeLabel} />
+            <DriftMarker
+              ref={driftMarkerRef}
+              fromIcon={drift.fromIcon}
+              toIcon={drift.toIcon}
+              fromLabel={drift.fromLabel}
+              toLabel={drift.toLabel}
+            />
+          </>
+        )}
       </div>
-      {timeShift && (
+      {drift && (
+        <div className="drift-readout" role="status" aria-live="polite">
+          <div className="drift-readout__ages">
+            <span>{drift.fromAgeLabel}</span>
+            <i aria-hidden="true">→</i>
+            <strong>{drift.toAgeLabel}</strong>
+          </div>
+          <p className="drift-readout__line">
+            <span ref={driftLatRef}>{formatLatitude(drift.from.lat, locale)}</span>
+            <em>{copy.driftLatitude}</em>
+          </p>
+          <p className="drift-readout__line drift-readout__line--distance">
+            <span ref={driftDistanceRef}>0</span>
+            <em>{copy.driftDistance}</em>
+          </p>
+          <small>{copy.driftNote}</small>
+        </div>
+      )}
+      {timeShift && !drift && (
         <div className={`fossil-time-shift fossil-time-shift--${timeShift}`} role="status" aria-live="polite">
           <div>
             <span>{timeShift === "to-present" ? copy.livingWorlds : copy.presentFossilTraces}</span>

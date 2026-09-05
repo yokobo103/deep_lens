@@ -8,7 +8,9 @@ import { ancientLifeRecords, featuredAncientLife, type AncientLifeRecord, type A
 import { fossilRecords } from "../data/fossils";
 import { featuredPresentTrace, presentTraceRecords, type PresentTraceRecord } from "../data/presentTraces";
 import { buildColumn, loadFormations, ENV_COLOR, ENV_LABEL, ENV_ORDER, type ColumnBand } from "../data/pbdb";
-import { environmentLabel, fossilCopy, type Locale } from "./localization";
+import { lifeIconGlyph } from "../components/lifeIcons";
+import { driftDistanceKm, type DriftPhase, type DriftPlan } from "./drift";
+import { environmentLabel, fossilCopy, localizeLife, localizeTrace, type Locale } from "./localization";
 
 /** How far from the clicked point a formation still counts as "here". */
 const COLUMN_RADIUS_KM = 200;
@@ -32,6 +34,7 @@ export function FossilPrototype() {
   const [columnLoading, setColumnLoading] = useState(false);
   const [showEvidence, setShowEvidence] = useState(false);
   const [showStrata, setShowStrata] = useState(false);
+  const [drift, setDrift] = useState<DriftPlan | null>(null);
   const [locale, setLocale] = useState<Locale>(() => {
     try {
       return window.localStorage.getItem("deep-lens-locale") === "en" ? "en" : "ja";
@@ -82,29 +85,64 @@ export function FossilPrototype() {
     setShowStrata(false);
   };
 
-  const seeFossilsToday = () => {
-    const matchingTrace = presentTraceRecords.find((trace) => trace.regionId === selectedLife?.regionId) ?? featuredPresentTrace;
-    setMode("present");
-    setSelected(true);
-    setSelectedTrace(matchingTrace);
+  // Both journeys are the same move played in opposite directions: the ground
+  // stays, the Earth around it changes. The card is withheld until the globe
+  // has finished, so the change is watched rather than read about.
+  const startDrift = (direction: "to-present" | "to-ancient", life: AncientLifeRecord, trace: PresentTraceRecord) => {
+    const ancient = { lat: life.lat, lng: life.lng };
+    const present = { lat: trace.presentLat, lng: trace.presentLng };
+    const lifeText = localizeLife(life, locale);
+    const traceText = localizeTrace(trace, locale);
+    const toPresent = direction === "to-present";
+    setSelected(false);
     setPlace(null);
     setShowStrata(false);
-    setFocusRequest((request) => request + 1);
+    setSelectedLife(life);
+    setSelectedTrace(trace);
+    setDrift({
+      key: Date.now(),
+      direction,
+      targetMode: toPresent ? "present" : "ancient",
+      from: toPresent ? ancient : present,
+      to: toPresent ? present : ancient,
+      fromIcon: toPresent ? lifeIconGlyph(life.iconType) : "🦴",
+      toIcon: toPresent ? "🦴" : lifeIconGlyph(life.iconType),
+      fromLabel: toPresent ? lifeText.name : traceText.formationLabel,
+      toLabel: toPresent ? traceText.formationLabel : lifeText.name,
+      fromAgeLabel: toPresent ? "95 Ma" : copy.present,
+      toAgeLabel: toPresent ? copy.present : "95 Ma",
+      distanceKm: driftDistanceKm(ancient, present),
+    });
+  };
+
+  const handleDriftPhase = (phase: DriftPhase) => {
+    if (phase === "swap") {
+      setMode((current) => (current === "present" ? "ancient" : "present"));
+      return;
+    }
+    setDrift(null);
+    setSelected(true);
+  };
+
+  const seeFossilsToday = () => {
+    const life = selectedLife ?? featuredAncientLife;
+    const matchingTrace = presentTraceRecords.find((trace) => trace.regionId === life.regionId) ?? featuredPresentTrace;
+    startDrift("to-present", life, matchingTrace);
   };
 
   const backToAncient = () => {
-    setMode("ancient");
-    setSelected(true);
-    setPlace(null);
-    setShowStrata(false);
-    setFocusRequest((request) => request + 1);
+    const trace = selectedTrace ?? featuredPresentTrace;
+    const life = selectedLife?.regionId === trace.regionId
+      ? selectedLife
+      : findRegionEcosystem(trace.regionId) ?? featuredAncientLife;
+    startDrift("to-ancient", life, trace);
   };
 
   const zoomLabel = zoomLevel === 1 ? copy.worldView : zoomLevel === 2 ? copy.regionView : copy.speciesView;
   const isAncient = mode === "ancient";
 
   return (
-    <main className={`fossil-poc fossil-poc--${mode}`}>
+    <main className={`fossil-poc fossil-poc--${mode}${drift ? " fossil-poc--drifting" : ""}`}>
       <FossilGlobe
         record={record}
         mode={mode}
@@ -113,6 +151,8 @@ export function FossilPrototype() {
         focusLife={selected ? selectedLife : null}
         focusTrace={selected ? selectedTrace : null}
         focusRequest={focusRequest}
+        drift={drift}
+        onDriftPhase={handleDriftPhase}
         onSelectTrace={(trace) => {
           setSelected(true);
           setSelectedTrace(trace);
