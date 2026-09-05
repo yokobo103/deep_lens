@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { GateDefinition } from "../data/gates";
 import type { GateDetail } from "../data/gateData";
 import { dominantEnvironment, ENV_COLOR, ENV_LABEL } from "../data/environment";
@@ -48,6 +49,13 @@ function groupName(group: string | null, locale: Locale): string {
  */
 export function WorldPanel({ gate, detail, locale, onLeave }: WorldPanelProps) {
   const text = hubCopy[locale];
+  // On a phone this panel would cover the globe, and the globe is the thing it
+  // is describing — pulling back to see the rest of the age is half the point
+  // of being in a world. So the cast folds away, and only the name and the kind
+  // of place stay on screen.
+  const compact = useCompactLayout();
+  const [openOnPhone, setOpenOnPhone] = useState(false);
+  const showCast = !compact || openOnPhone;
   const kind = dominantEnvironment(detail.environments);
 
   const grouped = new Map<string, typeof detail.cast>();
@@ -58,7 +66,7 @@ export function WorldPanel({ gate, detail, locale, onLeave }: WorldPanelProps) {
   const groups = [...grouped.entries()].sort((a, b) => b[1].length - a[1].length);
 
   return (
-    <aside className="world-panel" aria-label={gate.name[locale]}>
+    <aside className={`world-panel${compact ? " is-compact" : ""}${showCast ? " is-open" : ""}`} aria-label={gate.name[locale]}>
       <button type="button" className="world-panel__leave" onClick={onLeave}>{text.leave}</button>
 
       <h2>{gate.name[locale]}</h2>
@@ -69,7 +77,13 @@ export function WorldPanel({ gate, detail, locale, onLeave }: WorldPanelProps) {
         {ENV_LABEL[kind][locale]}
       </p>
 
-      <div className="world-cast">
+      {compact && (
+        <button type="button" className="world-panel__fold" aria-expanded={showCast} onClick={() => setOpenOnPhone((open) => !open)}>
+          {showCast ? text.hideCast : text.showCast}
+        </button>
+      )}
+
+      {showCast && <div className="world-cast">
         <h3>{text.cast(detail.castTotal)}</h3>
         {groups.map(([group, members]) => (
           <div key={group} className="world-cast__group">
@@ -85,7 +99,19 @@ export function WorldPanel({ gate, detail, locale, onLeave }: WorldPanelProps) {
           </div>
         ))}
         <small>{text.castNote}</small>
-      </div>
+      </div>}
     </aside>
   );
+}
+
+/** True on screens where a panel and the globe cannot both have the room. */
+function useCompactLayout(): boolean {
+  const [compact, setCompact] = useState(() => window.matchMedia("(max-width: 720px)").matches);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 720px)");
+    const update = () => setCompact(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return compact;
 }

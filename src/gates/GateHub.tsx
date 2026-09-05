@@ -162,6 +162,7 @@ export function GateHub() {
 
       {entered && world && (
         <WorldPanel
+          key={entered.id}
           gate={entered}
           detail={world}
           locale={locale}

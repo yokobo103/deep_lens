@@ -17,6 +17,8 @@ export const hubCopy = {
     cast: (n: number) => `記録されている${n}種のうち`,
     castNote: "記録の多い順。数は発表された記録の件数で、生きものの数ではありません。",
     here: "いまここ",
+    showCast: "顔ぶれを見る",
+    hideCast: "地球を見る",
   },
   en: {
     title: "Ways into the Earth's past",
@@ -34,5 +36,7 @@ export const hubCopy = {
     cast: (n: number) => `of ${n} species recorded`,
     castNote: "Most recorded first. Counts are published records, not numbers of animals.",
     here: "You are here",
+    showCast: "Show the cast",
+    hideCast: "Back to the globe",
   },
 } as const;
