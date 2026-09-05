@@ -31,7 +31,7 @@ export const PresentTraceMarker = forwardRef<HTMLButtonElement, PresentTraceMark
       tabIndex={isVisible ? 0 : -1}
     >
       <span className="present-trace-marker__pulse" aria-hidden="true" />
-      <span className="present-trace-marker__icon"><LifeIcon iconId={traceIconId ?? regionTraceIcon(record.regionId)} /></span>
+      <span className="present-trace-marker__icon"><LifeIcon iconId={traceIconId ?? regionTraceIcon(record.regionId)} tone="trace" /></span>
       <span className="present-trace-marker__label">
         <strong>{markerTitle}</strong>
         <small>{markerSubtitle}</small>

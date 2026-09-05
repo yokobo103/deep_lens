@@ -277,7 +277,7 @@ export function FossilPrototype() {
         </div>
       ) : !isAncient ? (
         <div className="fossil-legend" aria-label={locale === "ja" ? "マーカー凡例" : "Marker legend"}>
-          <span><i className="fossil-legend__bone"><LifeIcon iconId="trace-bone" /></i>{copy.modernTraceRegion}</span>
+          <span><i className="fossil-legend__bone"><LifeIcon iconId="trace-bone" tone="trace" /></i>{copy.modernTraceRegion}</span>
         </div>
       ) : null}
 

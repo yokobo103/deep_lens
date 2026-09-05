@@ -7,21 +7,32 @@
  * files never name a file, only a category, so the two can move independently.
  */
 
-const files = import.meta.glob("../assets/icons/*.{png,svg,webp}", {
-  eager: true,
-  query: "?url",
-  import: "default",
-}) as Record<string, string>;
+/**
+ * Two faces of the same drawing, built by `tools/build-icons.py`. Colour is the
+ * living Earth; brown is what is left of it. The split is the loudest thing the
+ * app says without words, so it lives in the artwork rather than in a filter.
+ */
+export type IconTone = "living" | "trace";
 
-const sources: Record<string, string> = Object.fromEntries(
-  Object.entries(files).map(([path, url]) => [path.replace(/^.*\//, "").replace(/\.[^.]+$/, ""), url]),
-);
+function collect(files: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(files).map(([path, url]) => [path.replace(/^.*\//, "").replace(/\.[^.]+$/, ""), url]),
+  );
+}
+
+const living = collect(import.meta.glob("../assets/icons/color/*.{png,svg,webp}", {
+  eager: true, query: "?url", import: "default",
+}) as Record<string, string>);
+
+const trace = collect(import.meta.glob("../assets/icons/trace/*.{png,svg,webp}", {
+  eager: true, query: "?url", import: "default",
+}) as Record<string, string>);
 
 /** Available artwork, by file name. Useful for checking what a set contains. */
-export const iconIds: readonly string[] = Object.keys(sources).sort();
+export const iconIds: readonly string[] = Object.keys(living).sort();
 
-export function iconSource(iconId: string): string | undefined {
-  return sources[iconId];
+export function iconSource(iconId: string, tone: IconTone = "living"): string | undefined {
+  return (tone === "trace" ? trace : living)[iconId];
 }
 
 /**
@@ -66,12 +77,15 @@ const TRACE_ICON: Record<string, string> = {
   crocodilian: "trace-bone",
   pterosaur: "trace-bone",
   fish: "trace-bone",
-  shark: "trace-tooth",
-  ray: "trace-tooth",
+  // The sheet came back without a tooth, so sharks and rays borrow the bone for
+  // now. A shark's record really is teeth, and Greenhorn is 235 of them, so this
+  // is the first gap to close when the set is redrawn.
+  shark: "trace-bone",
+  ray: "trace-bone",
   shell: "trace-coiled-shell",
   bivalve: "trace-bivalve-shell",
-  plant: "trace-leaf-impression",
-  fern: "trace-leaf-impression",
+  plant: "trace-frond",
+  fern: "trace-frond",
 };
 
 /**
@@ -83,7 +97,9 @@ const REGION_TRACE_ICON: Record<string, string> = {
   "kem-kem": "trace-bone",
   huincul: "trace-bone",
   winton: "trace-bone",
-  greenhorn: "trace-tooth",
+  // Sharks lead the record here, but with no tooth in the set the ammonite
+  // shell is the next honest thing: 114 records against 18 reptiles.
+  greenhorn: "trace-coiled-shell",
 };
 
 const FALLBACK_ANCIENT = "world-dryland";

@@ -446,9 +446,10 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
         ))}
         {drift && (
           <>
-            <DriftGhost ref={driftGhostRef} icon={drift.fromIcon} label={drift.fromAgeLabel} />
+            <DriftGhost ref={driftGhostRef} icon={drift.fromIcon} label={drift.fromAgeLabel} tone={drift.direction === "to-present" ? "living" : "trace"} />
             <DriftMarker
               ref={driftMarkerRef}
+              direction={drift.direction}
               fromIcon={drift.fromIcon}
               toIcon={drift.toIcon}
               fromLabel={drift.fromLabel}
