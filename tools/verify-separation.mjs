@@ -9,7 +9,11 @@ const denylistedPaths = [
   "src/components/AnchoredDetailsCard.tsx", "src/components/DetailsPanel.tsx", "src/components/LanguageSelector.tsx",
   "src/components/LayerPanel.tsx", "src/components/LifeMarker.tsx", "src/components/ModeSelector.tsx",
   "src/components/ShareButton.tsx", "src/components/Timeline.tsx", "src/components/WhyHerePanel.tsx",
-  "src/components/mission", "src/data/demo", "src/assets", "public/og-earth-lens.jpg",
+  "src/components/mission", "src/data/demo", "public/og-earth-lens.jpg",
+  // `src/assets` as a whole was denylisted while it could only mean EARTH LENS's
+  // stickers and splash. Deep Lens now keeps its own icon set there, so the
+  // inherited files are named directly instead of the folder that holds them.
+  "src/assets/stickers", "src/assets/about-splash.webp",
   "tools/build-geo.mjs", "tools/verify-borders.mjs", "tools/check-external-links.mjs",
   "tools/mobile-layout-audit.mjs", "tools/build-stickers.py",
 ];
