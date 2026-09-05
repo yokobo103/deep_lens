@@ -437,19 +437,41 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     linkEnd?.removeAll();
     const link = linkRef.current;
     link?.removeAll();
-    const drawLink = (progress: number, alpha: number) => {
-      if (!link) return;
-      link.removeAll();
-      if (progress <= 0.01) return;
+
+    const pathPositions = (progress: number) => {
       const samples = Math.max(2, Math.round(DRIFT_TRAIL_SAMPLES * progress));
-      const positions = Array.from({ length: samples }, (_, step) => {
+      return Array.from({ length: samples }, (_, step) => {
         const point = interpolateDrift(drift.from, drift.to, (step / (samples - 1)) * progress);
         return Cartesian3.fromDegrees(point.lng, point.lat, 24_000);
       });
-      link.add({
-        positions,
-        width: 2,
-        material: Material.fromType("Color", { color: Color.fromCssColorString("#79e3d2").withAlpha(alpha) }),
+    };
+
+    // The whole path is laid down straight away, faintly, and the bright line
+    // is what travels along it. Two reasons: the destination is visible from
+    // the first moment, and the thing the user is meant to watch no longer
+    // depends on animation frames arriving — an earlier version drew only
+    // inside the loop, and when frames were scarce there was simply no line.
+    link?.add({
+      positions: pathPositions(1),
+      width: 2,
+      material: Material.fromType("Color", { color: Color.fromCssColorString("#bff5ec").withAlpha(0.3) }),
+    });
+    linkEnd?.add({
+      position: Cartesian3.fromDegrees(drift.to.lng, drift.to.lat, 24_000),
+      color: Color.fromCssColorString("#d8fff6"),
+      outlineColor: Color.fromCssColorString("#07242a").withAlpha(0.9),
+      outlineWidth: 2,
+      pixelSize: 12,
+    });
+
+    let travelling: ReturnType<NonNullable<typeof link>["add"]> | null = null;
+    const drawLink = (progress: number) => {
+      if (!link || progress <= 0.02) return;
+      if (travelling) link.remove(travelling);
+      travelling = link.add({
+        positions: pathPositions(progress),
+        width: 4.5,
+        material: Material.fromType("Color", { color: Color.fromCssColorString("#d8fff6").withAlpha(0.95) }),
       });
     };
 
@@ -500,7 +522,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
           }
         }
         // In by the time the crossing is a third done, out again as it lands.
-        drawLink(t, 0.55 + 0.3 * Math.min(1, raw / 0.4));
+        drawLink(t);
 
         // Rise away from the surface for the crossing, then come back down
         // during the settle beat. The pull-back is what lets the whole
