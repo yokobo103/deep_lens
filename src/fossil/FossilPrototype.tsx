@@ -8,7 +8,7 @@ import { ancientLifeRecords, featuredAncientLife, type AncientLifeRecord, type A
 import { fossilRecords } from "../data/fossils";
 import { featuredPresentTrace, presentTraceRecords, type PresentTraceRecord } from "../data/presentTraces";
 import { buildColumn, loadFormations, ENV_COLOR, ENV_LABEL, ENV_ORDER, type ColumnBand } from "../data/pbdb";
-import { ancientIcon, traceIcon } from "../components/iconRegistry";
+import { ancientIcon } from "../components/iconRegistry";
 import { LifeIcon } from "../components/LifeIcon";
 import { driftDistanceKm, type DriftPhase, type DriftPlan } from "./drift";
 import { environmentLabel, fossilCopy, localizeLife, localizeTrace, type Locale } from "./localization";
@@ -106,8 +106,9 @@ export function FossilPrototype() {
       targetMode: toPresent ? "present" : "ancient",
       from: toPresent ? ancient : present,
       to: toPresent ? present : ancient,
-      fromIcon: toPresent ? ancientIcon(life.iconType) : traceIcon(life.iconType),
-      toIcon: toPresent ? traceIcon(life.iconType) : ancientIcon(life.iconType),
+      // The same creature in both ages. Only the colour drains.
+      fromIcon: ancientIcon(life.iconType),
+      toIcon: ancientIcon(life.iconType),
       fromLabel: toPresent ? lifeText.name : traceText.formationLabel,
       toLabel: toPresent ? traceText.formationLabel : lifeText.name,
       fromAgeLabel: toPresent ? "95 Ma" : copy.present,

@@ -73,7 +73,28 @@ type RawStage = {
   sites: Array<[number, number, number, number, EnvClass, number]>;
 };
 
+/** Where one creature in the app is dug up today. */
+export interface TaxonTrace {
+  id: string;
+  region: string;
+  genus: string;
+  /** Distinct published localities. Not a number of animals. */
+  sites: number;
+  countries: string[];
+  mainCountry: string;
+  mainCountrySites: number;
+  lat: number;
+  lng: number;
+  localities: Array<[number, number]>;
+}
+
+export interface TaxonTraces {
+  provenance: DataProvenance;
+  taxa: Record<string, TaxonTrace>;
+}
+
 const stageCache = new Map<string, Promise<PbdbStageSites>>();
+let taxonTraceCache: Promise<TaxonTraces> | null = null;
 let formationsCache: Promise<PbdbFormations> | null = null;
 
 async function fetchJson<T>(path: string): Promise<T> {
@@ -94,6 +115,11 @@ export function loadStageSites(stageId: string): Promise<PbdbStageSites> {
     stageCache.set(stageId, pending);
   }
   return pending;
+}
+
+export function loadTaxonTraces(): Promise<TaxonTraces> {
+  taxonTraceCache ??= fetchJson<TaxonTraces>("data/pbdb/taxon-traces.json");
+  return taxonTraceCache;
 }
 
 export function loadFormations(): Promise<PbdbFormations> {

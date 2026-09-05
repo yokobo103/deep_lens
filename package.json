@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview",
-    "data:pbdb": "node tools/build-pbdb.mjs"
+    "data:pbdb": "node tools/build-pbdb.mjs",
+    "data:taxa": "node tools/build-taxon-traces.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.1.0",

@@ -65,54 +65,25 @@ const ANCIENT_ICON: Record<string, string> = {
 };
 
 /**
- * Category to the form it survives as. This is the pairing the time shift
- * animates, so it must stay a function of the creature — a shark leaves teeth,
- * an ammonite leaves its shell — and never a second, unrelated taxonomy.
+ * What a whole region is drawn as on the present-day Earth: the same world it
+ * was, in brown. Creatures are not mapped to anything here — a creature is
+ * drawn as itself in both ages, and only the colour changes. Turning a
+ * Spinosaurus into a generic bone threw away the one thing the time shift is
+ * meant to show, which is that you are still looking at the same animal.
  */
-const TRACE_ICON: Record<string, string> = {
-  theropod: "trace-bone",
-  spinosaurus: "trace-bone",
-  sauropod: "trace-bone",
-  herbivore: "trace-bone",
-  crocodilian: "trace-bone",
-  pterosaur: "trace-bone",
-  fish: "trace-bone",
-  // The sheet came back without a tooth, so sharks and rays borrow the bone for
-  // now. A shark's record really is teeth, and Greenhorn is 235 of them, so this
-  // is the first gap to close when the set is redrawn.
-  shark: "trace-bone",
-  ray: "trace-bone",
-  shell: "trace-coiled-shell",
-  bivalve: "trace-bivalve-shell",
-  plant: "trace-frond",
-  fern: "trace-frond",
-};
-
-/**
- * What a whole region is usually found as today, when no single creature is
- * selected. Chosen by the largest recorded class in the local PBDB extract:
- * Greenhorn is 235 sharks against 18 reptiles, so a bone would be wrong there.
- */
-const REGION_TRACE_ICON: Record<string, string> = {
-  "kem-kem": "trace-bone",
-  huincul: "trace-bone",
-  winton: "trace-bone",
-  // Sharks lead the record here, but with no tooth in the set the ammonite
-  // shell is the next honest thing: 114 records against 18 reptiles.
-  greenhorn: "trace-coiled-shell",
+const REGION_ICON: Record<string, string> = {
+  "kem-kem": "world-delta",
+  huincul: "world-river",
+  winton: "world-river",
+  greenhorn: "world-sea",
 };
 
 const FALLBACK_ANCIENT = "world-dryland";
-const FALLBACK_TRACE = "trace-bone";
 
 export function ancientIcon(category: string): string {
   return ANCIENT_ICON[category] ?? FALLBACK_ANCIENT;
 }
 
-export function traceIcon(category: string): string {
-  return TRACE_ICON[category] ?? FALLBACK_TRACE;
-}
-
 export function regionTraceIcon(regionId: string): string {
-  return REGION_TRACE_ICON[regionId] ?? FALLBACK_TRACE;
+  return REGION_ICON[regionId] ?? FALLBACK_ANCIENT;
 }

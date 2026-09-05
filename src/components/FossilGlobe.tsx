@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import * as CesiumRuntime from "cesium";
 import { Cartesian2, Cartesian3, Cartographic, Color, Credit, Math as CesiumMath, PointPrimitiveCollection, SceneTransforms, ScreenSpaceEventHandler, ScreenSpaceEventType, SingleTileImageryProvider, type ImageryLayer, type Viewer } from "cesium";
 import { ancientLifeRecords, type AncientLifeRecord, type AncientZoomLevel } from "../data/ancientLife";
-import { ENV_COLOR, loadStageSites } from "../data/pbdb";
+import { ENV_COLOR, loadStageSites, loadTaxonTraces, type TaxonTrace } from "../data/pbdb";
 import type { FossilRecord } from "../data/fossils";
 import { presentTraceRecords, type PresentTraceRecord } from "../data/presentTraces";
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { AncientLifeMarker } from "./AncientLifeMarker";
 import { PresentTraceMarker } from "./PresentTraceMarker";
+import { PresentSpeciesMarker } from "./PresentSpeciesMarker";
 import { DriftGhost, DriftMarker } from "./DriftMarker";
-import { traceIcon } from "./iconRegistry";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
 import { DRIFT_BEATS, DRIFT_TRAVEL_HEIGHT, formatLatitude, interpolateDrift, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
@@ -78,6 +78,17 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   const zoomLevelRef = useRef<AncientZoomLevel>(1);
   const [zoomLevel, setZoomLevel] = useState<AncientZoomLevel>(1);
   const [timeShift, setTimeShift] = useState<TimeShiftDirection | null>(null);
+  // Where each creature is dug up today. Loaded once; markers appear on the
+  // present-day Earth wherever a taxon has recorded localities.
+  const [taxonTraces, setTaxonTraces] = useState<Record<string, TaxonTrace>>({});
+  const taxonTracesRef = useRef(taxonTraces);
+  const speciesMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
+  useEffect(() => { taxonTracesRef.current = taxonTraces; }, [taxonTraces]);
+  useEffect(() => {
+    loadTaxonTraces()
+      .then(({ taxa }) => setTaxonTraces(taxa))
+      .catch((error: unknown) => console.warn("Taxon traces could not be loaded", error));
+  }, []);
 
   // Drift plumbing. The readout is written straight into the DOM each frame:
   // re-rendering React sixty times a second to animate two numbers is not worth
@@ -250,6 +261,11 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       for (const life of ancientLifeRecords) {
         const marker = lifeMarkerRefs.current.get(life.id);
         if (marker) setLifeMarkerPosition(marker, { latitude: life.lat, longitude: life.lng });
+      }
+      for (const life of ancientLifeRecords) {
+        const marker = speciesMarkerRefs.current.get(life.id);
+        const trace = taxonTracesRef.current[life.id];
+        if (marker && trace) setLifeMarkerPosition(marker, { latitude: trace.lat, longitude: trace.lng });
       }
       const driftPoint = driftPointRef.current;
       if (driftPoint && driftMarkerRef.current) {
@@ -424,10 +440,30 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
             isEntering={timeShift === "to-present"}
             isSelected={focusTrace?.id === trace.id}
             selectedTaxonName={focusLife?.recordType === "taxon" && focusLife.regionId === trace.regionId ? localizeLife(focusLife, locale).name : undefined}
-            traceIconId={focusLife?.recordType === "taxon" && focusLife.regionId === trace.regionId ? traceIcon(focusLife.iconType) : undefined}
             onClick={() => onSelectTrace(trace)}
           />
         ))}
+        {ancientLifeRecords.map((life: AncientLifeRecord) => {
+          const trace = taxonTraces[life.id];
+          if (!trace) return null;
+          return (
+            <PresentSpeciesMarker
+              key={`present-${life.id}`}
+              ref={(element) => {
+                if (element) speciesMarkerRefs.current.set(life.id, element);
+                else speciesMarkerRefs.current.delete(life.id);
+              }}
+              record={life}
+              trace={trace}
+              locale={locale}
+              isVisible={showPresentMarkers && zoomLevel >= 2}
+              isSelected={focusLife?.id === life.id}
+              showLabel={zoomLevel >= 2}
+              spread={speciesSpread(life, taxonTraces)}
+              onClick={() => onSelectLife(life)}
+            />
+          );
+        })}
         {ancientLifeRecords.map((life: AncientLifeRecord) => (
           <AncientLifeMarker
             key={life.id}
@@ -488,6 +524,24 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       )}
     </div>
   );
+}
+
+/**
+ * Species from one region land within a degree or two of each other, so their
+ * markers stack. This pushes them apart on screen only — around a small circle
+ * in a fixed order, so the same creature always sits in the same place rather
+ * than jumping about between renders.
+ */
+const SPREAD_STEP = 32;
+function speciesSpread(life: AncientLifeRecord, traces: Record<string, TaxonTrace>): readonly [number, number] {
+  const region = traces[life.id]?.region;
+  const siblings = ancientLifeRecords.filter((other) => traces[other.id]?.region === region);
+  if (siblings.length < 2) return [0, 0];
+  const index = siblings.findIndex((other) => other.id === life.id);
+  // Stacked, not scattered: these labels are wide, so pushing them around a
+  // circle still leaves them overlapping. A ladder with a slight zigzag keeps
+  // every name readable.
+  return [index % 2 === 0 ? -20 : 20, (index - (siblings.length - 1) / 2) * SPREAD_STEP];
 }
 
 function getAncientZoomLevel(cameraHeight: number): AncientZoomLevel {
