@@ -1093,4 +1093,5 @@ body { overscroll-behavior: none; }
 .present-species-marker__icon { font-size: 21px; line-height: 1; }
 .present-species-marker__label { display: grid; justify-items: center; gap: 1px; }
 .present-species-marker__label strong { max-width: 130px; color: currentColor; font: 750 7px ui-monospace, monospace; letter-spacing: .04em; white-space: nowrap; }
+.present-species-marker__spread { color: #c8a271 !important; }
 .present-species-marker__label small { color: #a88656; font: 650 6px ui-monospace, monospace; letter-spacing: .06em; white-space: nowrap; }

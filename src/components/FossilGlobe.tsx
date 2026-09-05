@@ -67,6 +67,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   const lifeMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
   const viewerRef = useRef<Viewer | null>(null);
   const sitePointsRef = useRef<PointPrimitiveCollection | null>(null);
+  const localityPointsRef = useRef<PointPrimitiveCollection | null>(null);
   const modeRef = useRef(mode);
   const showEvidenceRef = useRef(showEvidence);
   const focusLifeRef = useRef(focusLife);
@@ -171,6 +172,12 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     }).catch((error: unknown) => {
       console.warn("PBDB sites could not be loaded", error);
     });
+
+    // Every published locality of the selected creature. Drawn where the ground
+    // sits now, or where it sat then — the same places, two ages.
+    const localityPoints = viewer.scene.primitives.add(new PointPrimitiveCollection());
+    localityPointsRef.current = localityPoints;
+    localityPoints.show = false;
 
     const clickHandler = new ScreenSpaceEventHandler(viewer.scene.canvas);
     clickHandler.setInputAction((movement: { position: Cartesian2 }) => {
@@ -290,6 +297,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       syncSurfaceRef.current = null;
       stopAnimation();
       sitePointsRef.current = null;
+      localityPointsRef.current = null;
       viewerRef.current = null;
       viewer.destroy();
     };
@@ -308,6 +316,32 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       duration: 1.25,
     });
   }, [focusRequest, focusLife, focusTrace, mode, record]);
+
+  // The localities of whatever creature is selected. Warm on the living Earth,
+  // brown on the present one, so the scatter reads as the same two faces the
+  // markers use.
+  useEffect(() => {
+    const points = localityPointsRef.current;
+    if (!points) return;
+    points.removeAll();
+    const trace = focusLife?.recordType === "taxon" ? taxonTraces[focusLife.id] : undefined;
+    if (!trace || drift) {
+      points.show = false;
+      return;
+    }
+    const ancient = mode === "ancient";
+    const colour = Color.fromCssColorString(ancient ? "#ffd690" : "#a87e52");
+    for (const [lng, lat, paleoLng, paleoLat] of trace.localities) {
+      points.add({
+        position: ancient ? Cartesian3.fromDegrees(paleoLng, paleoLat) : Cartesian3.fromDegrees(lng, lat),
+        color: colour.withAlpha(0.85),
+        outlineColor: Color.fromCssColorString(ancient ? "#3a2a10" : "#241708").withAlpha(0.7),
+        outlineWidth: 1,
+        pixelSize: 6,
+      });
+    }
+    points.show = true;
+  }, [focusLife, taxonTraces, mode, drift]);
 
   // The drift. Everything here happens in one rAF loop so the beats stay in
   // order: hold, then the world swaps while the point travels, then the

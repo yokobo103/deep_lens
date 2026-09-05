@@ -28,6 +28,13 @@ export const PresentSpeciesMarker = forwardRef<HTMLButtonElement, PresentSpecies
     const countries = trace.countries.length > 1
       ? locale === "ja" ? `${trace.countries.length}か国` : `${trace.countries.length} countries`
       : trace.mainCountry;
+    // Two numbers, no reading of them. The scatter on the globe is the argument;
+    // saying why it is that shape would be interpretation, and this app does not.
+    const spreadText = trace.sites > 1
+      ? locale === "ja"
+        ? `広がり ${trace.spreadKm.toLocaleString()} km · 当時 ${trace.paleoSpreadKm.toLocaleString()} km`
+        : `spread ${trace.spreadKm.toLocaleString()} km · then ${trace.paleoSpreadKm.toLocaleString()} km`
+      : null;
     return (
       <button
         ref={ref}
@@ -44,6 +51,7 @@ export const PresentSpeciesMarker = forwardRef<HTMLButtonElement, PresentSpecies
           <span className="present-species-marker__label">
             <strong>{text.name}</strong>
             <small>{sites} · {countries}</small>
+            {isSelected && spreadText && <small className="present-species-marker__spread">{spreadText}</small>}
           </span>
         )}
       </button>

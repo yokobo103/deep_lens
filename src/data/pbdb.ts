@@ -83,9 +83,18 @@ export interface TaxonTrace {
   countries: string[];
   mainCountry: string;
   mainCountrySites: number;
+  /**
+   * Median distance from the centre of the locality cloud, now and at the time.
+   * A creature on one plate barely changes — the plate moves as a piece — while
+   * one spread over several draws together, because the oceans between them
+   * were narrower.
+   */
+  spreadKm: number;
+  paleoSpreadKm: number;
   lat: number;
   lng: number;
-  localities: Array<[number, number]>;
+  /** `[lng, lat, paleoLng, paleoLat]` for every distinct published locality. */
+  localities: Array<[number, number, number, number]>;
 }
 
 export interface TaxonTraces {
