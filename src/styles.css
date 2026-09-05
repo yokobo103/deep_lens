@@ -1044,12 +1044,10 @@ body { overscroll-behavior: none; }
 .drift-readout__ages { display: flex; align-items: center; gap: 9px; color: #7f9b9b; font: 700 8px ui-monospace, monospace; letter-spacing: .16em; }
 .drift-readout__ages i { color: rgb(255 214 144 / 70%); font-style: normal; }
 .drift-readout__ages strong { color: #ffd690; font: 750 8px ui-monospace, monospace; letter-spacing: .16em; }
-.drift-readout__rows { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 3px 14px; margin: 4px 0 0; }
-.drift-readout__rows dt { color: #7f9b9b; font: 650 8px ui-monospace, monospace; letter-spacing: .12em; text-align: right; }
-.drift-readout__rows dd { display: flex; align-items: baseline; gap: 7px; margin: 0; }
-.drift-readout__rows dd span { min-width: 74px; color: #effffc; font: 650 17px/1 ui-monospace, monospace; text-align: right; }
-.drift-readout__rows dd i { color: rgb(255 214 144 / 60%); font-style: normal; font-size: 11px; }
-.drift-readout__rows dd b { color: #ffd690; font: 650 13px/1 ui-monospace, monospace; }
+.drift-readout__distance { display: flex; align-items: baseline; gap: 8px; margin: 5px 0 0; }
+.drift-readout__distance span { min-width: 78px; color: #effffc; font: 650 24px/1 ui-monospace, monospace; text-align: right; }
+.drift-readout__distance i { color: rgb(255 214 144 / 55%); font-style: normal; font-size: 13px; }
+.drift-readout__distance b { color: #ffd690; font: 650 15px/1 ui-monospace, monospace; }
 
 @media (prefers-reduced-motion: reduce) {
   .drift-marker__ring { animation: none; opacity: .35; }

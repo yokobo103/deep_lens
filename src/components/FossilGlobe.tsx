@@ -12,7 +12,7 @@ import { PresentSpeciesMarker } from "./PresentSpeciesMarker";
 import { DriftGhost, DriftMarker, DriftTarget } from "./DriftMarker";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
-import { DRIFT_BEATS, DRIFT_TRAIL_LIMIT, DRIFT_TRAIL_SAMPLES, DRIFT_TRAVEL_HEIGHT, driftDistanceKm, formatLatitude, interpolateDrift, trailLiftMetres, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
+import { DRIFT_BEATS, DRIFT_TRAIL_LIMIT, DRIFT_TRAIL_SAMPLES, DRIFT_TRAVEL_HEIGHT, driftDistanceKm, interpolateDrift, trailLiftMetres, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
 
 interface FossilGlobeProps {
   record: FossilRecord;
@@ -69,6 +69,8 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   const sitePointsRef = useRef<PointPrimitiveCollection | null>(null);
   const localityPointsRef = useRef<PointPrimitiveCollection | null>(null);
   const trailsRef = useRef<PolylineCollection | null>(null);
+  const linkRef = useRef<PolylineCollection | null>(null);
+  const linkEndRef = useRef<PointPrimitiveCollection | null>(null);
   const modeRef = useRef(mode);
   const showEvidenceRef = useRef(showEvidence);
   const focusLifeRef = useRef(focusLife);
@@ -100,7 +102,6 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   // the frames it costs on the globe.
   const driftMarkerRef = useRef<HTMLDivElement>(null);
   const driftGhostRef = useRef<HTMLDivElement>(null);
-  const driftLatRef = useRef<HTMLSpanElement>(null);
   const driftDistanceRef = useRef<HTMLSpanElement>(null);
   const driftPointRef = useRef<DriftPoint | null>(null);
   const driftGhostPointRef = useRef<DriftPoint | null>(null);
@@ -189,6 +190,16 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     // journey is the thing being watched, not a layer to leave switched on.
     const trails = viewer.scene.primitives.add(new PolylineCollection());
     trailsRef.current = trails;
+
+    // One line, from where the creature lived to where it is found. It stays
+    // while the creature is selected: this is the single thing worth looking at
+    // on either Earth, and it should not need an animation to appear.
+    const link = viewer.scene.primitives.add(new PolylineCollection());
+    linkRef.current = link;
+    // The far end of that line needs something to arrive at. A line running off
+    // to an unmarked spot reads as a mistake rather than a destination.
+    const linkEnd = viewer.scene.primitives.add(new PointPrimitiveCollection());
+    linkEndRef.current = linkEnd;
 
     const clickHandler = new ScreenSpaceEventHandler(viewer.scene.canvas);
     clickHandler.setInputAction((movement: { position: Cartesian2 }) => {
@@ -314,6 +325,8 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       sitePointsRef.current = null;
       localityPointsRef.current = null;
       trailsRef.current = null;
+      linkRef.current = null;
+      linkEndRef.current = null;
       viewerRef.current = null;
       viewer.destroy();
     };
@@ -358,6 +371,39 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     }
     points.show = true;
   }, [focusLife, taxonTraces, mode, drift]);
+
+  // The one line. Drawn between the creature's home and its modern find-spot,
+  // arcing over the surface so it reads as a link rather than a border.
+  useEffect(() => {
+    const link = linkRef.current;
+    const linkEnd = linkEndRef.current;
+    if (!link || !linkEnd) return;
+    link.removeAll();
+    linkEnd.removeAll();
+    const trace = focusLife?.recordType === "taxon" ? taxonTraces[focusLife.id] : undefined;
+    if (!focusLife || !trace || drift) return;
+    const from = { lat: focusLife.lat, lng: focusLife.lng };
+    const to = { lat: trace.lat, lng: trace.lng };
+    const lift = trailLiftMetres(driftDistanceKm(from, to));
+    const positions = Array.from({ length: 48 }, (_, step) => {
+      const fraction = step / 47;
+      const point = interpolateDrift(from, to, fraction);
+      return Cartesian3.fromDegrees(point.lng, point.lat, Math.sin(fraction * Math.PI) * lift);
+    });
+    link.add({
+      positions,
+      width: 3.4,
+      material: Material.fromType("Color", { color: Color.fromCssColorString("#4a9cff").withAlpha(0.92) }),
+    });
+    const far = mode === "ancient" ? to : from;
+    linkEnd.add({
+      position: Cartesian3.fromDegrees(far.lng, far.lat),
+      color: Color.fromCssColorString("#4a9cff"),
+      outlineColor: Color.fromCssColorString("#06202e").withAlpha(0.9),
+      outlineWidth: 2,
+      pixelSize: 11,
+    });
+  }, [focusLife, taxonTraces, drift, mode]);
 
   // The drift. Everything here happens in one rAF loop so the beats stay in
   // order: hold, then the world swaps while the point travels, then the
@@ -505,7 +551,6 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
         });
 
         if (driftGhostRef.current) driftGhostRef.current.style.opacity = `${Math.max(0, 1 - raw * 1.35)}`;
-        if (driftLatRef.current) driftLatRef.current.textContent = formatLatitude(point.lat, locale);
         if (driftDistanceRef.current) {
           driftDistanceRef.current.textContent = Math.round(drift.distanceKm * t).toLocaleString();
         }
@@ -622,20 +667,11 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
           <i aria-hidden="true">→</i>
           <strong>{drift.toAgeLabel}</strong>
         </div>
-        <dl className="drift-readout__rows">
-          <dt>{copy.driftLatitude}</dt>
-          <dd>
-            <span ref={driftLatRef}>{formatLatitude(drift.from.lat, locale)}</span>
-            <i aria-hidden="true">→</i>
-            <b>{formatLatitude(drift.to.lat, locale)}</b>
-          </dd>
-          <dt>{copy.driftDistance}</dt>
-          <dd>
-            <span ref={driftDistanceRef}>0</span>
-            <i aria-hidden="true">→</i>
-            <b>{Math.round(drift.distanceKm).toLocaleString()} km</b>
-          </dd>
-        </dl>
+        <p className="drift-readout__distance">
+          <span ref={driftDistanceRef}>0</span>
+          <i aria-hidden="true">/</i>
+          <b>{Math.round(drift.distanceKm).toLocaleString()} km</b>
+        </p>
         </div>
       )}
       {timeShift && !drift && (

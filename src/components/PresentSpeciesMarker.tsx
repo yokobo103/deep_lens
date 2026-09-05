@@ -24,36 +24,19 @@ interface PresentSpeciesMarkerProps {
 export const PresentSpeciesMarker = forwardRef<HTMLButtonElement, PresentSpeciesMarkerProps>(
   function PresentSpeciesMarker({ record, trace, locale, isVisible, isSelected, showLabel, spread, onClick }, ref) {
     const text = localizeLife(record, locale);
-    const sites = locale === "ja" ? `${trace.sites}地点` : `${trace.sites} sites`;
-    const countries = trace.countries.length > 1
-      ? locale === "ja" ? `${trace.countries.length}か国` : `${trace.countries.length} countries`
-      : trace.mainCountry;
-    // Two numbers, no reading of them. The scatter on the globe is the argument;
-    // saying why it is that shape would be interpretation, and this app does not.
-    const spreadText = trace.sites > 1
-      ? locale === "ja"
-        ? `広がり ${trace.spreadKm.toLocaleString()} km · 当時 ${trace.paleoSpreadKm.toLocaleString()} km`
-        : `spread ${trace.spreadKm.toLocaleString()} km · then ${trace.paleoSpreadKm.toLocaleString()} km`
-      : null;
     return (
       <button
         ref={ref}
         type="button"
         className={`present-species-marker${isVisible ? " is-visible" : ""}${isSelected ? " is-selected" : ""}`}
         onClick={onClick}
-        aria-label={`${text.name} — ${sites}`}
+        aria-label={`${text.name} — ${trace.sites}`}
         aria-hidden={!isVisible}
         tabIndex={isVisible ? 0 : -1}
         style={{ "--spread-x": `${spread[0]}px`, "--spread-y": `${spread[1]}px` } as CSSProperties}
       >
         <span className="present-species-marker__icon"><LifeIcon iconType={record.iconType} tone="trace" /></span>
-        {showLabel && (
-          <span className="present-species-marker__label">
-            <strong>{text.name}</strong>
-            <small>{sites} · {countries}</small>
-            {isSelected && spreadText && <small className="present-species-marker__spread">{spreadText}</small>}
-          </span>
-        )}
+        {showLabel && <span className="present-species-marker__label"><strong>{text.name}</strong></span>}
       </button>
     );
   },
