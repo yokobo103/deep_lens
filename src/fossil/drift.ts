@@ -25,6 +25,8 @@ export interface DriftPlan {
    * put the card away — and the localities must survive that.
    */
   taxonId: string | null;
+  /** Falls back to the whole rock unit when no single creature is chosen. */
+  regionId: string | null;
   from: DriftPoint;
   to: DriftPoint;
   fromIcon: string;

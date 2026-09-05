@@ -1044,11 +1044,12 @@ body { overscroll-behavior: none; }
 .drift-readout__ages { display: flex; align-items: center; gap: 9px; color: #7f9b9b; font: 700 8px ui-monospace, monospace; letter-spacing: .16em; }
 .drift-readout__ages i { color: rgb(255 214 144 / 70%); font-style: normal; }
 .drift-readout__ages strong { color: #ffd690; font: 750 8px ui-monospace, monospace; letter-spacing: .16em; }
-.drift-readout__line { display: flex; align-items: baseline; gap: 8px; margin: 0; }
-.drift-readout__line span { min-width: 62px; color: #effffc; font: 650 19px/1 ui-monospace, monospace; letter-spacing: .02em; text-align: right; }
-.drift-readout__line em { color: #8ca7a2; font: 600 8px ui-monospace, monospace; font-style: normal; letter-spacing: .08em; }
-.drift-readout__line--distance span { color: #ffd690; }
-.drift-readout small { margin-top: 2px; color: #6f8b87; font: 500 8px ui-monospace, monospace; }
+.drift-readout__rows { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 3px 14px; margin: 4px 0 0; }
+.drift-readout__rows dt { color: #7f9b9b; font: 650 8px ui-monospace, monospace; letter-spacing: .12em; text-align: right; }
+.drift-readout__rows dd { display: flex; align-items: baseline; gap: 7px; margin: 0; }
+.drift-readout__rows dd span { min-width: 74px; color: #effffc; font: 650 17px/1 ui-monospace, monospace; text-align: right; }
+.drift-readout__rows dd i { color: rgb(255 214 144 / 60%); font-style: normal; font-size: 11px; }
+.drift-readout__rows dd b { color: #ffd690; font: 650 13px/1 ui-monospace, monospace; }
 
 @media (prefers-reduced-motion: reduce) {
   .drift-marker__ring { animation: none; opacity: .35; }
@@ -1095,3 +1096,26 @@ body { overscroll-behavior: none; }
 .present-species-marker__label strong { max-width: 130px; color: currentColor; font: 750 7px ui-monospace, monospace; letter-spacing: .04em; white-space: nowrap; }
 .present-species-marker__spread { color: #c8a271 !important; }
 .present-species-marker__label small { color: #a88656; font: 650 6px ui-monospace, monospace; letter-spacing: .06em; white-space: nowrap; }
+
+/* Where the crossing is going. Present from the first frame, so the numbers
+   have somewhere to count towards and the camera has a visible destination. */
+.drift-target {
+  position: absolute; z-index: 7; display: grid; justify-items: center; gap: 4px;
+  transform: translate(-50%, -50%); pointer-events: none; will-change: left, top;
+}
+.drift-target__ring {
+  position: absolute; top: 0; left: 50%; width: 46px; height: 46px; margin-top: -23px;
+  transform: translateX(-50%); border: 1px dashed rgb(121 227 210 / 70%); border-radius: 50%;
+  animation: drift-target-ring 2s ease-in-out infinite;
+}
+@keyframes drift-target-ring {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: .55; }
+  50% { transform: translateX(-50%) scale(1.16); opacity: .95; }
+}
+.drift-target__dot { width: 6px; height: 6px; border-radius: 50%; background: #79e3d2; box-shadow: 0 0 10px #79e3d2; }
+.drift-target small {
+  margin-top: 22px; padding: 2px 7px; white-space: nowrap;
+  color: #79e3d2; border: 1px solid rgb(121 227 210 / 40%); background: rgb(4 20 22 / 88%);
+  font: 750 7px ui-monospace, monospace; letter-spacing: .1em;
+}
+@media (prefers-reduced-motion: reduce) { .drift-target__ring { animation: none; } }

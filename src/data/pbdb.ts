@@ -97,9 +97,20 @@ export interface TaxonTrace {
   localities: Array<[number, number, number, number]>;
 }
 
+/** The localities of a whole rock unit, for crossings started from a region. */
+export interface RegionTrace {
+  id: string;
+  stratum: string;
+  sites: number;
+  spreadKm: number;
+  paleoSpreadKm: number;
+  localities: Array<[number, number, number, number]>;
+}
+
 export interface TaxonTraces {
   provenance: DataProvenance;
   taxa: Record<string, TaxonTrace>;
+  regions: Record<string, RegionTrace>;
 }
 
 const stageCache = new Map<string, Promise<PbdbStageSites>>();

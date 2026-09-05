@@ -105,6 +105,7 @@ export function FossilPrototype() {
       direction,
       targetMode: toPresent ? "present" : "ancient",
       taxonId: life.recordType === "taxon" ? life.id : null,
+      regionId: life.regionId,
       from: toPresent ? ancient : present,
       to: toPresent ? present : ancient,
       // The same creature in both ages. Only the colour drains.

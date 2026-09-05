@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import * as CesiumRuntime from "cesium";
 import { Cartesian2, Cartesian3, Cartographic, Color, Credit, Math as CesiumMath, Material, PointPrimitiveCollection, PolylineCollection, SceneTransforms, ScreenSpaceEventHandler, ScreenSpaceEventType, SingleTileImageryProvider, type ImageryLayer, type Viewer } from "cesium";
 import { ancientLifeRecords, type AncientLifeRecord, type AncientZoomLevel } from "../data/ancientLife";
-import { ENV_COLOR, loadStageSites, loadTaxonTraces, type TaxonTrace } from "../data/pbdb";
+import { ENV_COLOR, loadStageSites, loadTaxonTraces, type RegionTrace, type TaxonTrace } from "../data/pbdb";
 import type { FossilRecord } from "../data/fossils";
 import { presentTraceRecords, type PresentTraceRecord } from "../data/presentTraces";
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { AncientLifeMarker } from "./AncientLifeMarker";
 import { PresentTraceMarker } from "./PresentTraceMarker";
 import { PresentSpeciesMarker } from "./PresentSpeciesMarker";
-import { DriftGhost, DriftMarker } from "./DriftMarker";
+import { DriftGhost, DriftMarker, DriftTarget } from "./DriftMarker";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
 import { DRIFT_BEATS, DRIFT_TRAIL_LIMIT, DRIFT_TRAIL_SAMPLES, DRIFT_TRAVEL_HEIGHT, driftDistanceKm, formatLatitude, interpolateDrift, trailLiftMetres, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
@@ -83,12 +83,15 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   // Where each creature is dug up today. Loaded once; markers appear on the
   // present-day Earth wherever a taxon has recorded localities.
   const [taxonTraces, setTaxonTraces] = useState<Record<string, TaxonTrace>>({});
+  const [regionTraces, setRegionTraces] = useState<Record<string, RegionTrace>>({});
   const taxonTracesRef = useRef(taxonTraces);
+  const regionTracesRef = useRef(regionTraces);
   const speciesMarkerRefs = useRef(new Map<string, HTMLButtonElement>());
   useEffect(() => { taxonTracesRef.current = taxonTraces; }, [taxonTraces]);
+  useEffect(() => { regionTracesRef.current = regionTraces; }, [regionTraces]);
   useEffect(() => {
     loadTaxonTraces()
-      .then(({ taxa }) => setTaxonTraces(taxa))
+      .then(({ taxa, regions }) => { setTaxonTraces(taxa); setRegionTraces(regions ?? {}); })
       .catch((error: unknown) => console.warn("Taxon traces could not be loaded", error));
   }, []);
 
@@ -101,6 +104,8 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   const driftDistanceRef = useRef<HTMLSpanElement>(null);
   const driftPointRef = useRef<DriftPoint | null>(null);
   const driftGhostPointRef = useRef<DriftPoint | null>(null);
+  const driftTargetRef = useRef<HTMLDivElement>(null);
+  const driftTargetPointRef = useRef<DriftPoint | null>(null);
   const onDriftPhaseRef = useRef(onDriftPhase);
   useEffect(() => { onDriftPhaseRef.current = onDriftPhase; }, [onDriftPhase]);
 
@@ -288,6 +293,10 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       if (ghostPoint && driftGhostRef.current) {
         setLifeMarkerPosition(driftGhostRef.current, { latitude: ghostPoint.lat, longitude: ghostPoint.lng });
       }
+      const targetPoint = driftTargetPointRef.current;
+      if (targetPoint && driftTargetRef.current) {
+        setLifeMarkerPosition(driftTargetRef.current, { latitude: targetPoint.lat, longitude: targetPoint.lng });
+      }
     };
 
     viewer.scene.postRender.addEventListener(updatePositions);
@@ -359,11 +368,13 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     if (!viewer || !drift) {
       driftPointRef.current = null;
       driftGhostPointRef.current = null;
+      driftTargetPointRef.current = null;
       return;
     }
 
     driftPointRef.current = { ...drift.from };
     driftGhostPointRef.current = { ...drift.from };
+    driftTargetPointRef.current = { ...drift.to };
     const marker = driftMarkerRef.current;
     marker?.classList.remove("is-morphed");
 
@@ -381,7 +392,10 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     // them moves; a sample of them leave a drawn arc, and the shape of that
     // bundle is the point — a creature on one plate leaves parallel tracks,
     // one spread over several leaves tracks that converge.
-    const trace = drift.taxonId ? taxonTracesRef.current[drift.taxonId] : undefined;
+    // A creature's own localities when one is chosen, otherwise the whole rock
+    // unit's — so a crossing always carries something with it.
+    const trace = (drift.taxonId ? taxonTracesRef.current[drift.taxonId] : undefined)
+      ?? (drift.regionId ? regionTracesRef.current[drift.regionId] : undefined);
     const toPresent = drift.direction === "to-present";
     const journeys = (trace?.localities ?? []).map(([lng, lat, paleoLng, paleoLat]) => ({
       from: toPresent ? { lat: paleoLat, lng: paleoLng } : { lat, lng },
@@ -589,6 +603,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
         {drift && (
           <>
             <DriftGhost ref={driftGhostRef} icon={drift.fromIcon} label={drift.fromAgeLabel} tone={drift.direction === "to-present" ? "living" : "trace"} />
+            <DriftTarget ref={driftTargetRef} label={drift.toAgeLabel} />
             <DriftMarker
               ref={driftMarkerRef}
               direction={drift.direction}
@@ -603,19 +618,24 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       {drift && (
         <div className="drift-readout" role="status" aria-live="polite">
           <div className="drift-readout__ages">
-            <span>{drift.fromAgeLabel}</span>
-            <i aria-hidden="true">→</i>
-            <strong>{drift.toAgeLabel}</strong>
-          </div>
-          <p className="drift-readout__line">
+          <span>{drift.fromAgeLabel}</span>
+          <i aria-hidden="true">→</i>
+          <strong>{drift.toAgeLabel}</strong>
+        </div>
+        <dl className="drift-readout__rows">
+          <dt>{copy.driftLatitude}</dt>
+          <dd>
             <span ref={driftLatRef}>{formatLatitude(drift.from.lat, locale)}</span>
-            <em>{copy.driftLatitude}</em>
-          </p>
-          <p className="drift-readout__line drift-readout__line--distance">
+            <i aria-hidden="true">→</i>
+            <b>{formatLatitude(drift.to.lat, locale)}</b>
+          </dd>
+          <dt>{copy.driftDistance}</dt>
+          <dd>
             <span ref={driftDistanceRef}>0</span>
-            <em>{copy.driftDistance}</em>
-          </p>
-          <small>{copy.driftNote}</small>
+            <i aria-hidden="true">→</i>
+            <b>{Math.round(drift.distanceKm).toLocaleString()} km</b>
+          </dd>
+        </dl>
         </div>
       )}
       {timeShift && !drift && (

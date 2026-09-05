@@ -25,6 +25,18 @@ const SOURCE = join(ROOT, "src", "data", "ancientLife.ts");
 const OUT = join(ROOT, "public", "data", "pbdb", "taxon-traces.json");
 const BASE = "https://paleobiodb.org/data1.2";
 
+/**
+ * The named rock unit behind each region, so a crossing started from a region
+ * marker has localities to carry too. Without these, picking a region and
+ * crossing showed a single point moving and nothing else.
+ */
+const REGION_STRATA = {
+  "kem-kem": "Kem Kem",
+  huincul: "Huincul",
+  winton: "Winton",
+  greenhorn: "Greenhorn",
+};
+
 /** `id` and the genus to ask PBDB about, for every taxon record in the app. */
 async function readTaxa() {
   const source = await readFile(SOURCE, "utf8");
@@ -59,6 +71,42 @@ function spread(points) {
 function round(value, digits) {
   const factor = 10 ** digits;
   return Math.round(value * factor) / factor;
+}
+
+async function fetchLocalities(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`PBDB request failed (${response.status})`);
+  const body = await response.json();
+  const seen = new Map();
+  for (const record of body.records ?? []) {
+    if (record.lng == null || record.lat == null || record.pln == null || record.pla == null) continue;
+    const lng = round(Number(record.lng), 3);
+    const lat = round(Number(record.lat), 3);
+    const key = `${lng},${lat}`;
+    if (!seen.has(key)) {
+      seen.set(key, {
+        lng, lat,
+        paleoLng: round(Number(record.pln), 2),
+        paleoLat: round(Number(record.pla), 2),
+        country: record.cc2 ?? null,
+      });
+    }
+  }
+  return { localities: [...seen.values()], body };
+}
+
+async function fetchRegion(regionId, stratum) {
+  const url = `${BASE}/colls/list.json?strat=${encodeURIComponent(stratum)}&show=loc,coords,paleoloc&pgm=scotese&limit=5000`;
+  const { localities } = await fetchLocalities(url);
+  if (localities.length === 0) return null;
+  return {
+    id: regionId,
+    stratum,
+    sites: localities.length,
+    spreadKm: Math.round(spread(localities.map((p) => [p.lng, p.lat]))),
+    paleoSpreadKm: Math.round(spread(localities.map((p) => [p.paleoLng, p.paleoLat]))),
+    localities: localities.map((p) => [p.lng, p.lat, p.paleoLng, p.paleoLat]),
+  };
 }
 
 async function fetchTaxon({ id, region, genus }) {
@@ -132,6 +180,17 @@ for (const taxon of taxa) {
   console.log(`  ${taxon.genus.padEnd(20)} ${String(row.sites).padStart(4)} sites  ${String(row.countries.length).padStart(2)} countries  spread ${String(row.spreadKm).padStart(5)} km now / ${String(row.paleoSpreadKm).padStart(5)} km then`);
 }
 
+const regions = {};
+for (const [regionId, stratum] of Object.entries(REGION_STRATA)) {
+  const row = await fetchRegion(regionId, stratum);
+  if (!row) {
+    console.log(`  region ${regionId.padEnd(14)} no localities`);
+    continue;
+  }
+  regions[regionId] = row;
+  console.log(`  region ${regionId.padEnd(14)} ${String(row.sites).padStart(4)} sites  spread ${String(row.spreadKm).padStart(5)} km now / ${String(row.paleoSpreadKm).padStart(5)} km then`);
+}
+
 await mkdir(dirname(OUT), { recursive: true });
 await writeFile(OUT, JSON.stringify({
   provenance: {
@@ -148,5 +207,6 @@ await writeFile(OUT, JSON.stringify({
       "in the largest national cluster because the centroid of a wide range falls nowhere real.",
   },
   taxa: traces,
+  regions,
 }, null, 1));
 console.log(`\n-> ${OUT}`);

@@ -31,6 +31,22 @@ export const DriftMarker = forwardRef<HTMLDivElement, DriftMarkerProps>(function
   );
 });
 
+/**
+ * Where the crossing is going, shown from the moment it starts. Without it the
+ * journey has no destination on screen: numbers count up from zero towards
+ * nothing, and the camera moves without the eye knowing what it is moving
+ * towards.
+ */
+export const DriftTarget = forwardRef<HTMLDivElement, { label: string }>(function DriftTarget({ label }, ref) {
+  return (
+    <div ref={ref} className="drift-target" aria-hidden="true">
+      <span className="drift-target__ring" />
+      <span className="drift-target__dot" />
+      <small>{label}</small>
+    </div>
+  );
+});
+
 /** Where the place used to be. It stays put and fades, so the gap is visible. */
 export const DriftGhost = forwardRef<HTMLDivElement, { icon: string; label: string; tone: "living" | "trace" }>(function DriftGhost({ icon, label, tone }, ref) {
   return (
