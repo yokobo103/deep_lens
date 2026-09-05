@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as CesiumRuntime from "cesium";
-import { Cartesian2, Cartesian3, Cartographic, Color, Credit, Math as CesiumMath, PointPrimitiveCollection, SceneTransforms, ScreenSpaceEventHandler, ScreenSpaceEventType, SingleTileImageryProvider, type ImageryLayer, type Viewer } from "cesium";
+import { Cartesian2, Cartesian3, Cartographic, Color, Credit, Math as CesiumMath, Material, PointPrimitiveCollection, PolylineCollection, SceneTransforms, ScreenSpaceEventHandler, ScreenSpaceEventType, SingleTileImageryProvider, type ImageryLayer, type Viewer } from "cesium";
 import { ancientLifeRecords, type AncientLifeRecord, type AncientZoomLevel } from "../data/ancientLife";
 import { ENV_COLOR, loadStageSites, loadTaxonTraces, type TaxonTrace } from "../data/pbdb";
 import type { FossilRecord } from "../data/fossils";
@@ -12,7 +12,7 @@ import { PresentSpeciesMarker } from "./PresentSpeciesMarker";
 import { DriftGhost, DriftMarker } from "./DriftMarker";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
-import { DRIFT_BEATS, DRIFT_TRAVEL_HEIGHT, formatLatitude, interpolateDrift, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
+import { DRIFT_BEATS, DRIFT_TRAIL_LIMIT, DRIFT_TRAIL_SAMPLES, DRIFT_TRAVEL_HEIGHT, driftDistanceKm, formatLatitude, interpolateDrift, trailLiftMetres, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
 
 interface FossilGlobeProps {
   record: FossilRecord;
@@ -68,6 +68,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   const viewerRef = useRef<Viewer | null>(null);
   const sitePointsRef = useRef<PointPrimitiveCollection | null>(null);
   const localityPointsRef = useRef<PointPrimitiveCollection | null>(null);
+  const trailsRef = useRef<PolylineCollection | null>(null);
   const modeRef = useRef(mode);
   const showEvidenceRef = useRef(showEvidence);
   const focusLifeRef = useRef(focusLife);
@@ -178,6 +179,11 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     const localityPoints = viewer.scene.primitives.add(new PointPrimitiveCollection());
     localityPointsRef.current = localityPoints;
     localityPoints.show = false;
+
+    // The paths the ground took. Only drawn while a time shift is playing: the
+    // journey is the thing being watched, not a layer to leave switched on.
+    const trails = viewer.scene.primitives.add(new PolylineCollection());
+    trailsRef.current = trails;
 
     const clickHandler = new ScreenSpaceEventHandler(viewer.scene.canvas);
     clickHandler.setInputAction((movement: { position: Cartesian2 }) => {
@@ -298,6 +304,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       stopAnimation();
       sitePointsRef.current = null;
       localityPointsRef.current = null;
+      trailsRef.current = null;
       viewerRef.current = null;
       viewer.destroy();
     };
@@ -370,6 +377,58 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     const ease = (t: number) => t * t * (3 - 2 * t);
     let finished = false;
 
+    // The creature's own localities travel alongside the marker. Every one of
+    // them moves; a sample of them leave a drawn arc, and the shape of that
+    // bundle is the point — a creature on one plate leaves parallel tracks,
+    // one spread over several leaves tracks that converge.
+    const trace = drift.taxonId ? taxonTracesRef.current[drift.taxonId] : undefined;
+    const toPresent = drift.direction === "to-present";
+    const journeys = (trace?.localities ?? []).map(([lng, lat, paleoLng, paleoLat]) => ({
+      from: toPresent ? { lat: paleoLat, lng: paleoLng } : { lat, lng },
+      to: toPresent ? { lat, lng } : { lat: paleoLat, lng: paleoLng },
+    }));
+    const swarm = localityPointsRef.current;
+    const trails = trailsRef.current;
+    trails?.removeAll();
+    if (swarm && journeys.length > 0) {
+      swarm.removeAll();
+      for (const journey of journeys) {
+        swarm.add({
+          position: Cartesian3.fromDegrees(journey.from.lng, journey.from.lat),
+          color: Color.fromCssColorString("#ffd690").withAlpha(0.9),
+          outlineColor: Color.fromCssColorString("#2a1c08").withAlpha(0.7),
+          outlineWidth: 1,
+          pixelSize: 6,
+        });
+      }
+      swarm.show = true;
+    }
+    if (trails && journeys.length > 0) {
+      const stride = Math.max(1, Math.ceil(journeys.length / DRIFT_TRAIL_LIMIT));
+      for (let index = 0; index < journeys.length; index += stride) {
+        const journey = journeys[index]!;
+        const lift = trailLiftMetres(driftDistanceKm(journey.from, journey.to));
+        const positions = Array.from({ length: DRIFT_TRAIL_SAMPLES }, (_, step) => {
+          const fraction = step / (DRIFT_TRAIL_SAMPLES - 1);
+          const point = interpolateDrift(journey.from, journey.to, fraction);
+          return Cartesian3.fromDegrees(point.lng, point.lat, Math.sin(fraction * Math.PI) * lift);
+        });
+        trails.add({
+          positions,
+          width: 1.4,
+          material: Material.fromType("Color", { color: Color.fromCssColorString("#ffd690").withAlpha(0) }),
+        });
+      }
+      trails.show = true;
+    }
+    const setTrailAlpha = (alpha: number) => {
+      if (!trails) return;
+      for (let index = 0; index < trails.length; index += 1) {
+        const line = trails.get(index);
+        (line.material.uniforms as { color: Color }).color = Color.fromCssColorString("#ffd690").withAlpha(alpha);
+      }
+    };
+
     // A hidden tab pauses requestAnimationFrame, so a drift started just before
     // the user looks away would freeze with the card withheld and no way back.
     // The timer lands the journey regardless of whether any frame ever ran.
@@ -382,6 +441,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
         onDriftPhaseRef.current?.("swap");
       }
       marker?.classList.add("is-morphed");
+      trailsRef.current?.removeAll();
       driftPointRef.current = { ...drift.to };
       viewer.camera.setView({
         destination: Cartesian3.fromDegrees(drift.to.lng, drift.to.lat, settleHeight),
@@ -406,6 +466,16 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
         const t = ease(raw);
         const point = interpolateDrift(drift.from, drift.to, t);
         driftPointRef.current = point;
+
+        if (swarm && journeys.length > 0) {
+          for (let index = 0; index < journeys.length; index += 1) {
+            const journey = journeys[index]!;
+            const carried = interpolateDrift(journey.from, journey.to, t);
+            swarm.get(index).position = Cartesian3.fromDegrees(carried.lng, carried.lat);
+          }
+        }
+        // In by the time the crossing is a third done, out again as it lands.
+        setTrailAlpha(Math.min(raw / 0.3, 1) * (1 - Math.max(0, (raw - 0.75) / 0.25)) * 0.5);
 
         // Rise away from the surface for the crossing, then come back down
         // during the settle beat. The pull-back is what lets the whole
@@ -438,6 +508,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       }
       finished = true;
       window.clearTimeout(safety);
+      trailsRef.current?.removeAll();
       driftPointRef.current = { ...drift.to };
       onDriftPhaseRef.current?.("done");
     };
@@ -446,6 +517,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
     return () => {
       finished = true;
       window.clearTimeout(safety);
+      trailsRef.current?.removeAll();
       if (frame) cancelAnimationFrame(frame);
     };
   }, [drift, locale]);

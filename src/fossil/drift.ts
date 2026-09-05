@@ -19,6 +19,12 @@ export interface DriftPlan {
   key: number;
   direction: "to-present" | "to-ancient";
   targetMode: FossilTimeMode;
+  /**
+   * The creature being carried, if it is a single taxon. Held here rather than
+   * read from the selection, because starting a drift clears the selection to
+   * put the card away — and the localities must survive that.
+   */
+  taxonId: string | null;
   from: DriftPoint;
   to: DriftPoint;
   fromIcon: string;
@@ -88,3 +94,25 @@ export const DRIFT_BEATS = {
 } as const;
 
 export const DRIFT_TRAVEL_HEIGHT = 12_000_000;
+
+/**
+ * How many localities get a drawn trail. Every locality still moves as a point;
+ * only the lines are sampled, because a genus like Baculites has six hundred of
+ * them and the shape of the bundle is legible long before that.
+ */
+export const DRIFT_TRAIL_LIMIT = 160;
+
+/** Samples along one trail. Enough that a 3,000 km arc reads as a curve. */
+export const DRIFT_TRAIL_SAMPLES = 20;
+
+/**
+ * A trail is lifted off the surface in proportion to how far the ground moved,
+ * so a long journey arcs higher than a short one and the bundle has depth.
+ */
+export function trailLiftMetres(distanceKm: number): number {
+  return Math.min(1_500_000, distanceKm * 220);
+}
+
+export function greatCircleKm(from: DriftPoint, to: DriftPoint): number {
+  return driftDistanceKm(from, to);
+}
