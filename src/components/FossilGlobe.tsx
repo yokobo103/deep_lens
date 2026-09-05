@@ -8,7 +8,6 @@ import { presentTraceRecords, type PresentTraceRecord } from "../data/presentTra
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { AncientLifeMarker } from "./AncientLifeMarker";
 import { PresentTraceMarker } from "./PresentTraceMarker";
-import { PresentSpeciesMarker } from "./PresentSpeciesMarker";
 import { DriftGhost, DriftMarker, DriftTarget } from "./DriftMarker";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
@@ -80,7 +79,6 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
   const onPickLocationRef = useRef(onPickLocation);
   const onSitesLoadedRef = useRef(onSitesLoaded);
   const zoomLevelRef = useRef<AncientZoomLevel>(1);
-  const [zoomLevel, setZoomLevel] = useState<AncientZoomLevel>(1);
   const [timeShift, setTimeShift] = useState<TimeShiftDirection | null>(null);
   // Where each creature is dug up today. Loaded once; markers appear on the
   // present-day Earth wherever a taxon has recorded localities.
@@ -274,7 +272,6 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
       if (nextLevel === zoomLevelRef.current) return;
       zoomLevelRef.current = nextLevel;
       sitePoints.show = modeRef.current === "ancient" && showEvidenceRef.current && nextLevel >= 2;
-      setZoomLevel(nextLevel);
       onZoomLevelChangeRef.current?.(nextLevel);
     };
 
@@ -597,27 +594,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
             onClick={() => onSelectTrace(trace)}
           />
         ))}
-        {ancientLifeRecords.map((life: AncientLifeRecord) => {
-          const trace = taxonTraces[life.id];
-          if (!trace) return null;
-          return (
-            <PresentSpeciesMarker
-              key={`present-${life.id}`}
-              ref={(element) => {
-                if (element) speciesMarkerRefs.current.set(life.id, element);
-                else speciesMarkerRefs.current.delete(life.id);
-              }}
-              record={life}
-              trace={trace}
-              locale={locale}
-              isVisible={showPresentMarkers && zoomLevel >= 2}
-              isSelected={focusLife?.id === life.id}
-              showLabel={focusLife?.id === life.id}
-              onClick={() => onSelectLife(life)}
-            />
-          );
-        })}
-        {ancientLifeRecords.map((life: AncientLifeRecord) => (
+        {ancientLifeRecords.filter((life) => life.recordType === "ecosystem").map((life: AncientLifeRecord) => (
           <AncientLifeMarker
             key={life.id}
             ref={(element) => {
@@ -626,8 +603,8 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
             }}
             record={life}
             locale={locale}
-            isVisible={showAncientMarkers && zoomLevel >= life.minZoomLevel && (life.maxZoomLevel === undefined || zoomLevel <= life.maxZoomLevel)}
-            showLabel={isAncient && (life.recordType === "ecosystem" || focusLife?.id === life.id)}
+            isVisible={showAncientMarkers}
+            showLabel={isAncient}
             isSelected={focusLife?.id === life.id}
             isEntering={timeShift === "to-ancient" && focusLife?.id === life.id}
             onClick={() => onSelectLife(life)}

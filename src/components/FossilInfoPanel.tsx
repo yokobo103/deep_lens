@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import type { FossilRecord } from "../data/fossils";
-import type { AncientLifeRecord } from "../data/ancientLife";
+import { ancientLifeRecords, type AncientLifeRecord } from "../data/ancientLife";
 import type { PresentTraceRecord } from "../data/presentTraces";
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { LifeIcon } from "./LifeIcon";
@@ -15,9 +15,10 @@ interface FossilInfoPanelProps {
   onClose: () => void;
   onSeeFossilsToday: () => void;
   onBackToAncient: () => void;
+  onSelectLife: (life: AncientLifeRecord) => void;
 }
 
-export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, onSeeFossilsToday, onBackToAncient }: FossilInfoPanelProps) {
+export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, onSeeFossilsToday, onBackToAncient, onSelectLife }: FossilInfoPanelProps) {
   const isMobile = useMobileLayout();
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const detailId = useId();
@@ -39,6 +40,16 @@ export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, on
   const paleoLat = taxonSpecificTrace ? record.paleoLat : trace.paleoLat;
   const paleoLng = taxonSpecificTrace ? record.paleoLng : trace.paleoLng;
   const showDetails = !isMobile || mobileExpanded;
+  // The globe carries regions; the creatures live in here. At planet scale
+  // their markers landed on top of each other, and a list is where a name and
+  // a small picture work anyway.
+  const isRegion = life.recordType === "ecosystem";
+  const residents = isRegion
+    ? ancientLifeRecords.filter((other) => other.recordType === "taxon" && other.regionId === life.regionId)
+    : [];
+  const homeRegion = isRegion
+    ? undefined
+    : ancientLifeRecords.find((other) => other.recordType === "ecosystem" && other.regionId === life.regionId);
 
   return (
     <aside className={`fossil-info-panel${mobileExpanded ? " is-mobile-expanded" : " is-mobile-collapsed"}`} aria-label={`${title} information`}>
@@ -61,6 +72,27 @@ export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, on
           <p>{ancient ? `${lifeText.regionLabel} · ${lifeText.category}` : `${traceText.placeLabel} · ${record.ageLabel}${locale === "ja" ? "の岩石" : " rocks"}`}</p>
         </div>
       </div>
+
+      {isRegion && residents.length > 0 && (
+        <div className="fossil-residents">
+          <p className="fossil-residents__label">{copy.livedHere}</p>
+          <ul>
+            {residents.map((resident) => (
+              <li key={resident.id}>
+                <button type="button" onClick={() => onSelectLife(resident)}>
+                  <LifeIcon iconType={resident.iconType} tone={ancient ? "living" : "trace"} />
+                  <span>{localizeLife(resident, locale).name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {homeRegion && (
+        <button type="button" className="fossil-residents__back" onClick={() => onSelectLife(homeRegion)}>
+          ← {localizeLife(homeRegion, locale).name}
+        </button>
+      )}
 
       {showDetails && <div id={detailId} className="fossil-info-panel__details">
       {ancient ? (

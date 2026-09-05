@@ -1075,27 +1075,6 @@ body { overscroll-behavior: none; }
   background-size: contain; background-repeat: no-repeat; background-position: center;
 }
 
-/* The same creature, where it comes out of the ground today. Brown, quiet, and
-   still recognisably itself — the ancient marker with the colour taken out. */
-.present-species-marker {
-  position: absolute; display: grid; place-items: center; width: 32px; height: 32px; padding: 0;
-  transform: translate(-50%, -50%) scale(.8); border-radius: 50%;
-  color: #d6b486; border: 1px solid rgb(168 126 82 / 52%); background: rgb(26 18 11 / 88%);
-  cursor: pointer; filter: drop-shadow(0 5px 12px rgb(0 0 0 / 45%));
-  opacity: 0; pointer-events: none;
-  transition: opacity .42s ease, transform .42s ease, border-color .2s ease, background .2s ease;
-  will-change: opacity, transform;
-}
-.present-species-marker.is-visible { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
-.present-species-marker.is-selected { z-index: 2; }
-.present-species-marker.is-selected { color: #f0d6ab; border-color: rgb(214 180 134 / 92%); background: rgb(48 33 19 / 94%); }
-.present-species-marker:hover { border-color: rgb(214 180 134 / 80%); }
-.present-species-marker__icon { font-size: 21px; line-height: 1; }
-.present-species-marker__label { position: absolute; top: calc(100% + 5px); left: 50%; transform: translateX(-50%); padding: 2px 7px; border: 1px solid currentColor; border-radius: 9px; background: rgb(20 14 8 / 92%); white-space: nowrap; }
-.present-species-marker__label strong { max-width: 130px; color: currentColor; font: 750 7px ui-monospace, monospace; letter-spacing: .04em; white-space: nowrap; }
-.present-species-marker__spread { color: #c8a271 !important; }
-.present-species-marker__label small { color: #a88656; font: 650 6px ui-monospace, monospace; letter-spacing: .06em; white-space: nowrap; }
-
 /* Where the crossing is going. Present from the first frame, so the numbers
    have somewhere to count towards and the camera has a visible destination. */
 .drift-target {
@@ -1118,3 +1097,21 @@ body { overscroll-behavior: none; }
   font: 750 7px ui-monospace, monospace; letter-spacing: .1em;
 }
 @media (prefers-reduced-motion: reduce) { .drift-target__ring { animation: none; } }
+
+/* Who lived here. The globe shows worlds; the creatures are a list inside one,
+   which is the only place a name and a small picture both fit. */
+.fossil-residents { margin: 14px 0 0; }
+.fossil-residents__label { margin: 0 0 7px; color: #7f9b9b; font: 700 8px ui-monospace, monospace; letter-spacing: .14em; }
+.fossil-residents ul { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.fossil-residents button {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; text-align: left;
+  color: #d9ece7; border: 1px solid rgb(121 227 210 / 20%); background: rgb(8 26 29 / 70%);
+  cursor: pointer; font: 650 11px ui-monospace, monospace;
+}
+.fossil-residents button:hover { border-color: rgb(255 214 144 / 55%); background: rgb(30 26 14 / 82%); }
+.fossil-residents .life-icon { font-size: 22px; flex: 0 0 auto; }
+.fossil-residents__back {
+  margin: 12px 0 0; padding: 7px 11px; color: #8ca7a2; border: 1px solid rgb(129 210 198 / 24%);
+  background: transparent; cursor: pointer; font: 650 9px ui-monospace, monospace; letter-spacing: .06em;
+}
+.fossil-residents__back:hover { color: #79e3d2; border-color: rgb(121 227 210 / 50%); }
