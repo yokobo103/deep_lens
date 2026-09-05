@@ -9,6 +9,7 @@ import type { FossilTimeMode } from "./TimeModeToggle";
 import { AncientLifeMarker } from "./AncientLifeMarker";
 import { PresentTraceMarker } from "./PresentTraceMarker";
 import { DriftGhost, DriftMarker } from "./DriftMarker";
+import { traceIcon } from "./iconRegistry";
 import { createEarthViewer } from "../globe/cesium/createViewer";
 import { fossilCopy, localizeLife, type Locale } from "../fossil/localization";
 import { DRIFT_BEATS, DRIFT_TRAVEL_HEIGHT, formatLatitude, interpolateDrift, type DriftPhase, type DriftPlan, type DriftPoint } from "../fossil/drift";
@@ -423,6 +424,7 @@ export function FossilGlobe({ record, mode, locale, showEvidence, onSelectTrace,
             isEntering={timeShift === "to-present"}
             isSelected={focusTrace?.id === trace.id}
             selectedTaxonName={focusLife?.recordType === "taxon" && focusLife.regionId === trace.regionId ? localizeLife(focusLife, locale).name : undefined}
+            traceIconId={focusLife?.recordType === "taxon" && focusLife.regionId === trace.regionId ? traceIcon(focusLife.iconType) : undefined}
             onClick={() => onSelectTrace(trace)}
           />
         ))}

@@ -1,6 +1,8 @@
 import { forwardRef } from "react";
 import type { PresentTraceRecord } from "../data/presentTraces";
 import { localizeTrace, type Locale } from "../fossil/localization";
+import { LifeIcon } from "./LifeIcon";
+import { regionTraceIcon } from "./iconRegistry";
 
 interface PresentTraceMarkerProps {
   record: PresentTraceRecord;
@@ -9,10 +11,12 @@ interface PresentTraceMarkerProps {
   isEntering: boolean;
   isSelected: boolean;
   selectedTaxonName?: string;
+  /** The trace of the selected creature, when one is selected. */
+  traceIconId?: string;
   onClick: () => void;
 }
 
-export const PresentTraceMarker = forwardRef<HTMLButtonElement, PresentTraceMarkerProps>(function PresentTraceMarker({ record, locale, isVisible, isEntering, isSelected, selectedTaxonName, onClick }, ref) {
+export const PresentTraceMarker = forwardRef<HTMLButtonElement, PresentTraceMarkerProps>(function PresentTraceMarker({ record, locale, isVisible, isEntering, isSelected, selectedTaxonName, traceIconId, onClick }, ref) {
   const text = localizeTrace(record, locale);
   const markerTitle = selectedTaxonName ?? text.placeLabel;
   const markerSubtitle = selectedTaxonName ? locale === "ja" ? "化石記録" : "FOSSIL RECORD" : text.formationLabel;
@@ -27,7 +31,7 @@ export const PresentTraceMarker = forwardRef<HTMLButtonElement, PresentTraceMark
       tabIndex={isVisible ? 0 : -1}
     >
       <span className="present-trace-marker__pulse" aria-hidden="true" />
-      <span className="present-trace-marker__icon" aria-hidden="true">🦴</span>
+      <span className="present-trace-marker__icon"><LifeIcon iconId={traceIconId ?? regionTraceIcon(record.regionId)} /></span>
       <span className="present-trace-marker__label">
         <strong>{markerTitle}</strong>
         <small>{markerSubtitle}</small>

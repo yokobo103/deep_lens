@@ -4,6 +4,7 @@ import type { AncientLifeRecord } from "../data/ancientLife";
 import type { PresentTraceRecord } from "../data/presentTraces";
 import type { FossilTimeMode } from "./TimeModeToggle";
 import { LifeIcon } from "./LifeIcon";
+import { traceIcon } from "./iconRegistry";
 import { fossilCopy, localizeLife, localizeTrace, type Locale } from "../fossil/localization";
 
 interface FossilInfoPanelProps {
@@ -55,7 +56,7 @@ export function FossilInfoPanel({ record, mode, locale, life, trace, onClose, on
       </button>
       <p className="fossil-eyebrow">{ancient ? `${life.recordType === "ecosystem" ? copy.regionalWorld : copy.ancientLife} · ${locale === "ja" ? "セノマニアン期" : "CENOMANIAN"}` : copy.fossilDiscovery}</p>
       <div className="fossil-info-panel__title-row">
-        <span className="fossil-info-panel__species-mark" aria-hidden="true">{ancient ? <LifeIcon iconType={life.iconType} /> : "🦴"}</span>
+        <span className="fossil-info-panel__species-mark" aria-hidden="true">{ancient ? <LifeIcon iconType={life.iconType} /> : <LifeIcon iconId={traceIcon(life.iconType)} />}</span>
         <div>
           <h2>{title}</h2>
           <p>{ancient ? `${lifeText.regionLabel} · ${lifeText.category}` : `${traceText.placeLabel} · ${record.ageLabel}${locale === "ja" ? "の岩石" : " rocks"}`}</p>

@@ -8,7 +8,8 @@ import { ancientLifeRecords, featuredAncientLife, type AncientLifeRecord, type A
 import { fossilRecords } from "../data/fossils";
 import { featuredPresentTrace, presentTraceRecords, type PresentTraceRecord } from "../data/presentTraces";
 import { buildColumn, loadFormations, ENV_COLOR, ENV_LABEL, ENV_ORDER, type ColumnBand } from "../data/pbdb";
-import { lifeIconGlyph } from "../components/lifeIcons";
+import { ancientIcon, traceIcon } from "../components/iconRegistry";
+import { LifeIcon } from "../components/LifeIcon";
 import { driftDistanceKm, type DriftPhase, type DriftPlan } from "./drift";
 import { environmentLabel, fossilCopy, localizeLife, localizeTrace, type Locale } from "./localization";
 
@@ -105,8 +106,8 @@ export function FossilPrototype() {
       targetMode: toPresent ? "present" : "ancient",
       from: toPresent ? ancient : present,
       to: toPresent ? present : ancient,
-      fromIcon: toPresent ? lifeIconGlyph(life.iconType) : "🦴",
-      toIcon: toPresent ? "🦴" : lifeIconGlyph(life.iconType),
+      fromIcon: toPresent ? ancientIcon(life.iconType) : traceIcon(life.iconType),
+      toIcon: toPresent ? traceIcon(life.iconType) : ancientIcon(life.iconType),
       fromLabel: toPresent ? lifeText.name : traceText.formationLabel,
       toLabel: toPresent ? traceText.formationLabel : lifeText.name,
       fromAgeLabel: toPresent ? "95 Ma" : copy.present,
@@ -276,7 +277,7 @@ export function FossilPrototype() {
         </div>
       ) : !isAncient ? (
         <div className="fossil-legend" aria-label={locale === "ja" ? "マーカー凡例" : "Marker legend"}>
-          <span><i className="fossil-legend__bone">🦴</i>{copy.modernTraceRegion}</span>
+          <span><i className="fossil-legend__bone"><LifeIcon iconId="trace-bone" /></i>{copy.modernTraceRegion}</span>
         </div>
       ) : null}
 

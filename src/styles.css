@@ -1064,3 +1064,17 @@ body { overscroll-behavior: none; }
 .fossil-poc--drifting .fossil-mode-dock {
   opacity: .18; transition: opacity .32s ease; pointer-events: none;
 }
+
+/* --- Icons ---------------------------------------------------------------- */
+/* One artwork file serves every colour: the picture is a mask and the fill is
+   currentColor, so the existing per-marker colour rules keep working. Sized in
+   em so the surrounding font-size still decides how big the icon is. */
+.life-icon {
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.12em;
+  background-color: currentColor;
+  -webkit-mask-image: var(--icon-source); mask-image: var(--icon-source);
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+}
+.drift-ghost__icon .life-icon { filter: none; }
