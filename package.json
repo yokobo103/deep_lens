@@ -11,7 +11,8 @@
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview",
     "data:pbdb": "node tools/build-pbdb.mjs",
-    "data:taxa": "node tools/build-taxon-traces.mjs"
+    "data:taxa": "node tools/build-taxon-traces.mjs",
+    "data:gates": "node tools/build-gates.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.1.0",

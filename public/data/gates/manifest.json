@@ -1,0 +1,95 @@
+{
+ "provenance": {
+  "source": "The Paleobiology Database",
+  "sourceUrl": "https://paleobiodb.org/",
+  "confidence": "medium",
+  "dataKind": "real",
+  "note": "One file per gate. `sites` counts distinct published localities and `occurrences` counts published records, neither of which is a number of animals — both follow where people have dug. Paleocoordinates are PBDB's PALEOMAP reconstruction at each record's own mid-age."
+ },
+ "gates": [
+  {
+   "id": "hell-creek",
+   "band": "late-cretaceous",
+   "sites": 309,
+   "occurrences": 5241,
+   "medianAgeMa": 69.1,
+   "cast": 14,
+   "lat": 46.604,
+   "lng": -104.742,
+   "paleoLat": 53.23,
+   "paleoLng": -78.09
+  },
+  {
+   "id": "dinosaur-park",
+   "band": "late-cretaceous",
+   "sites": 301,
+   "occurrences": 2098,
+   "medianAgeMa": 77.9,
+   "cast": 14,
+   "lat": 50.686,
+   "lng": -111.384,
+   "paleoLat": 58.95,
+   "paleoLng": -75.66
+  },
+  {
+   "id": "nemegt",
+   "band": "late-cretaceous",
+   "sites": 106,
+   "occurrences": 470,
+   "medianAgeMa": 69.1,
+   "cast": 14,
+   "lat": 43.65,
+   "lng": 100.889,
+   "paleoLat": 41.15,
+   "paleoLng": 89.49
+  },
+  {
+   "id": "maevarano",
+   "band": "late-cretaceous",
+   "sites": 23,
+   "occurrences": 264,
+   "medianAgeMa": 69.1,
+   "cast": 14,
+   "lat": -15.92,
+   "lng": 46.425,
+   "paleoLat": -30.01,
+   "paleoLng": 38.16
+  },
+  {
+   "id": "kem-kem",
+   "band": "mid-cretaceous",
+   "sites": 38,
+   "occurrences": 222,
+   "medianAgeMa": 97.2,
+   "cast": 14,
+   "lat": 30.882,
+   "lng": -4.581,
+   "paleoLat": 18.04,
+   "paleoLng": -4.69
+  },
+  {
+   "id": "western-interior",
+   "band": "mid-cretaceous",
+   "sites": 65,
+   "occurrences": 617,
+   "medianAgeMa": 97.2,
+   "cast": 14,
+   "lat": 38.909,
+   "lng": -103.486,
+   "paleoLat": 38.45,
+   "paleoLng": -66.45
+  },
+  {
+   "id": "fezouata",
+   "band": "early-ordovician",
+   "sites": 47,
+   "occurrences": 383,
+   "medianAgeMa": 477.3,
+   "cast": 14,
+   "lat": 30.424,
+   "lng": -6.251,
+   "paleoLat": -75.99,
+   "paleoLng": 104.97
+  }
+ ]
+}
