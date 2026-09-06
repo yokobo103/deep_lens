@@ -4,6 +4,7 @@ import type { GateDetail } from "../data/gateData";
 import { dominantEnvironment, ENV_COLOR, ENV_LABEL } from "../data/environment";
 import type { Locale } from "./copy";
 import { hubCopy } from "./copy";
+import { GateScene } from "./GateScene";
 
 interface WorldPanelProps {
   gate: GateDefinition;
@@ -39,9 +40,10 @@ function groupName(group: string | null, locale: Locale): string {
 }
 
 /**
- * What is inside a world: the kind of place it was, and who is recorded there.
+ * What is inside a world: what it looked like, the kind of place it was, and
+ * who is recorded there.
  *
- * The cast carries no pictures yet. The icon set was drawn for a handful of
+ * The cast list carries no pictures. The icon set was drawn for a handful of
  * hand-picked Cretaceous animals, and what these gates actually contain is
  * classes — reptiles, sharks, trilobites, bony fish. Only a third of the
  * entries could be given an honest icon from that set, and a trilobite drawn
@@ -68,6 +70,8 @@ export function WorldPanel({ gate, detail, locale, onLeave }: WorldPanelProps) {
   return (
     <aside className={`world-panel${compact ? " is-compact" : ""}${showCast ? " is-open" : ""}`} aria-label={gate.name[locale]}>
       <button type="button" className="world-panel__leave" onClick={onLeave}>{text.leave}</button>
+
+      <GateScene gateId={gate.id} title={gate.name[locale]} locale={locale} />
 
       <h2>{gate.name[locale]}</h2>
       <p className="world-panel__world">{gate.world[locale]}</p>
