@@ -658,9 +658,13 @@ body { overscroll-behavior: none; }
 /* A thin held place in deep time. It sits under the header rather than over
    the globe's middle, carries no numbers, and is the first thing to go when
    the reader turns it off. */
+/* Left, not centred. Cards and the world panel live on the right at this
+   width, and a centred bar ran under them — hiding the one mark the bar
+   exists for, the moment a gate was opened. The width is capped so the bar
+   always ends before a card can start. */
 .timescale {
-  position: absolute; z-index: 4; top: 116px; left: 50%; transform: translateX(-50%);
-  width: min(520px, calc(100vw - 40px)); padding: 8px 15px 11px;
+  position: absolute; z-index: 4; top: 116px; left: 26px;
+  width: min(520px, calc(100vw - 412px)); padding: 8px 15px 11px;
   border: 1px solid rgb(129 210 198 / 14%); background: rgb(6 18 20 / 82%);
   pointer-events: none; user-select: none;
 }
@@ -669,9 +673,9 @@ body { overscroll-behavior: none; }
 .timescale__eras { display: flex; margin-bottom: 6px; }
 .timescale__eras span {
   flex-basis: 0; min-width: 0; overflow: hidden; text-align: center; white-space: nowrap;
-  color: #6f8b87; font: 650 8px ui-monospace, monospace; letter-spacing: .12em;
+  color: #9db8b3; font: 650 9px ui-monospace, monospace; letter-spacing: .12em;
 }
-.timescale__track { position: relative; display: flex; height: 3px; }
+.timescale__track { position: relative; display: flex; height: 4px; }
 .timescale__era { flex-basis: 0; height: 100%; background: rgb(129 210 198 / 22%); }
 .timescale__era + .timescale__era { margin-left: 2px; }
 .timescale__era.is-cenozoic { background: rgb(129 210 198 / 34%); }
@@ -862,7 +866,7 @@ body { overscroll-behavior: none; }
   .log__seal { width: 58px; height: 58px; right: 12px; font-size: 6px; }
   .log__body { padding: 15px 88px 17px 16px; }
   .log__body strong { font-size: 18px; }
-  .timescale { top: 100px; width: calc(100vw - 32px); }
+  .timescale { top: 100px; left: 16px; width: calc(100vw - 32px); }
   .world-age { top: 62px; max-width: calc(100vw - 20px); }
   .world-age p { padding: 5px 10px; letter-spacing: .1em; }
   .world-age button { padding: 5px 9px; }
