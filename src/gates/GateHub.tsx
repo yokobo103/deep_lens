@@ -168,14 +168,20 @@ export function GateHub() {
           <h1>{text.title}</h1>
         </div>
         <div className="gate-controls">
+          {/* A place to go, not a setting. It is set apart from the pair beside
+              it and wears the log's own colour, because three identical chips
+              in a row read as three switches. */}
           <button
             type="button"
             className="gate-log-open"
             onClick={() => setLogOpen(true)}
+            aria-label={text.logLong}
           >
-            {text.log}
+            <span className="is-wide">{text.logLong}</span>
+            <span className="is-narrow">{text.log}</span>
             {visits.length > 0 && <i aria-hidden="true">{visits.length}</i>}
           </button>
+          <div className="gate-settings">
           <button
             type="button"
             className="gate-timescale-toggle"
@@ -189,6 +195,7 @@ export function GateHub() {
             <button type="button" aria-pressed={locale === "ja"} onClick={() => setLocale("ja")}>JA</button>
             <button type="button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>EN</button>
           </nav>
+          </div>
         </div>
       </header>
 

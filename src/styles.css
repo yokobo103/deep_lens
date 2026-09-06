@@ -746,16 +746,21 @@ body { overscroll-behavior: none; }
 .log__tail { margin: 26px 0 0; color: #55706c; font: 500 10px/1.8 ui-monospace, monospace; letter-spacing: .08em; }
 
 .gate-log-open {
-  display: flex; align-items: center; gap: 6px; padding: 5px 9px; cursor: pointer; color: #8ca7a2;
-  border: 1px solid rgb(129 210 198 / 22%); background: transparent;
-  font: 700 8px ui-monospace, monospace; letter-spacing: .12em;
+  display: flex; align-items: center; gap: 7px; padding: 7px 13px; cursor: pointer;
+  color: #e7dcc4; border: 1px solid rgb(255 214 144 / 34%); background: rgb(26 20 10 / 55%);
+  font: 700 9px ui-monospace, monospace; letter-spacing: .12em; pointer-events: auto;
 }
-.gate-log-open:hover { color: #a9eee0; border-color: rgb(121 227 210 / 40%); }
-.gate-log-open i { color: #ffd690; font: 700 9px ui-monospace, monospace; font-style: normal; }
+.gate-log-open:hover { color: #ffd690; border-color: #ffd690; background: rgb(42 32 14 / 70%); }
+.gate-log-open i { color: #ffd690; font: 750 10px ui-monospace, monospace; font-style: normal; }
+.gate-log-open .is-narrow { display: none; }
 
-.gate-controls { display: flex; align-items: center; gap: 10px; }
+/* The header itself lets clicks through to the globe behind it, so anything
+   in it that is meant to be pressed has to say so. Only .gate-language did,
+   which is why JA and EN worked and the two buttons beside them did not. */
+.gate-controls { display: flex; align-items: center; gap: 14px; pointer-events: auto; }
+.gate-settings { display: flex; align-items: center; gap: 6px; pointer-events: auto; }
 .gate-timescale-toggle {
-  padding: 5px 9px; cursor: pointer; color: #55706c;
+  padding: 6px 9px; cursor: pointer; color: #55706c; pointer-events: auto;
   border: 1px solid rgb(129 210 198 / 16%); background: transparent;
   font: 700 8px ui-monospace, monospace; letter-spacing: .12em;
 }
@@ -858,7 +863,10 @@ body { overscroll-behavior: none; }
   .gate-header { padding: 16px 12px; gap: 10px; }
   .gate-header h1 { font-size: 13px; }
   .gate-controls { gap: 6px; }
-  .gate-log-open, .gate-timescale-toggle { padding: 5px 7px; }
+  .gate-log-open { padding: 7px 10px; }
+  .gate-log-open .is-wide { display: none; }
+  .gate-log-open .is-narrow { display: inline; }
+  .gate-timescale-toggle { padding: 6px 7px; }
   .gate-language button { min-width: 28px; }
 
   .log__sheet { padding: 22px 14px 48px; }
