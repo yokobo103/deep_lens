@@ -4,6 +4,7 @@ import { gateById, gatesInBand, bandById, hubs, hubIdOf, type GateDefinition, ty
 import { loadGateManifest, loadGate, type GateDetail, type GateSummary } from "../data/gateData";
 import { WorldPanel } from "./WorldPanel";
 import { hubCopy, type Locale } from "./copy";
+import { TimeScale } from "./TimeScale";
 
 /**
  * The present-day Earth as a hub: gates on it, and nothing else.
@@ -28,6 +29,15 @@ export function GateHub() {
   // The panel can be put away without leaving the age. Arriving anywhere opens
   // it again, because arriving is exactly when there is something to read.
   const [panelOpen, setPanelOpen] = useState(true);
+  // Optional, and remembered. The globe and its gates are the thing; this is a
+  // reader's thumb held in the book, and some readers do not want one.
+  const [timescale, setTimescale] = useState<boolean>(() => {
+    try {
+      return window.localStorage.getItem("deep-lens-timescale") !== "off";
+    } catch {
+      return true;
+    }
+  });
   const allHubs = hubs();
 
   const enterGate = (id: string | null) => {
@@ -48,6 +58,14 @@ export function GateHub() {
       // The language still works when storage is unavailable.
     }
   }, [locale]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("deep-lens-timescale", timescale ? "on" : "off");
+    } catch {
+      // The setting still works for this visit when storage is unavailable.
+    }
+  }, [timescale]);
 
   useEffect(() => {
     loadGateManifest()
@@ -144,11 +162,30 @@ export function GateHub() {
           <p>DEEP LENS</p>
           <h1>{text.title}</h1>
         </div>
-        <nav className="gate-language" aria-label="Language">
-          <button type="button" aria-pressed={locale === "ja"} onClick={() => setLocale("ja")}>JA</button>
-          <button type="button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>EN</button>
-        </nav>
+        <div className="gate-controls">
+          <button
+            type="button"
+            className="gate-timescale-toggle"
+            aria-pressed={timescale}
+            title={text.timescaleOn}
+            onClick={() => setTimescale((on) => !on)}
+          >
+            {text.timescale}
+          </button>
+          <nav className="gate-language" aria-label="Language">
+            <button type="button" aria-pressed={locale === "ja"} onClick={() => setLocale("ja")}>JA</button>
+            <button type="button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>EN</button>
+          </nav>
+        </div>
       </header>
+
+      {timescale && (
+        <TimeScale
+          ageMa={enteredBand?.terrainMa ?? null}
+          locale={locale}
+          label={text.timescaleAt(enteredBand?.label[locale] ?? text.now)}
+        />
+      )}
 
       {!selected && !entered && (
         <p className="gate-hint">

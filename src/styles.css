@@ -654,6 +654,45 @@ body { overscroll-behavior: none; }
 .gate-marker.is-here .gate-marker__core { background: #79e3d2; box-shadow: 0 0 12px #79e3d2; transform: scale(1.4); }
 .gate-marker.is-here .gate-marker__label { color: #a9eee0; border-color: rgb(121 227 210 / 34%); }
 
+/* A thin held place in deep time. It sits under the header rather than over
+   the globe's middle, carries no numbers, and is the first thing to go when
+   the reader turns it off. */
+.timescale {
+  position: absolute; z-index: 4; top: 116px; left: 50%; transform: translateX(-50%);
+  width: min(520px, calc(100vw - 40px)); padding: 8px 15px 11px;
+  border: 1px solid rgb(129 210 198 / 14%); background: rgb(6 18 20 / 82%);
+  pointer-events: none; user-select: none;
+}
+/* Sunlit Cretaceous terrain is nearly white, and a hairline over it is not
+   there at all. The plate is the same one the age banner stands on. */
+.timescale__eras { display: flex; margin-bottom: 6px; }
+.timescale__eras span {
+  flex-basis: 0; min-width: 0; overflow: hidden; text-align: center; white-space: nowrap;
+  color: #6f8b87; font: 650 8px ui-monospace, monospace; letter-spacing: .12em;
+}
+.timescale__track { position: relative; display: flex; height: 3px; }
+.timescale__era { flex-basis: 0; height: 100%; background: rgb(129 210 198 / 22%); }
+.timescale__era + .timescale__era { margin-left: 2px; }
+.timescale__era.is-cenozoic { background: rgb(129 210 198 / 34%); }
+.timescale__tick {
+  position: absolute; top: -2px; width: 1px; height: 7px;
+  background: rgb(169 238 224 / 62%); transform: translateX(-50%);
+}
+.timescale__here {
+  position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+  background: #ffd690; box-shadow: 0 0 9px rgb(255 214 144 / 70%);
+  transform: translate(-50%, -50%);
+}
+
+.gate-controls { display: flex; align-items: center; gap: 10px; }
+.gate-timescale-toggle {
+  padding: 5px 9px; cursor: pointer; color: #55706c;
+  border: 1px solid rgb(129 210 198 / 16%); background: transparent;
+  font: 700 8px ui-monospace, monospace; letter-spacing: .12em;
+}
+.gate-timescale-toggle:hover { color: #8ca7a2; border-color: rgb(129 210 198 / 32%); }
+.gate-timescale-toggle[aria-pressed="true"] { color: #a9eee0; border-color: rgb(121 227 210 / 34%); }
+
 .world-age {
   position: absolute; z-index: 8; top: 76px; left: 50%; transform: translateX(-50%);
   display: flex; align-items: stretch; gap: 6px;
@@ -745,6 +784,7 @@ body { overscroll-behavior: none; }
 
   .gate-card { top: auto; right: 10px; left: 10px; bottom: 10px; width: auto; max-height: 48dvh; padding: 16px 18px 14px; }
   .gate-hint { bottom: 18px; }
+  .timescale { top: 100px; width: calc(100vw - 32px); }
   .world-age { top: 62px; max-width: calc(100vw - 20px); }
   .world-age p { padding: 5px 10px; letter-spacing: .1em; }
   .world-age button { padding: 5px 9px; }
