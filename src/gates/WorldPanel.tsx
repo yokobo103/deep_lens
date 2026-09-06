@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { GateDefinition } from "../data/gates";
 import type { GateDetail } from "../data/gateData";
+import { bandById } from "../data/gates";
 import { dominantEnvironment, ENV_COLOR, ENV_LABEL } from "../data/environment";
 import type { Locale } from "./copy";
 import { hubCopy } from "./copy";
@@ -10,6 +11,9 @@ interface WorldPanelProps {
   gate: GateDefinition;
   detail: GateDetail;
   locale: Locale;
+  /** The other ages of this same place. Empty when the place has only one. */
+  alsoHere: readonly GateDefinition[];
+  onGoTo: (gateId: string) => void;
   onLeave: () => void;
 }
 
@@ -49,7 +53,7 @@ function groupName(group: string | null, locale: Locale): string {
  * entries could be given an honest icon from that set, and a trilobite drawn
  * as a fish is worse than a trilobite drawn as nothing.
  */
-export function WorldPanel({ gate, detail, locale, onLeave }: WorldPanelProps) {
+export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onLeave }: WorldPanelProps) {
   const text = hubCopy[locale];
   // On a phone this panel would cover the globe, and the globe is the thing it
   // is describing — pulling back to see the rest of the age is half the point
@@ -85,6 +89,23 @@ export function WorldPanel({ gate, detail, locale, onLeave }: WorldPanelProps) {
         <span className="world-panel__swatch" style={{ background: ENV_COLOR[kind] }} aria-hidden="true" />
         {ENV_LABEL[kind][locale]}
       </p>
+
+      {/* The move the app exists for, offered from inside rather than from the
+          front door: leaving to the present and coming back in through the
+          same marker is the long way round to say "this place, but then".
+          Above the fold on a phone, because it is worth doing while the globe
+          is still the thing being looked at. */}
+      {alsoHere.length > 0 && (
+        <div className="world-ages" role="group" aria-label={text.downTo}>
+          <span>{text.downTo}</span>
+          {alsoHere.map((other) => (
+            <button key={other.id} type="button" onClick={() => onGoTo(other.id)}>
+              <b>{bandById(other.band)?.label[locale].split(" · ")[1] ?? `${other.ageMa.from} Ma`}</b>
+              {other.name[locale]}
+            </button>
+          ))}
+        </div>
+      )}
 
       {compact && (
         <button type="button" className="world-panel__fold" aria-expanded={showCast} onClick={() => setOpenOnPhone((open) => !open)}>

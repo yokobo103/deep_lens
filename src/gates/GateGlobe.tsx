@@ -108,24 +108,42 @@ export function GateGlobe({ points, renderPoint, ariaLabel, terrain = null, focu
   // an effect keyed on the object would tear the layer down and fetch the same
   // file again on every move — which showed as the present Earth flashing
   // through whenever a gate was tapped from inside a world of its own age.
+  //
+  // One Earth is laid over the other before the old one is taken away. Moving
+  // between two ages at the same place is the thing this app is for, and
+  // dropping the layer first put the present-day Earth on screen for as long
+  // as the next texture took to arrive — half a megabyte of modern coastlines
+  // in the middle of a 380-million-year step.
   const terrainUrl = terrain?.url ?? null;
   const terrainCredit = terrain?.credit ?? "";
   useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer) return;
     let cancelled = false;
-    const existing = terrainLayerRef.current;
-    if (existing) {
+
+    const dropExisting = () => {
+      const existing = terrainLayerRef.current;
+      if (!existing) return;
       viewer.imageryLayers.remove(existing, true);
       terrainLayerRef.current = null;
+    };
+
+    if (!terrainUrl) {
+      dropExisting();
+      return;
     }
-    if (!terrainUrl) return;
+
     void SingleTileImageryProvider.fromUrl(terrainUrl, { credit: new Credit(terrainCredit) })
       .then((provider) => {
         if (cancelled || viewer.isDestroyed()) return;
-        terrainLayerRef.current = viewer.imageryLayers.addImageryProvider(provider);
+        const arriving = viewer.imageryLayers.addImageryProvider(provider);
+        dropExisting();
+        terrainLayerRef.current = arriving;
       })
-      .catch((error: unknown) => console.warn("Reconstructed Earth could not be loaded", error));
+      .catch((error: unknown) => {
+        console.warn("Reconstructed Earth could not be loaded", error);
+        if (!cancelled && !viewer.isDestroyed()) dropExisting();
+      });
     return () => { cancelled = true; };
   }, [terrainUrl, terrainCredit]);
 

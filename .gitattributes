@@ -1,0 +1,6 @@
+# Source is LF everywhere. tools/build-gates.mjs reads src/data/gates.ts as
+# text and splits it on newlines; a CRLF checkout made it parse zero gates.
+* text=auto eol=lf
+*.webp binary
+*.png binary
+*.jpg binary

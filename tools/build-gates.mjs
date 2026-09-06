@@ -31,7 +31,10 @@ const CAST_LIMIT = 14;
  * A second copy of this list is a second thing to forget to update.
  */
 async function readGates() {
-  const source = await readFile(SOURCE, "utf8");
+  // Normalised first. Checked out on Windows this file has CRLF endings, and
+  // the block split below looks for a bare newline — without this the parser
+  // quietly finds nothing at all.
+  const source = (await readFile(SOURCE, "utf8")).replace(/\r\n/g, "\n");
   const body = source.slice(source.indexOf("export const gateDefinitions"));
   const gates = [];
   for (const block of body.split(/\n  \{\n/).slice(1)) {
@@ -156,6 +159,12 @@ async function buildGate(gate) {
 
 const gates = await readGates();
 console.log(`${gates.length} gates read from gates.ts\n`);
+
+// Reading nothing is a broken parser, never an empty app. Writing the manifest
+// anyway replaces every baked gate with an empty list and reports success.
+if (gates.length === 0) {
+  throw new Error(`No gates parsed from ${SOURCE}. Refusing to write an empty manifest over the baked data.`);
+}
 
 await mkdir(OUT_DIR, { recursive: true });
 const manifest = [];

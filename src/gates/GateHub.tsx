@@ -62,6 +62,11 @@ export function GateHub() {
   // record is simply the best surveyed.
   const entered = enteredId ? gateById(enteredId) : undefined;
   const enteredBand = entered ? bandById(entered.band) : undefined;
+  // The other ages of the place being stood in. A hub is the same ground seen
+  // at different times, so this is the vertical move — as against the band's
+  // markers on the globe, which are the same time seen at different places.
+  const enteredHub = entered ? allHubs.find((hub) => hub.id === hubIdOf(entered)) : undefined;
+  const alsoHere = (enteredHub?.gates ?? []).filter((gate) => gate.id !== entered?.id);
 
   // Inside a world the globe carries that Earth's gates at the positions they
   // held then — which is what makes pulling back worth doing.
@@ -167,6 +172,8 @@ export function GateHub() {
           gate={entered}
           detail={world}
           locale={locale}
+          alsoHere={alsoHere}
+          onGoTo={enterGate}
           onLeave={() => enterGate(null)}
         />
       )}

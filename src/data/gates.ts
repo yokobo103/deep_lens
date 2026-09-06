@@ -15,9 +15,15 @@
  *              "Kem Kem" also returns an 8 Ma record and "Hell Creek" a 103 Ma
  *              one, both from unrelated units that happen to share a name.
  *
- * `band` groups gates that share a world. Gates in one band stand on the same
- * reconstructed Earth and can be seen from each other, so the band — not the
- * gate — is what a terrain texture belongs to.
+ * Two fields carry the two ways out of a world, and they are perpendicular:
+ *
+ *   `band`  same age, other places. Gates in one band stand on the same
+ *           reconstructed Earth and can be seen from each other, so the band —
+ *           not the gate — is what a terrain texture belongs to.
+ *   `hub`   same place, other ages. This is the move the whole app is for:
+ *           the present place is one moment of a place that had many.
+ *
+ * Both are reachable from inside a world without returning to the present.
  */
 
 export interface GateQuery {
@@ -41,8 +47,6 @@ export interface GateDefinition {
   name: { ja: string; en: string };
   /** One line. What kind of world this is — not a summary of its fauna. */
   world: { ja: string; en: string };
-  /** Gates reachable from this one without returning to the present. */
-  alsoAtThisPlace?: string[];
   featured?: boolean;
 }
 
@@ -91,7 +95,6 @@ export const gateDefinitions: readonly GateDefinition[] = [
     place: { ja: "アメリカ合衆国", en: "United States" },
     name: { ja: "ヘルクリーク", en: "Hell Creek" },
     world: { ja: "白亜紀最後の川と氾濫原", en: "The last rivers and floodplains of the Cretaceous" },
-    alsoAtThisPlace: ["dinosaur-park"],
     featured: true,
   },
   {
@@ -102,7 +105,6 @@ export const gateDefinitions: readonly GateDefinition[] = [
     place: { ja: "カナダ", en: "Canada" },
     name: { ja: "ダイナソーパーク", en: "Dinosaur Park" },
     world: { ja: "海に近い、角竜の多い低地", en: "Coastal lowlands thick with horned dinosaurs" },
-    alsoAtThisPlace: ["hell-creek"],
     featured: true,
   },
   {
@@ -134,7 +136,6 @@ export const gateDefinitions: readonly GateDefinition[] = [
     place: { ja: "モロッコ", en: "Morocco" },
     name: { ja: "ケムケム", en: "Kem Kem" },
     world: { ja: "大河とデルタ、大型の捕食者たち", en: "A great river delta and its large predators" },
-    alsoAtThisPlace: ["fezouata"],
     featured: true,
   },
   {
@@ -156,7 +157,6 @@ export const gateDefinitions: readonly GateDefinition[] = [
     place: { ja: "モロッコ", en: "Morocco" },
     name: { ja: "フェズアタ", en: "Fezouata" },
     world: { ja: "極に近い、冷たい海の底", en: "A cold sea floor, close to the pole" },
-    alsoAtThisPlace: ["kem-kem"],
     featured: true,
   },
 ];

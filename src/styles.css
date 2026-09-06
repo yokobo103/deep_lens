@@ -680,6 +680,16 @@ body { overscroll-behavior: none; }
 .world-panel__swatch { width: 9px; height: 9px; border-radius: 2px; }
 .world-panel__kind i { color: rgb(121 227 210 / 40%); font-style: normal; }
 
+.world-ages { display: grid; gap: 6px; margin-top: 15px; }
+.world-ages > span { color: #b69b6c; font: 700 8px ui-monospace, monospace; letter-spacing: .12em; }
+.world-ages button {
+  display: flex; align-items: baseline; gap: 9px; width: 100%; padding: 9px 11px; cursor: pointer;
+  color: #cfe6e1; border: 1px solid rgb(255 214 144 / 26%); background: rgb(26 20 10 / 60%);
+  font: 500 11px ui-monospace, monospace; text-align: left;
+}
+.world-ages button b { color: #ffd690; font: 750 9px ui-monospace, monospace; letter-spacing: .08em; }
+.world-ages button:hover { border-color: #ffd690; background: rgb(42 32 14 / 70%); }
+
 .world-cast { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgb(129 210 198 / 16%); }
 .world-cast h3 { margin: 0 0 10px; color: #6f8b87; font: 650 8px ui-monospace, monospace; letter-spacing: .14em; }
 .world-cast__group { margin-bottom: 12px; }
