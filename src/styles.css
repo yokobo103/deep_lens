@@ -508,9 +508,10 @@ body { overscroll-behavior: none; }
 .gate-header {
   position: absolute; z-index: 6; top: 0; left: 0; right: 0;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 26px; pointer-events: none;
+  gap: 14px; padding: 20px 26px; pointer-events: none;
 }
-.gate-header > div { pointer-events: none; }
+.gate-header > div { min-width: 0; pointer-events: none; }
+.gate-header h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gate-header p { margin: 0; color: #6f8b87; font: 700 9px ui-monospace, monospace; letter-spacing: .34em; }
 .gate-header h1 { margin: 3px 0 0; color: #e7f6f2; font: 500 15px/1.3 ui-monospace, monospace; letter-spacing: .04em; }
 .gate-language { display: flex; gap: 3px; pointer-events: auto; }
@@ -684,6 +685,70 @@ body { overscroll-behavior: none; }
   transform: translate(-50%, -50%);
 }
 
+/* The field log. A full screen, opened from the header and closed back to the
+   globe — Deep Lens is one Earth, and a permanent tab bar would take a strip
+   off it forever. */
+.log {
+  position: fixed; z-index: 50; inset: 0; overflow-y: auto; overscroll-behavior: contain;
+  background: radial-gradient(120% 90% at 78% -10%, #10303a 0%, #04121a 46%, #01080d 100%);
+}
+.log__sheet { max-width: 780px; margin: 0 auto; padding: 34px 22px 60px; }
+.log__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.log__brand { margin: 0; color: #6f8b87; font: 650 9px ui-monospace, monospace; letter-spacing: .42em; }
+.log__head h2 { margin: 6px 0 0; color: #effffc; font: 400 30px/1.15 ui-monospace, monospace; letter-spacing: .04em; }
+.log__lede { margin: 9px 0 0; color: #8ca7a2; font: 500 11px/1.7 ui-monospace, monospace; letter-spacing: .06em; }
+.log__close {
+  flex: none; width: 34px; height: 34px; line-height: 1; cursor: pointer; font-size: 20px;
+  color: #8ca7a2; border: 1px solid rgb(129 210 198 / 22%); background: rgb(5 15 18 / 78%);
+}
+.log__close:hover { color: #79e3d2; border-color: rgb(121 227 210 / 45%); }
+
+.log__count {
+  display: flex; align-items: baseline; gap: 9px; margin: 26px 0 0; padding: 16px 20px;
+  border: 1px solid rgb(129 210 198 / 16%); background: rgb(7 22 27 / 66%);
+}
+.log__count span { color: #8ca7a2; font: 600 9px ui-monospace, monospace; letter-spacing: .12em; }
+.log__count b { color: #a9eee0; font: 400 26px/1 ui-monospace, monospace; }
+.log__count i { color: #55706c; font: 500 11px ui-monospace, monospace; font-style: normal; }
+.log__empty { margin: 22px 0 0; color: #6f8b87; font: 500 11px/1.8 ui-monospace, monospace; }
+
+.log__list { display: grid; gap: 12px; margin: 14px 0 0; padding: 0; list-style: none; }
+.log__list button {
+  position: relative; display: block; width: 100%; padding: 0; overflow: hidden; cursor: pointer;
+  border: 1px solid rgb(129 210 198 / 15%); background: #05141a; text-align: left;
+}
+.log__list button:hover { border-color: rgb(121 227 210 / 40%); }
+/* Scaled past the frame so the Latin names painted into the artwork fall
+   outside it: the card has its own text and two sets fighting is neither. */
+.log__scene {
+  position: absolute; inset: 0; width: 118%; height: 118%; margin: -9% 0 0 -9%;
+  object-fit: cover; object-position: center 38%; opacity: .62;
+}
+.log__body {
+  position: relative; display: block; min-height: 126px; padding: 20px 118px 22px 22px;
+  background: linear-gradient(100deg, rgb(3 12 16 / 95%) 0%, rgb(3 12 16 / 84%) 40%, rgb(3 12 16 / 20%) 88%, rgb(3 12 16 / 8%) 100%);
+}
+.log__body time { display: block; color: #7f9b9b; font: 500 10px ui-monospace, monospace; letter-spacing: .18em; }
+.log__body strong { display: block; margin-top: 7px; color: #f2fffb; font: 500 21px/1.2 ui-monospace, monospace; letter-spacing: .03em; }
+.log__place { display: block; margin-top: 4px; color: #9db8b3; font: 500 11px ui-monospace, monospace; letter-spacing: .06em; }
+.log__age { display: block; margin-top: 12px; color: #ffd690; font: 600 10px ui-monospace, monospace; letter-spacing: .08em; }
+.log__age::before { content: "—"; margin-right: 9px; color: rgb(255 214 144 / 45%); }
+.log__seal {
+  position: absolute; top: 50%; right: 20px; display: grid; place-items: center;
+  width: 74px; height: 74px; padding: 8px; border-radius: 50%; transform: translateY(-50%);
+  color: #cfe6e1; border: 1px solid rgb(255 214 144 / 32%); background: rgb(4 13 17 / 62%);
+  font: 700 7px/1.35 ui-monospace, monospace; letter-spacing: .1em; text-align: center;
+}
+.log__tail { margin: 26px 0 0; color: #55706c; font: 500 10px/1.8 ui-monospace, monospace; letter-spacing: .08em; }
+
+.gate-log-open {
+  display: flex; align-items: center; gap: 6px; padding: 5px 9px; cursor: pointer; color: #8ca7a2;
+  border: 1px solid rgb(129 210 198 / 22%); background: transparent;
+  font: 700 8px ui-monospace, monospace; letter-spacing: .12em;
+}
+.gate-log-open:hover { color: #a9eee0; border-color: rgb(121 227 210 / 40%); }
+.gate-log-open i { color: #ffd690; font: 700 9px ui-monospace, monospace; font-style: normal; }
+
 .gate-controls { display: flex; align-items: center; gap: 10px; }
 .gate-timescale-toggle {
   padding: 5px 9px; cursor: pointer; color: #55706c;
@@ -784,6 +849,19 @@ body { overscroll-behavior: none; }
 
   .gate-card { top: auto; right: 10px; left: 10px; bottom: 10px; width: auto; max-height: 48dvh; padding: 16px 18px 14px; }
   .gate-hint { bottom: 18px; }
+  /* Four controls and a title do not fit 375px. The title gives way — it is
+     the one thing on this bar that is not a control. */
+  .gate-header { padding: 16px 12px; gap: 10px; }
+  .gate-header h1 { font-size: 13px; }
+  .gate-controls { gap: 6px; }
+  .gate-log-open, .gate-timescale-toggle { padding: 5px 7px; }
+  .gate-language button { min-width: 28px; }
+
+  .log__sheet { padding: 22px 14px 48px; }
+  .log__head h2 { font-size: 24px; }
+  .log__seal { width: 58px; height: 58px; right: 12px; font-size: 6px; }
+  .log__body { padding: 15px 88px 17px 16px; }
+  .log__body strong { font-size: 18px; }
   .timescale { top: 100px; width: calc(100vw - 32px); }
   .world-age { top: 62px; max-width: calc(100vw - 20px); }
   .world-age p { padding: 5px 10px; letter-spacing: .1em; }

@@ -5,6 +5,8 @@ import { loadGateManifest, loadGate, type GateDetail, type GateSummary } from ".
 import { WorldPanel } from "./WorldPanel";
 import { hubCopy, type Locale } from "./copy";
 import { TimeScale } from "./TimeScale";
+import { ExplorerLog } from "./ExplorerLog";
+import { readLog, recordVisit, type Visit } from "./log";
 
 /**
  * The present-day Earth as a hub: gates on it, and nothing else.
@@ -31,6 +33,8 @@ export function GateHub() {
   const [panelOpen, setPanelOpen] = useState(true);
   // Optional, and remembered. The globe and its gates are the thing; this is a
   // reader's thumb held in the book, and some readers do not want one.
+  const [visits, setVisits] = useState<Visit[]>(() => readLog());
+  const [logOpen, setLogOpen] = useState(false);
   const [timescale, setTimescale] = useState<boolean>(() => {
     try {
       return window.localStorage.getItem("deep-lens-timescale") !== "off";
@@ -45,6 +49,7 @@ export function GateHub() {
     setWorld(null);
     setPanelOpen(true);
     if (!id) return;
+    setVisits((log) => recordVisit(id, log));
     loadGate(id)
       .then((detail) => setWorld((current) => (current?.id === detail.id ? current : detail)))
       .catch((error: unknown) => console.warn("World could not be loaded", error));
@@ -165,6 +170,14 @@ export function GateHub() {
         <div className="gate-controls">
           <button
             type="button"
+            className="gate-log-open"
+            onClick={() => setLogOpen(true)}
+          >
+            {text.log}
+            {visits.length > 0 && <i aria-hidden="true">{visits.length}</i>}
+          </button>
+          <button
+            type="button"
             className="gate-timescale-toggle"
             aria-pressed={timescale}
             title={text.timescaleOn}
@@ -178,6 +191,16 @@ export function GateHub() {
           </nav>
         </div>
       </header>
+
+      {logOpen && (
+        <ExplorerLog
+          visits={visits}
+          ages={new Map(gates.flatMap((gate) => (gate.medianAgeMa === null ? [] : [[gate.id, gate.medianAgeMa] as const])))}
+          locale={locale}
+          onGoTo={(id) => { setLogOpen(false); setSelectedId(null); enterGate(id); }}
+          onClose={() => setLogOpen(false)}
+        />
+      )}
 
       {timescale && (
         <TimeScale
