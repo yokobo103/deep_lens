@@ -126,6 +126,66 @@
    "lng": -108.702,
    "paleoLat": 43.63,
    "paleoLng": -94.8
+  },
+  {
+   "id": "sarka",
+   "band": "early-ordovician",
+   "sites": 19,
+   "occurrences": 338,
+   "medianAgeMa": 466.1,
+   "cast": 14,
+   "lat": 50.043,
+   "lng": 14.323,
+   "paleoLat": -56.14,
+   "paleoLng": 86.36
+  },
+  {
+   "id": "elliot",
+   "band": "late-triassic",
+   "sites": 64,
+   "occurrences": 124,
+   "medianAgeMa": 214.5,
+   "cast": 14,
+   "lat": -29.68,
+   "lng": 27.561,
+   "paleoLat": -49.1,
+   "paleoLng": 0.04
+  },
+  {
+   "id": "tendaguru",
+   "band": "late-jurassic",
+   "sites": 50,
+   "occurrences": 300,
+   "medianAgeMa": 146.7,
+   "cast": 14,
+   "lat": -9.715,
+   "lng": 39.234,
+   "paleoLat": -29.79,
+   "paleoLng": 16.94
+  },
+  {
+   "id": "solnhofen",
+   "band": "late-jurassic",
+   "sites": 28,
+   "occurrences": 847,
+   "medianAgeMa": 147.1,
+   "cast": 14,
+   "lat": 48.872,
+   "lng": 11.124,
+   "paleoLat": 40.75,
+   "paleoLng": 18.83
+  },
+  {
+   "id": "london-clay",
+   "band": "early-eocene",
+   "sites": 107,
+   "occurrences": 2026,
+   "medianAgeMa": 52,
+   "cast": 14,
+   "lat": 51.419,
+   "lng": -0.037,
+   "paleoLat": 46.97,
+   "paleoLng": -2.34
   }
  ]
 }

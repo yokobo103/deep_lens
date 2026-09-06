@@ -14,46 +14,17 @@
 // Seeing the rest of the world at one age does not need that bake either: gates
 // carry a band, and the other gates of a band are simply the ones sharing it.
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { writeFile, mkdir } from "node:fs/promises";
+import { readGates, GATES_SOURCE } from "./gates-source.mjs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SOURCE = join(ROOT, "src", "data", "gates.ts");
 const OUT_DIR = join(ROOT, "public", "data", "gates");
 const BASE = "https://paleobiodb.org/data1.2";
 
 /** How many named creatures a gate carries. Beyond this it becomes a list. */
 const CAST_LIMIT = 14;
-
-/**
- * Read the definitions out of the TypeScript rather than duplicating them.
- * A second copy of this list is a second thing to forget to update.
- */
-async function readGates() {
-  // Normalised first. Checked out on Windows this file has CRLF endings, and
-  // the block split below looks for a bare newline — without this the parser
-  // quietly finds nothing at all.
-  const source = (await readFile(SOURCE, "utf8")).replace(/\r\n/g, "\n");
-  const body = source.slice(source.indexOf("export const gateDefinitions"));
-  const gates = [];
-  for (const block of body.split(/\n  \{\n/).slice(1)) {
-    const id = block.match(/id:\s*"([^"]+)"/)?.[1];
-    if (!id) continue;
-    const stratum = block.match(/stratum:\s*"([^"]+)"/)?.[1];
-    const box = block.match(/box:\s*\{\s*west:\s*(-?[\d.]+),\s*east:\s*(-?[\d.]+),\s*south:\s*(-?[\d.]+),\s*north:\s*(-?[\d.]+)/);
-    const age = block.match(/ageMa:\s*\{\s*from:\s*([\d.]+),\s*to:\s*([\d.]+)/);
-    gates.push({
-      id,
-      band: block.match(/band:\s*"([^"]+)"/)?.[1],
-      stratum,
-      box: box ? { west: +box[1], east: +box[2], south: +box[3], north: +box[4] } : undefined,
-      from: age ? +age[1] : null,
-      to: age ? +age[2] : null,
-    });
-  }
-  return gates;
-}
 
 function collectionUrl({ stratum, box }, show) {
   const parameters = [`show=${show}`, "pgm=scotese", "limit=10000"];
@@ -163,7 +134,7 @@ console.log(`${gates.length} gates read from gates.ts\n`);
 // Reading nothing is a broken parser, never an empty app. Writing the manifest
 // anyway replaces every baked gate with an empty list and reports success.
 if (gates.length === 0) {
-  throw new Error(`No gates parsed from ${SOURCE}. Refusing to write an empty manifest over the baked data.`);
+  throw new Error(`No gates parsed from ${GATES_SOURCE}. Refusing to write an empty manifest over the baked data.`);
 }
 
 await mkdir(OUT_DIR, { recursive: true });

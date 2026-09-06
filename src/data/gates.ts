@@ -26,6 +26,14 @@
  *           the present place is one moment of a place that had many.
  *
  * Both are reachable from inside a world without returning to the present.
+ *
+ * A band is deliberately wider than one moment. Its terrain is a single
+ * reconstruction, and a gate whose records centre a few million years either
+ * side still belongs on it — Dinosaur Park is 7.9 Myr from the 70 Ma map and
+ * has always stood there. Splitting bands finely enough that every gate sat on
+ * its exact age would give each one an Earth with nobody else on it, which
+ * costs more truth than it buys. `npm run gates:map` prints both the loneliness
+ * and the offsets, so the trade is visible rather than remembered.
  */
 
 export interface GateQuery {
@@ -197,6 +205,57 @@ export const gateDefinitions: readonly GateDefinition[] = [
     place: { ja: "アメリカ合衆国", en: "United States" },
     name: { ja: "グリーンリバー", en: "Green River" },
     world: { ja: "亜熱帯の湖と、そこへ落ちた無数の虫", en: "A subtropical lake, and the insects that fell into it" },
+    featured: true,
+  },
+
+  {
+    id: "sarka",
+    band: "early-ordovician",
+    query: { stratum: "Sarka" },
+    ageMa: { from: 478, to: 462 },
+    place: { ja: "チェコ", en: "Czech Republic" },
+    name: { ja: "シャルカ", en: "Sarka" },
+    world: { ja: "泥の海底に降り積もった、殻の群れ", en: "Shells settling onto a muddy sea floor" },
+    featured: true,
+  },
+  {
+    id: "elliot",
+    band: "late-triassic",
+    query: { stratum: "Elliot" },
+    ageMa: { from: 228, to: 205 },
+    place: { ja: "南アフリカ", en: "South Africa" },
+    name: { ja: "エリオット", en: "Elliot" },
+    world: { ja: "大型化が始まったころの、乾いた氾濫原", en: "Dry floodplains, as the long-necked began to get large" },
+    featured: true,
+  },
+  {
+    id: "tendaguru",
+    band: "late-jurassic",
+    query: { stratum: "Tendaguru" },
+    ageMa: { from: 157, to: 143 },
+    place: { ja: "タンザニア", en: "Tanzania" },
+    name: { ja: "テンダグル", en: "Tendaguru" },
+    world: { ja: "季節ごとに乾く海岸平野と、巨大な竜脚類", en: "A coastal plain that dried each season, and its giant sauropods" },
+    featured: true,
+  },
+  {
+    id: "solnhofen",
+    band: "late-jurassic",
+    query: { stratum: "Solnhofen" },
+    ageMa: { from: 155, to: 145 },
+    place: { ja: "ドイツ", en: "Germany" },
+    name: { ja: "ゾルンホーフェン", en: "Solnhofen" },
+    world: { ja: "島々のあいだの、静かで塩辛い潟", en: "Still, salt-heavy lagoons between islands" },
+    featured: true,
+  },
+  {
+    id: "london-clay",
+    band: "early-eocene",
+    query: { stratum: "London Clay" },
+    ageMa: { from: 56, to: 47 },
+    place: { ja: "イギリス", en: "United Kingdom" },
+    name: { ja: "ロンドンクレイ", en: "London Clay" },
+    world: { ja: "マングローブの茂る、熱帯の入り江", en: "A tropical inlet thick with mangroves" },
     featured: true,
   },
 ];
