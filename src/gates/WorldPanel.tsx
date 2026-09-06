@@ -14,7 +14,8 @@ interface WorldPanelProps {
   /** The other ages of this same place. Empty when the place has only one. */
   alsoHere: readonly GateDefinition[];
   onGoTo: (gateId: string) => void;
-  onLeave: () => void;
+  /** Puts the panel away. Does not leave the world — that is the age banner's. */
+  onDismiss: () => void;
 }
 
 /** PBDB's class names, as a reader would say them. */
@@ -59,7 +60,7 @@ function groupName(group: string | null, locale: Locale): string {
  * entries could be given an honest icon from that set, and a trilobite drawn
  * as a fish is worse than a trilobite drawn as nothing.
  */
-export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onLeave }: WorldPanelProps) {
+export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onDismiss }: WorldPanelProps) {
   const text = hubCopy[locale];
   // On a phone this panel would cover the globe, and the globe is the thing it
   // is describing — pulling back to see the rest of the age is half the point
@@ -79,12 +80,11 @@ export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onLeave }: 
 
   return (
     <aside className={`world-panel${compact ? " is-compact" : ""}${showCast ? " is-open" : ""}`} aria-label={gate.name[locale]}>
-      {/* The same × in the same corner as the gate card's. A world is left the
-          way a card is closed, so it should not be a differently shaped
-          control in a different place — and a labelled button above the
-          picture read as something to do inside the world rather than the way
-          out of it. */}
-      <button type="button" className="world-panel__close" onClick={onLeave} aria-label={text.leave} title={text.leave}>×</button>
+      {/* Closes the card, and only the card. Leaving the age is a different
+          size of action and lives on the age banner instead: from in here the
+          globe is the reconstructed Earth, and wanting to see it unobstructed
+          is not the same as wanting to go back to the present. */}
+      <button type="button" className="world-panel__close" onClick={onDismiss} aria-label={text.close} title={text.close}>×</button>
 
       <GateScene gateId={gate.id} title={gate.name[locale]} locale={locale} />
 

@@ -25,11 +25,15 @@ export function GateHub() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [enteredId, setEnteredId] = useState<string | null>(null);
   const [world, setWorld] = useState<GateDetail | null>(null);
+  // The panel can be put away without leaving the age. Arriving anywhere opens
+  // it again, because arriving is exactly when there is something to read.
+  const [panelOpen, setPanelOpen] = useState(true);
   const allHubs = hubs();
 
   const enterGate = (id: string | null) => {
     setEnteredId(id);
     setWorld(null);
+    setPanelOpen(true);
     if (!id) return;
     loadGate(id)
       .then((detail) => setWorld((current) => (current?.id === detail.id ? current : detail)))
@@ -103,7 +107,7 @@ export function GateHub() {
                 data-globe-point={point.id}
                 type="button"
                 className={`gate-marker${isHere ? " is-here" : ""}`}
-                onClick={() => enterGate(neighbour.id)}
+                onClick={() => (isHere ? setPanelOpen(true) : enterGate(neighbour.id))}
                 aria-label={neighbour.name[locale]}
               >
                 <span className="gate-marker__ring" aria-hidden="true" />
@@ -165,7 +169,7 @@ export function GateHub() {
         />
       )}
 
-      {entered && world && (
+      {entered && world && panelOpen && (
         <WorldPanel
           key={entered.id}
           gate={entered}
@@ -173,12 +177,18 @@ export function GateHub() {
           locale={locale}
           alsoHere={alsoHere}
           onGoTo={enterGate}
-          onLeave={() => enterGate(null)}
+          onDismiss={() => setPanelOpen(false)}
         />
       )}
 
+      {/* The age you are standing in, and the way out of it. Leaving is a
+          property of the age rather than of the card describing it, so it stays
+          on screen whether the card is open or not. */}
       {entered && enteredBand && (
-        <p className="world-age">{enteredBand.label[locale]}</p>
+        <div className="world-age">
+          <p>{enteredBand.label[locale]}</p>
+          <button type="button" onClick={() => enterGate(null)}>{text.leave}</button>
+        </div>
       )}
     </main>
   );
