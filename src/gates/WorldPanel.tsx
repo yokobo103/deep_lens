@@ -27,6 +27,8 @@ const GROUP_LABEL: Record<string, { ja: string; en: string }> = {
   Aves: { ja: "鳥類", en: "Birds" },
   Chondrichthyes: { ja: "軟骨魚類", en: "Sharks and rays" },
   Osteichthyes: { ja: "硬骨魚類", en: "Bony fish" },
+  Actinopterygii: { ja: "条鰭類", en: "Ray-finned fish" },
+  Insecta: { ja: "昆虫", en: "Insects" },
   Trilobita: { ja: "三葉虫", en: "Trilobites" },
   Cephalopoda: { ja: "頭足類", en: "Cephalopods" },
   Bivalvia: { ja: "二枚貝", en: "Bivalves" },
@@ -101,7 +103,7 @@ export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onLeave }: 
           {alsoHere.map((other) => (
             <button key={other.id} type="button" onClick={() => onGoTo(other.id)}>
               <b>{bandById(other.band)?.label[locale].split(" · ")[1] ?? `${other.ageMa.from} Ma`}</b>
-              {other.name[locale]}
+              <span>{other.name[locale]}</span>
             </button>
           ))}
         </div>

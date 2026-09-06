@@ -3,6 +3,16 @@
 Requires Pillow, numpy, and netCDF4. The source grid is kept outside the public
 bundle; only the rendered image is loaded by the browser.
 
+The grids come from Zenodo record 5460860, file
+`Scotese_Wright_2018_Maps_1-88_1degX1deg_PaleoDEMS_nc.zip` (9.3 MB, CC BY 4.0):
+109 maps covering 0-540 Ma at 5 Myr steps, so any band a new gate needs already
+has one waiting. Unzip, then pass the map for the age you want:
+
+    python tools/render-paleodem-texture.py       .../Map45_PALEOMAP_1deg_Late_Triassic_220Ma.nc public/geo/paleodem-220.webp
+
+The file name must match `paleodem-<terrainMa>.webp` for the band that asks for
+it in src/data/gates.ts.
+
 The source is 1x1 degree — about 111 km per cell — and no amount of rendering
 adds information that is not in it. What earlier versions did was stretch that
 grid 5.7x with a bilinear filter, which spent 2048x1024 pixels carrying

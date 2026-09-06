@@ -715,6 +715,14 @@ body { overscroll-behavior: none; }
     padding: 14px 16px 14px; max-height: 38dvh;
   }
   .world-panel.is-open { max-height: 62dvh; }
+  /* Three ages is three full-width rows, and with a picture above them the
+     folded panel would start scrolling — putting the way to the cast out of
+     reach. The age is the axis being chosen here; the name of where it leads
+     is on the other side of the press. */
+  .world-ages { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .world-ages > span { width: 100%; }
+  .world-ages button { width: auto; padding: 8px 12px; }
+  .world-ages button > span { display: none; }
   .gate-scene { margin-bottom: 11px; }
   .gate-scene img { max-height: 88px; object-fit: cover; object-position: center 42%; }
   .scene-view { padding: 14px; }

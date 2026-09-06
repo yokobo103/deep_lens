@@ -90,6 +90,42 @@
    "lng": -6.251,
    "paleoLat": -75.99,
    "paleoLng": 104.97
+  },
+  {
+   "id": "chinle",
+   "band": "late-triassic",
+   "sites": 54,
+   "occurrences": 267,
+   "medianAgeMa": 217.2,
+   "cast": 14,
+   "lat": 37.605,
+   "lng": -108.843,
+   "paleoLat": 12.62,
+   "paleoLng": -50.6
+  },
+  {
+   "id": "morrison",
+   "band": "late-jurassic",
+   "sites": 140,
+   "occurrences": 858,
+   "medianAgeMa": 149.3,
+   "cast": 14,
+   "lat": 38.918,
+   "lng": -108.443,
+   "paleoLat": 35.06,
+   "paleoLng": -59.69
+  },
+  {
+   "id": "green-river",
+   "band": "early-eocene",
+   "sites": 51,
+   "occurrences": 664,
+   "medianAgeMa": 49.1,
+   "cast": 14,
+   "lat": 39.685,
+   "lng": -108.702,
+   "paleoLat": 43.63,
+   "paleoLng": -94.8
   }
  ]
 }

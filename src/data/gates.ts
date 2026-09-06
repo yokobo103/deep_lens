@@ -8,9 +8,11 @@
  *
  * Two things a gate must carry beyond its name:
  *
- *   `query`    how to find its records. A stratigraphic unit name where one
- *              exists, or a box of modern coordinates where it does not —
- *              Chengjiang and La Brea have no usable unit name in PBDB.
+ *   `query`    how to find its records. A stratigraphic unit name, a box of
+ *              modern coordinates, or both. Both is what a hub often needs: the
+ *              Chinle, Morrison and Green River each outcrop over most of the
+ *              American West, and only where they are stacked in the same
+ *              cliffs is it true to call them one place.
  *   `ageMa`    the window, always. Unit names are not unique: asking PBDB for
  *              "Kem Kem" also returns an 8 Ma record and "Hell Creek" a 103 Ma
  *              one, both from unrelated units that happen to share a name.
@@ -80,10 +82,14 @@ export const bandDefinitions: readonly BandDefinition[] = [
   { id: "late-cretaceous", terrainMa: 70, label: { ja: "白亜紀後期 · 約70 Ma", en: "Late Cretaceous · ~70 Ma" } },
   { id: "mid-cretaceous", terrainMa: 95, label: { ja: "白亜紀中期 · 約95 Ma", en: "Mid Cretaceous · ~95 Ma" } },
   { id: "early-ordovician", terrainMa: 475, label: { ja: "オルドビス紀前期 · 約475 Ma", en: "Early Ordovician · ~475 Ma" } },
+  { id: "late-jurassic", terrainMa: 150, label: { ja: "ジュラ紀後期 · 約150 Ma", en: "Late Jurassic · ~150 Ma" } },
+  { id: "late-triassic", terrainMa: 220, label: { ja: "三畳紀後期 · 約220 Ma", en: "Late Triassic · ~220 Ma" } },
+  { id: "early-eocene", terrainMa: 50, label: { ja: "始新世前期 · 約50 Ma", en: "Early Eocene · ~50 Ma" } },
 ];
 
 export const hubDefinitions: readonly HubDefinition[] = [
   { id: "morocco", name: { ja: "モロッコ", en: "Morocco" }, place: { ja: "北アフリカ", en: "North Africa" } },
+  { id: "colorado", name: { ja: "コロラド高原", en: "Colorado Plateau" }, place: { ja: "アメリカ合衆国", en: "United States" } },
 ];
 
 export const gateDefinitions: readonly GateDefinition[] = [
@@ -157,6 +163,40 @@ export const gateDefinitions: readonly GateDefinition[] = [
     place: { ja: "モロッコ", en: "Morocco" },
     name: { ja: "フェズアタ", en: "Fezouata" },
     world: { ja: "極に近い、冷たい海の底", en: "A cold sea floor, close to the pole" },
+    featured: true,
+  },
+
+  {
+    id: "chinle",
+    hub: "colorado",
+    band: "late-triassic",
+    query: { stratum: "Chinle", box: { west: -113, east: -105, south: 36, north: 41 } },
+    ageMa: { from: 235, to: 205 },
+    place: { ja: "アメリカ合衆国", en: "United States" },
+    name: { ja: "チンリ", en: "Chinle" },
+    world: { ja: "恐竜がまだ主役でない、川と湖", en: "Rivers and lakes, before dinosaurs were the story" },
+    featured: true,
+  },
+  {
+    id: "morrison",
+    hub: "colorado",
+    band: "late-jurassic",
+    query: { stratum: "Morrison", box: { west: -113, east: -105, south: 36, north: 41 } },
+    ageMa: { from: 157, to: 145 },
+    place: { ja: "アメリカ合衆国", en: "United States" },
+    name: { ja: "モリソン", en: "Morrison" },
+    world: { ja: "巨大な竜脚類が歩いた氾濫原", en: "Floodplains walked by the largest sauropods" },
+    featured: true,
+  },
+  {
+    id: "green-river",
+    hub: "colorado",
+    band: "early-eocene",
+    query: { stratum: "Green River", box: { west: -113, east: -105, south: 36, north: 41 } },
+    ageMa: { from: 54, to: 46 },
+    place: { ja: "アメリカ合衆国", en: "United States" },
+    name: { ja: "グリーンリバー", en: "Green River" },
+    world: { ja: "亜熱帯の湖と、そこへ落ちた無数の虫", en: "A subtropical lake, and the insects that fell into it" },
     featured: true,
   },
 ];
