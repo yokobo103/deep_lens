@@ -4,7 +4,6 @@ import { gateById, gatesInBand, bandById, hubs, hubIdOf, type GateDefinition, ty
 import { loadGateManifest, loadGate, type GateDetail, type GateSummary } from "../data/gateData";
 import { WorldPanel } from "./WorldPanel";
 import { hubCopy, type Locale } from "./copy";
-import { GateScene } from "./GateScene";
 
 /**
  * The present-day Earth as a hub: gates on it, and nothing else.
@@ -196,8 +195,14 @@ interface GateCardProps {
 }
 
 /**
- * What a gate says before it is entered: what it looked like, where, when,
- * and what kind of world.
+ * What a gate says before it is entered: where, when, and what kind of world.
+ *
+ * No picture of the world. The card is read while standing on the present-day
+ * Earth, and a reconstruction shown there has already been crossed into before
+ * anything was crossed — the gate stops being a threshold and becomes a
+ * caption. What the world looked like is on the other side of the button, on
+ * the Earth it belongs to.
+ *
  * The counts are here because they are the honest size of the record; the cast
  * belongs inside the world, not on its front door.
  */
@@ -211,7 +216,6 @@ function GateCard({ gate, hub, summary, locale, onClose, onGoTo, onEnter }: Gate
   return (
     <aside className="gate-card" aria-label={gate.name[locale]}>
       <button type="button" className="gate-card__close" onClick={onClose} aria-label={text.close}>×</button>
-      <GateScene gateId={gate.id} title={gate.name[locale]} locale={locale} />
       <p className="gate-card__age">{band?.label[locale] ?? `${summary.medianAgeMa} Ma`}</p>
       <h2>{gate.name[locale]}</h2>
       <p className="gate-card__place">{gate.place[locale]}</p>
