@@ -69,7 +69,12 @@ export function WorldPanel({ gate, detail, locale, onLeave }: WorldPanelProps) {
 
   return (
     <aside className={`world-panel${compact ? " is-compact" : ""}${showCast ? " is-open" : ""}`} aria-label={gate.name[locale]}>
-      <button type="button" className="world-panel__leave" onClick={onLeave}>{text.leave}</button>
+      {/* The same × in the same corner as the gate card's. A world is left the
+          way a card is closed, so it should not be a differently shaped
+          control in a different place — and a labelled button above the
+          picture read as something to do inside the world rather than the way
+          out of it. */}
+      <button type="button" className="world-panel__close" onClick={onLeave} aria-label={text.leave} title={text.leave}>×</button>
 
       <GateScene gateId={gate.id} title={gate.name[locale]} locale={locale} />
 

@@ -102,6 +102,14 @@ export function GateGlobe({ points, renderPoint, ariaLabel, terrain = null, focu
   // The reconstructed Earth is a layer over the present one rather than a
   // replacement for it, so the present is always underneath and coming back
   // costs nothing.
+  //
+  // Watched by url rather than by the object holding it. A caller building
+  // `{ url, credit }` while rendering hands over a new object every time, and
+  // an effect keyed on the object would tear the layer down and fetch the same
+  // file again on every move — which showed as the present Earth flashing
+  // through whenever a gate was tapped from inside a world of its own age.
+  const terrainUrl = terrain?.url ?? null;
+  const terrainCredit = terrain?.credit ?? "";
   useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer) return;
@@ -111,15 +119,15 @@ export function GateGlobe({ points, renderPoint, ariaLabel, terrain = null, focu
       viewer.imageryLayers.remove(existing, true);
       terrainLayerRef.current = null;
     }
-    if (!terrain) return;
-    void SingleTileImageryProvider.fromUrl(terrain.url, { credit: new Credit(terrain.credit) })
+    if (!terrainUrl) return;
+    void SingleTileImageryProvider.fromUrl(terrainUrl, { credit: new Credit(terrainCredit) })
       .then((provider) => {
         if (cancelled || viewer.isDestroyed()) return;
         terrainLayerRef.current = viewer.imageryLayers.addImageryProvider(provider);
       })
       .catch((error: unknown) => console.warn("Reconstructed Earth could not be loaded", error));
     return () => { cancelled = true; };
-  }, [terrain]);
+  }, [terrainUrl, terrainCredit]);
 
   useEffect(() => {
     const viewer = viewerRef.current;
