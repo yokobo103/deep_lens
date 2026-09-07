@@ -54,10 +54,26 @@ export interface GateDefinition {
   ageMa: { from: number; to: number };
   /** Modern country or region, for the label. */
   place: { ja: string; en: string };
+  /** Broad present-day geography. Never a palaeocontinent. */
+  currentRegion: CurrentRegionId;
   name: { ja: string; en: string };
   /** One line. What kind of world this is — not a summary of its fauna. */
   world: { ja: string; en: string };
   featured?: boolean;
+}
+
+export type CurrentRegionId =
+  | "north-america"
+  | "south-america"
+  | "europe"
+  | "africa"
+  | "asia"
+  | "oceania"
+  | "antarctica";
+
+export interface CurrentRegionDefinition {
+  id: CurrentRegionId;
+  name: { ja: string; en: string };
 }
 
 /**
@@ -101,6 +117,20 @@ export const bandDefinitions: readonly BandDefinition[] = [
   { id: "cambrian", terrainMa: 510, label: { ja: "カンブリア紀 · 約510 Ma", en: "Cambrian · ~510 Ma" } },
 ];
 
+/**
+ * The album groups journeys by today's geography so different ages can be
+ * noticed at one familiar place. Keep this deliberately broader than country.
+ */
+export const currentRegionDefinitions: readonly CurrentRegionDefinition[] = [
+  { id: "north-america", name: { ja: "北アメリカ", en: "North America" } },
+  { id: "south-america", name: { ja: "南アメリカ", en: "South America" } },
+  { id: "europe", name: { ja: "ヨーロッパ", en: "Europe" } },
+  { id: "africa", name: { ja: "アフリカ", en: "Africa" } },
+  { id: "asia", name: { ja: "アジア", en: "Asia" } },
+  { id: "oceania", name: { ja: "オセアニア", en: "Oceania" } },
+  { id: "antarctica", name: { ja: "南極", en: "Antarctica" } },
+];
+
 export const hubDefinitions: readonly HubDefinition[] = [
   { id: "morocco", name: { ja: "モロッコ", en: "Morocco" }, place: { ja: "北アフリカ", en: "North Africa" } },
   { id: "colorado", name: { ja: "コロラド高原", en: "Colorado Plateau" }, place: { ja: "アメリカ合衆国", en: "United States" } },
@@ -117,6 +147,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Hell Creek" },
     ageMa: { from: 72, to: 66 },
     place: { ja: "アメリカ合衆国", en: "United States" },
+    currentRegion: "north-america",
     name: { ja: "ヘルクリーク", en: "Hell Creek" },
     world: { ja: "白亜紀最後の川と氾濫原", en: "The last rivers and floodplains of the Cretaceous" },
     featured: true,
@@ -127,6 +158,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Dinosaur Park" },
     ageMa: { from: 80, to: 74 },
     place: { ja: "カナダ", en: "Canada" },
+    currentRegion: "north-america",
     name: { ja: "ダイナソーパーク", en: "Dinosaur Park" },
     world: { ja: "海に近い、角竜の多い低地", en: "Coastal lowlands thick with horned dinosaurs" },
     featured: true,
@@ -137,6 +169,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Nemegt" },
     ageMa: { from: 72, to: 66 },
     place: { ja: "モンゴル", en: "Mongolia" },
+    currentRegion: "asia",
     name: { ja: "ネメグト", en: "Nemegt" },
     world: { ja: "内陸の河川と湿地", en: "Inland rivers and wetlands" },
     featured: true,
@@ -147,6 +180,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Maevarano" },
     ageMa: { from: 72, to: 66 },
     place: { ja: "マダガスカル", en: "Madagascar" },
+    currentRegion: "africa",
     name: { ja: "マエヴァラノ", en: "Maevarano" },
     world: { ja: "切り離された島の、独特な顔ぶれ", en: "An island cut adrift, with a cast of its own" },
     featured: true,
@@ -158,6 +192,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Kem Kem" },
     ageMa: { from: 100, to: 93 },
     place: { ja: "モロッコ", en: "Morocco" },
+    currentRegion: "africa",
     name: { ja: "ケムケム", en: "Kem Kem" },
     world: { ja: "大河とデルタ、大型の捕食者たち", en: "A great river delta and its large predators" },
     featured: true,
@@ -168,6 +203,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Greenhorn" },
     ageMa: { from: 100, to: 92 },
     place: { ja: "アメリカ合衆国", en: "United States" },
+    currentRegion: "north-america",
     name: { ja: "西部内陸海路", en: "Western Interior Seaway" },
     world: { ja: "大陸を割った海", en: "A sea that split a continent" },
     featured: true,
@@ -179,6 +215,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Fezouata" },
     ageMa: { from: 485, to: 470 },
     place: { ja: "モロッコ", en: "Morocco" },
+    currentRegion: "africa",
     name: { ja: "フェズアタ", en: "Fezouata" },
     world: { ja: "極に近い、冷たい海の底", en: "A cold sea floor, close to the pole" },
     featured: true,
@@ -191,6 +228,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Chinle", box: { west: -113, east: -105, south: 36, north: 41 } },
     ageMa: { from: 235, to: 205 },
     place: { ja: "アメリカ合衆国", en: "United States" },
+    currentRegion: "north-america",
     name: { ja: "チンリ", en: "Chinle" },
     world: { ja: "恐竜がまだ主役でない、川と湖", en: "Rivers and lakes, before dinosaurs were the story" },
     featured: true,
@@ -202,6 +240,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Morrison", box: { west: -113, east: -105, south: 36, north: 41 } },
     ageMa: { from: 157, to: 145 },
     place: { ja: "アメリカ合衆国", en: "United States" },
+    currentRegion: "north-america",
     name: { ja: "モリソン", en: "Morrison" },
     world: { ja: "巨大な竜脚類が歩いた氾濫原", en: "Floodplains walked by the largest sauropods" },
     featured: true,
@@ -213,6 +252,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Green River", box: { west: -113, east: -105, south: 36, north: 41 } },
     ageMa: { from: 54, to: 46 },
     place: { ja: "アメリカ合衆国", en: "United States" },
+    currentRegion: "north-america",
     name: { ja: "グリーンリバー", en: "Green River" },
     world: { ja: "亜熱帯の湖と、そこへ落ちた無数の虫", en: "A subtropical lake, and the insects that fell into it" },
     featured: true,
@@ -224,6 +264,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Sarka" },
     ageMa: { from: 478, to: 462 },
     place: { ja: "チェコ", en: "Czech Republic" },
+    currentRegion: "europe",
     name: { ja: "シャルカ", en: "Sarka" },
     world: { ja: "泥の海底に降り積もった、殻の群れ", en: "Shells settling onto a muddy sea floor" },
     featured: true,
@@ -235,6 +276,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Elliot" },
     ageMa: { from: 228, to: 205 },
     place: { ja: "南アフリカ", en: "South Africa" },
+    currentRegion: "africa",
     name: { ja: "エリオット", en: "Elliot" },
     world: { ja: "大型化が始まったころの、乾いた氾濫原", en: "Dry floodplains, as the long-necked began to get large" },
     featured: true,
@@ -245,6 +287,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Tendaguru" },
     ageMa: { from: 157, to: 143 },
     place: { ja: "タンザニア", en: "Tanzania" },
+    currentRegion: "africa",
     name: { ja: "テンダグル", en: "Tendaguru" },
     world: { ja: "季節ごとに乾く海岸平野と、巨大な竜脚類", en: "A coastal plain that dried each season, and its giant sauropods" },
     featured: true,
@@ -255,6 +298,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Solnhofen" },
     ageMa: { from: 155, to: 145 },
     place: { ja: "ドイツ", en: "Germany" },
+    currentRegion: "europe",
     name: { ja: "ゾルンホーフェン", en: "Solnhofen" },
     world: { ja: "島々のあいだの、静かで塩辛い潟", en: "Still, salt-heavy lagoons between islands" },
     featured: true,
@@ -266,6 +310,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "London Clay" },
     ageMa: { from: 56, to: 47 },
     place: { ja: "イギリス", en: "United Kingdom" },
+    currentRegion: "europe",
     name: { ja: "ロンドンクレイ", en: "London Clay" },
     world: { ja: "マングローブの茂る、熱帯の入り江", en: "A tropical inlet thick with mangroves" },
     featured: true,
@@ -278,6 +323,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { box: { west: 102.3, east: 103.2, south: 24.3, north: 25.2 } },
     ageMa: { from: 525, to: 512 },
     place: { ja: "中国", en: "China" },
+    currentRegion: "asia",
     name: { ja: "澄江", en: "Chengjiang" },
     world: { ja: "体のつくりが出そろった、浅い海", en: "A shallow sea where body plans arrived all at once" },
     featured: true,
@@ -288,6 +334,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Burgess Shale" },
     ageMa: { from: 512, to: 502 },
     place: { ja: "カナダ", en: "Canada" },
+    currentRegion: "north-america",
     name: { ja: "バージェス頁岩", en: "Burgess Shale" },
     world: { ja: "泥崩れに飲まれて残った、奇妙な体の群れ", en: "Strange bodies, buried whole by a slide of mud" },
     featured: true,
@@ -299,6 +346,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { box: { west: -8, east: -3, south: 29, north: 32 } },
     ageMa: { from: 400, to: 372 },
     place: { ja: "モロッコ", en: "Morocco" },
+    currentRegion: "africa",
     name: { ja: "アンチアトラス", en: "Anti-Atlas" },
     world: { ja: "三葉虫の最後の栄え", en: "The last flourishing of the trilobites" },
     featured: true,
@@ -309,6 +357,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Gogo" },
     ageMa: { from: 387, to: 375 },
     place: { ja: "オーストラリア", en: "Australia" },
+    currentRegion: "oceania",
     name: { ja: "ゴーゴー", en: "Gogo" },
     world: { ja: "熱帯の礁と、甲冑をまとった魚たち", en: "A tropical reef, and fish in armour" },
     featured: true,
@@ -319,6 +368,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Francis Creek" },
     ageMa: { from: 315, to: 303 },
     place: { ja: "アメリカ合衆国", en: "United States" },
+    currentRegion: "north-america",
     name: { ja: "メイゾンクリーク", en: "Mazon Creek" },
     world: { ja: "石炭になる前の、シダの湿地", en: "The fern swamp that would become coal" },
     featured: true,
@@ -329,6 +379,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Bear Gulch" },
     ageMa: { from: 330, to: 318 },
     place: { ja: "アメリカ合衆国", en: "United States" },
+    currentRegion: "north-america",
     name: { ja: "ベアガルチ", en: "Bear Gulch" },
     world: { ja: "静かな入り江に沈んだ、魚だらけの海", en: "A still bay, and the sea of fish that sank into it" },
     featured: true,
@@ -340,6 +391,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Beaufort" },
     ageMa: { from: 266, to: 252 },
     place: { ja: "南アフリカ", en: "South Africa" },
+    currentRegion: "africa",
     name: { ja: "ボーフォート", en: "Beaufort" },
     world: { ja: "大量絶滅の直前、獣に似た顔が歩く大地", en: "The land of beast-faced reptiles, just before the dying" },
     featured: true,
@@ -350,6 +402,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Zechstein" },
     ageMa: { from: 260, to: 252 },
     place: { ja: "ヨーロッパ", en: "Europe" },
+    currentRegion: "europe",
     name: { ja: "ツェヒシュタイン", en: "Zechstein" },
     world: { ja: "塩が濃くなっていく、閉じた海", en: "A closed sea, going slowly to salt" },
     featured: true,
@@ -361,6 +414,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Katberg" },
     ageMa: { from: 252, to: 245 },
     place: { ja: "南アフリカ", en: "South Africa" },
+    currentRegion: "africa",
     name: { ja: "カットバーグ", en: "Katberg" },
     world: { ja: "絶滅の直後、生き残りだけが歩く荒れ地", en: "The bare ground after the dying, and the few that walked it" },
     featured: true,
@@ -372,6 +426,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Moenkopi" },
     ageMa: { from: 250, to: 242 },
     place: { ja: "アメリカ合衆国", en: "United States" },
+    currentRegion: "north-america",
     name: { ja: "モエンコピ", en: "Moenkopi" },
     world: { ja: "浅い海が引いたあとの、泥の平原", en: "Mud flats left behind by a shallow sea" },
     featured: true,
@@ -383,6 +438,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Yixian" },
     ageMa: { from: 130, to: 120 },
     place: { ja: "中国", en: "China" },
+    currentRegion: "asia",
     name: { ja: "熱河", en: "Jehol" },
     world: { ja: "火山灰が降りつづけた湖と、羽毛のある恐竜", en: "A lake under falling ash, and dinosaurs with feathers" },
     featured: true,
@@ -394,6 +450,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Wealden" },
     ageMa: { from: 140, to: 125 },
     place: { ja: "イギリス", en: "United Kingdom" },
+    currentRegion: "europe",
     name: { ja: "ウィールド", en: "Wealden" },
     world: { ja: "イグアノドンが歩いた、大きな川の氾濫原", en: "The floodplain of a great river, walked by Iguanodon" },
     featured: true,
@@ -405,6 +462,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Lopez de Bertodano" },
     ageMa: { from: 70, to: 66 },
     place: { ja: "南極", en: "Antarctica" },
+    currentRegion: "antarctica",
     name: { ja: "ロペス・デ・ベルトダーノ", en: "Lopez de Bertodano" },
     world: { ja: "氷のない南極の、冷たく浅い海", en: "A cold shallow sea off an Antarctica with no ice" },
     featured: true,
@@ -416,6 +474,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "La Meseta" },
     ageMa: { from: 54, to: 44 },
     place: { ja: "南極", en: "Antarctica" },
+    currentRegion: "antarctica",
     name: { ja: "ラ・メセタ", en: "La Meseta" },
     world: { ja: "南極に森があったころの、岸辺", en: "A shoreline, back when Antarctica had forests" },
     featured: true,
@@ -426,6 +485,7 @@ export const gateDefinitions: readonly GateDefinition[] = [
     query: { stratum: "Ischigualasto" },
     ageMa: { from: 236, to: 224 },
     place: { ja: "アルゼンチン", en: "Argentina" },
+    currentRegion: "south-america",
     name: { ja: "イシグアラスト", en: "Ischigualasto" },
     world: { ja: "最初の恐竜が現れた、季節のある平原", en: "A plain of wet and dry seasons, where the first dinosaurs appear" },
     featured: true,

@@ -1,6 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { bandById, gateById, gateDefinitions } from "../data/gates";
+import {
+  bandById,
+  currentRegionDefinitions,
+  gateById,
+  type GateDefinition,
+} from "../data/gates";
 import { sceneSource } from "./scenes";
 import { agePhrase, eraOf, formatDay, type Visit } from "./log";
 import { hubCopy, type Locale } from "./copy";
@@ -14,24 +19,34 @@ interface ExplorerLogProps {
   onClose: () => void;
 }
 
+type SortMode = "visited" | "oldest" | "newest" | "region";
+
+interface LogEntry {
+  visit: Visit;
+  gate: GateDefinition;
+  ageMa: number;
+  visitIndex: number;
+}
+
+function fallbackAge(gate: GateDefinition): number {
+  return (gate.ageMa.from + gate.ageMa.to) / 2;
+}
+
+function ageThenName(direction: "oldest" | "newest", locale: Locale) {
+  const sign = direction === "oldest" ? -1 : 1;
+  return (a: LogEntry, b: LogEntry) =>
+    ((a.ageMa - b.ageMa) * sign)
+    || a.gate.name[locale].localeCompare(b.gate.name[locale], locale);
+}
+
 /**
- * Where this reader has been.
- *
- * Two dates on every card, and they are the whole point: the day someone sat
- * down and went, and how far back they went. A log is the only place in the app
- * those two can stand next to each other.
- *
- * Not a mission list. No progress bar, no badges earned, no percentage — the
- * count is here because a reader wants to know how much of it they have seen,
- * and that is a different question from being told to finish.
- *
- * A full screen opened from the header rather than a tab. Deep Lens is one
- * globe; permanent navigation furniture would take a strip off it forever, and
- * on a phone that strip is the difference between holding the Earth and looking
- * at a website about the Earth.
+ * The quiet room after the globe: one journey, rearranged to reveal time and
+ * place. It is an album, not a checklist — there is deliberately no total,
+ * percentage, progress bar, or locked slot.
  */
 export function ExplorerLog({ visits, ages, locale, onGoTo, onClose }: ExplorerLogProps) {
   const text = hubCopy[locale];
+  const [sortMode, setSortMode] = useState<SortMode>("visited");
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
@@ -39,13 +54,34 @@ export function ExplorerLog({ visits, ages, locale, onGoTo, onClose }: ExplorerL
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Most recent first: a log is read backwards from the last trip.
-  const entries = [...visits]
-    .sort((a, b) => (a.on === b.on ? 0 : a.on < b.on ? 1 : -1))
-    .flatMap((visit) => {
-      const gate = gateById(visit.gateId);
-      return gate ? [{ visit, gate }] : [];
-    });
+  const entries = useMemo(() => visits.flatMap((visit, visitIndex) => {
+    const gate = gateById(visit.gateId);
+    return gate ? [{
+      visit,
+      gate,
+      ageMa: ages.get(gate.id) ?? fallbackAge(gate),
+      visitIndex,
+    }] : [];
+  }), [ages, visits]);
+
+  const sections = useMemo(() => {
+    if (sortMode === "region") {
+      return currentRegionDefinitions.flatMap((region) => {
+        const regionEntries = entries
+          .filter((entry) => entry.gate.currentRegion === region.id)
+          .sort(ageThenName("oldest", locale));
+        return regionEntries.length > 0 ? [{ id: region.id, region, entries: regionEntries }] : [];
+      });
+    }
+
+    const sorted = [...entries];
+    if (sortMode === "visited") {
+      sorted.sort((a, b) => b.visit.on.localeCompare(a.visit.on) || b.visitIndex - a.visitIndex);
+    } else {
+      sorted.sort(ageThenName(sortMode, locale));
+    }
+    return [{ id: sortMode, region: null, entries: sorted }];
+  }, [entries, locale, sortMode]);
 
   return createPortal(
     <div className="log" role="dialog" aria-modal="true" aria-label={text.logTitle}>
@@ -59,37 +95,58 @@ export function ExplorerLog({ visits, ages, locale, onGoTo, onClose }: ExplorerL
           <button type="button" className="log__close" onClick={onClose} aria-label={text.close}>×</button>
         </header>
 
-        <p className="log__count">
-          <span>{text.logVisited}</span>
-          <b>{entries.length}</b>
-          <i>/ {gateDefinitions.length}</i>
-        </p>
+        <div className="log__tools">
+          <p className="log__count">{text.logVisited(entries.length)}</p>
+          <label className="log__sort">
+            <span>{text.logSort}</span>
+            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+              <option value="visited">{text.logSortVisited}</option>
+              <option value="oldest">{text.logSortOldest}</option>
+              <option value="newest">{text.logSortNewest}</option>
+              <option value="region">{text.logSortRegion}</option>
+            </select>
+          </label>
+        </div>
 
         {entries.length === 0 && <p className="log__empty">{text.logEmpty}</p>}
 
-        <ol className="log__list">
-          {entries.map(({ visit, gate }) => {
-            const band = bandById(gate.band);
-            const scene = sceneSource(gate.id);
-            const ma = ages.get(gate.id);
-            return (
-              <li key={gate.id}>
-                <button type="button" onClick={() => onGoTo(gate.id)}>
-                  {scene && <img src={scene} alt="" className="log__scene" />}
-                  <span className="log__body">
-                    <time dateTime={visit.on}>{formatDay(visit.on)}</time>
-                    <strong>{band ? eraOf(band.label[locale]) : gate.name[locale]}</strong>
-                    <span className="log__place">{gate.name[locale]}</span>
-                    <span className="log__age">{ma === undefined ? "" : agePhrase(ma, locale)}</span>
-                  </span>
-                  {band && <span className="log__seal" aria-hidden="true">{eraOf(band.label.en).toUpperCase()}</span>}
-                </button>
-              </li>
-            );
-          })}
-        </ol>
+        <div className="log__album">
+          {sections.map((section) => (
+            <section className="log__section" key={section.id}>
+              {section.region && (
+                <header className="log__region">
+                  <h3><span aria-hidden="true">⌖</span>{section.region.name[locale]}</h3>
+                  <p>{text.logWorlds(section.entries.length)}</p>
+                </header>
+              )}
+              <ol className="log__list">
+                {section.entries.map(({ visit, gate, ageMa }) => {
+                  const band = bandById(gate.band);
+                  const scene = sceneSource(gate.id);
+                  return (
+                    <li key={gate.id}>
+                      <button type="button" onClick={() => onGoTo(gate.id)}>
+                        <span className="log__visual">
+                          {scene && <img src={scene} alt="" className="log__scene" />}
+                          {band && <span className="log__era">{eraOf(band.label[locale])}</span>}
+                        </span>
+                        <span className="log__body">
+                          {sortMode === "visited" && <time dateTime={visit.on}>{formatDay(visit.on)}</time>}
+                          <strong>{gate.name[locale]}</strong>
+                          <span className="log__place">{gate.place[locale]}</span>
+                          <span className="log__age">{agePhrase(ageMa, locale)}</span>
+                        </span>
+                        <span className="log__return" aria-hidden="true">↗</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          ))}
+        </div>
 
-        <p className="log__tail">{text.logMore}</p>
+        {entries.length > 0 && <p className="log__tail">{text.logMore}</p>}
       </div>
     </div>,
     document.body,
