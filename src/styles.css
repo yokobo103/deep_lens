@@ -757,6 +757,39 @@ body { overscroll-behavior: none; }
 /* The header itself lets clicks through to the globe behind it, so anything
    in it that is meant to be pressed has to say so. Only .gate-language did,
    which is why JA and EN worked and the two buttons beside them did not. */
+/* Where this came from. Read once, so it lives nowhere on the globe. */
+.about {
+  position: fixed; z-index: 50; inset: 0; overflow-y: auto; overscroll-behavior: contain;
+  background: radial-gradient(120% 90% at 70% -10%, #10303a 0%, #04121a 48%, #01080d 100%);
+}
+.about__sheet {
+  position: relative; display: grid; gap: 34px; align-items: start;
+  max-width: 880px; margin: 0 auto; padding: 44px 22px 64px;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+}
+.about__close {
+  position: absolute; top: 18px; right: 18px; width: 34px; height: 34px; line-height: 1;
+  cursor: pointer; font-size: 20px; color: #8ca7a2;
+  border: 1px solid rgb(129 210 198 / 22%); background: rgb(5 15 18 / 78%);
+}
+.about__close:hover { color: #79e3d2; border-color: rgb(121 227 210 / 45%); }
+.about__poster { display: block; width: 100%; height: auto; border: 1px solid rgb(129 210 198 / 18%); }
+.about__brand { margin: 0; color: #6f8b87; font: 650 9px ui-monospace, monospace; letter-spacing: .42em; }
+.about__words h2 { margin: 8px 0 22px; color: #effffc; font: 400 25px/1.2 ui-monospace, monospace; letter-spacing: .04em; }
+.about__words p { margin: 0 0 15px; color: #cfe6e1; font: 500 12px/2.05 ui-monospace, monospace; letter-spacing: .04em; }
+.about__sign { margin-top: 24px !important; color: #ffd690 !important; font: 700 9px ui-monospace, monospace !important; letter-spacing: .3em; }
+.about__sources { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid rgb(129 210 198 / 16%); }
+.about__sources div { margin-bottom: 13px; }
+.about__sources dt { color: #b69b6c; font: 700 8px ui-monospace, monospace; letter-spacing: .12em; }
+.about__sources dd { margin: 4px 0 0; color: #7f9b9b; font: 500 9px/1.75 ui-monospace, monospace; }
+
+.gate-about-open {
+  padding: 7px 11px; cursor: pointer; color: #8ca7a2; pointer-events: auto;
+  border: 1px solid rgb(129 210 198 / 22%); background: transparent;
+  font: 700 9px ui-monospace, monospace; letter-spacing: .12em;
+}
+.gate-about-open:hover { color: #a9eee0; border-color: rgb(121 227 210 / 40%); }
+
 .gate-controls { display: flex; align-items: center; gap: 14px; pointer-events: auto; }
 .gate-settings { display: flex; align-items: center; gap: 6px; pointer-events: auto; }
 .gate-timescale-toggle {
@@ -860,8 +893,15 @@ body { overscroll-behavior: none; }
   .gate-hint { bottom: 18px; }
   /* Four controls and a title do not fit 375px. The title gives way — it is
      the one thing on this bar that is not a control. */
-  .gate-header { padding: 16px 12px; gap: 10px; }
-  .gate-header h1 { font-size: 13px; }
+  /* Five controls and a two-line title do not fit 375px. The subtitle goes:
+     the wordmark still says what this is, and the line under it is repeated
+     inside About anyway. */
+  .gate-header { padding: 14px 12px; gap: 10px; }
+  .gate-header h1 { display: none; }
+  .gate-about-open { padding: 7px 8px; }
+  .about__sheet { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 34px 16px 52px; }
+  .about__poster { max-width: 300px; margin: 0 auto; }
+  .about__words h2 { font-size: 21px; }
   .gate-controls { gap: 6px; }
   .gate-log-open { padding: 7px 10px; }
   .gate-log-open .is-wide { display: none; }

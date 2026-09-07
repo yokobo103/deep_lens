@@ -23,6 +23,23 @@ const denylistedPaths = [
 // catches an EARTH LENS workflow if one is ever copied back in.
 const forbiddenImports = /(?:missions|lenses|why-here|i18n|share)\//;
 const forbiddenText = ["EARTH LENS", "earth-lens", "Earth Lens"];
+
+/**
+ * The one place Deep Lens is allowed to say the other app's name.
+ *
+ * The forbidden-text check exists to catch inherited code and strings. It is
+ * not meant to stop Deep Lens from saying where it came from: the maker's note
+ * on the About page begins with Earth Lens because that is the true origin of
+ * this one, and a device built on saying who is speaking should be able to say
+ * that much about itself.
+ *
+ * Counted, not waived. One mention in this file passes; a second anywhere —
+ * including a second in this file — still fails, so the allowance cannot widen
+ * without someone deciding to widen it here.
+ */
+const allowedMentions = [
+  { path: "src/gates/copy.ts", text: "Earth Lens", times: 2, why: "the maker's note, in both languages" },
+];
 const failures = [];
 
 for (const path of denylistedPaths) {
@@ -49,8 +66,14 @@ for (const path of ["src", "index.html", "package.json", "README.md"]) {
   const paths = path === "src" ? sourceFiles(absolutePath) : [absolutePath];
   for (const file of paths) {
     const content = readFileSync(file, "utf8");
+    const where = relative(root, file).replaceAll("\\", "/");
     for (const text of forbiddenText) {
-      if (content.includes(text)) failures.push(`forbidden text "${text}" in ${relative(root, file)}`);
+      const found = content.split(text).length - 1;
+      const allowed = allowedMentions.find((entry) => entry.path === where && entry.text === text)?.times ?? 0;
+      if (found > allowed) {
+        const extra = allowed === 0 ? "" : ` (${allowed} allowed, ${found} found)`;
+        failures.push(`forbidden text "${text}" in ${where}${extra}`);
+      }
     }
   }
 }

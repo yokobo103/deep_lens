@@ -6,6 +6,7 @@ import { WorldPanel } from "./WorldPanel";
 import { hubCopy, type Locale } from "./copy";
 import { TimeScale } from "./TimeScale";
 import { ExplorerLog } from "./ExplorerLog";
+import { About } from "./About";
 import { readLog, recordVisit, type Visit } from "./log";
 
 /**
@@ -35,6 +36,7 @@ export function GateHub() {
   // reader's thumb held in the book, and some readers do not want one.
   const [visits, setVisits] = useState<Visit[]>(() => readLog());
   const [logOpen, setLogOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [timescale, setTimescale] = useState<boolean>(() => {
     try {
       return window.localStorage.getItem("deep-lens-timescale") !== "off";
@@ -181,6 +183,14 @@ export function GateHub() {
             <span className="is-narrow">{text.log}</span>
             {visits.length > 0 && <i aria-hidden="true">{visits.length}</i>}
           </button>
+          <button
+            type="button"
+            className="gate-about-open"
+            onClick={() => setAboutOpen(true)}
+            aria-label={text.aboutTitle}
+          >
+            {text.about}
+          </button>
           <div className="gate-settings">
           <button
             type="button"
@@ -198,6 +208,8 @@ export function GateHub() {
           </div>
         </div>
       </header>
+
+      {aboutOpen && <About locale={locale} onClose={() => setAboutOpen(false)} />}
 
       {logOpen && (
         <ExplorerLog
