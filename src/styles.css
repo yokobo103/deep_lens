@@ -537,6 +537,18 @@ body { overscroll-behavior: none; }
 .gate-marker.has-ages::after {
   position: absolute; inset: -7px; border: 1px solid rgb(255 214 144 / 26%); border-radius: 50%; content: "";
 }
+/* A label that would land on one already drawn is not drawn. The marker stays
+   and still says what it is when pressed.
+
+   Hidden with visibility, never with display: the collision test measures the
+   label's own width every frame, and display:none reports zero. A suppressed
+   label would then look collision-free, come back, collide, and go again —
+   flickering, with real overlaps on screen while it happened. */
+.gate-marker.is-crowded .gate-marker__label { visibility: hidden; }
+.gate-marker.is-crowded .gate-marker__ring { border-color: rgb(255 214 144 / 34%); box-shadow: none; }
+.gate-marker.is-crowded:hover .gate-marker__label { visibility: visible; z-index: 2; }
+.gate-marker.is-crowded:hover .gate-marker__ring { border-color: #ffd690; box-shadow: 0 0 26px rgb(255 214 144 / 45%); }
+
 .gate-marker__label i { margin-left: 6px; padding: 0 4px; color: #1b1207; background: #ffd690; border-radius: 6px; font-style: normal; font-size: 7px; }
 
 .gate-ages { display: flex; gap: 5px; margin-top: 13px; }

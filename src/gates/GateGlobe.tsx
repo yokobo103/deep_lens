@@ -7,6 +7,8 @@ export interface GlobePoint {
   id: string;
   lat: number;
   lng: number;
+  /** Which label survives a collision. Higher wins; default 0. */
+  weight?: number;
 }
 
 interface GateGlobeProps {
@@ -67,11 +69,35 @@ export function GateGlobe({ points, renderPoint, ariaLabel, terrain = null, focu
     const windowPosition = new Cartesian2();
     const occluder = new EllipsoidalOccluder(viewer.scene.globe.ellipsoid, viewer.camera.positionWC);
 
+    /**
+     * Where a marker's label would land if it were drawn.
+     *
+     * Computed rather than measured: the label is centred under a 34px marker
+     * with a 6px gap, and only its own width and height have to be read. That
+     * keeps every DOM read in one pass and every write in another, so a frame
+     * costs one layout instead of one per marker.
+     */
+    const labelBox = (x: number, y: number, width: number, height: number) => ({
+      left: x - width / 2, right: x + width / 2, top: y + 23, bottom: y + 23 + height,
+    });
+
+    const overlaps = (a: ReturnType<typeof labelBox>, b: ReturnType<typeof labelBox>) =>
+      a.left < b.right + 4 && a.right + 4 > b.left && a.top < b.bottom + 3 && a.bottom + 3 > b.top;
+
     const place = () => {
       const overlay = overlayRef.current;
       if (!overlay) return;
       occluder.cameraPosition = viewer.camera.positionWC;
       const byId = new Map(pointsRef.current.map((point) => [point.id, point]));
+      const centreX = overlay.clientWidth / 2;
+      const centreY = overlay.clientHeight / 2;
+
+      // Read everything first, write everything after.
+      const found: {
+        element: HTMLElement; x: number; y: number; visible: boolean;
+        box: ReturnType<typeof labelBox> | null; weight: number; pinned: boolean; fromCentre: number;
+      }[] = [];
+
       for (const element of overlay.querySelectorAll<HTMLElement>("[data-globe-point]")) {
         const point = byId.get(element.dataset.globePoint ?? "");
         if (!point) continue;
@@ -80,11 +106,50 @@ export function GateGlobe({ points, renderPoint, ariaLabel, terrain = null, focu
         // Behind the horizon is hidden rather than moved: a marker that slides
         // to the rim as the Earth turns reads as a thing on the screen, not a
         // thing on the planet.
-        element.style.visibility = projected && occluder.isPointVisible(world) ? "visible" : "hidden";
-        if (projected) {
-          element.style.left = `${projected.x}px`;
-          element.style.top = `${projected.y}px`;
+        const visible = Boolean(projected) && occluder.isPointVisible(world);
+        const label = element.querySelector<HTMLElement>(".gate-marker__label");
+        const x = projected ? projected.x : 0;
+        const y = projected ? projected.y : 0;
+        found.push({
+          element, x, y, visible,
+          box: label && visible ? labelBox(x, y, label.offsetWidth, label.offsetHeight) : null,
+          weight: point.weight ?? 0,
+          // A place being looked at keeps its name whatever is next to it.
+          pinned: element.classList.contains("is-selected") || element.classList.contains("is-here"),
+          fromCentre: Math.hypot(x - centreX, y - centreY),
+        });
+      }
+
+      /**
+       * Thirty gates put four names on top of each other over North America.
+       * So labels are placed in order of importance and any that would land on
+       * one already placed is simply not drawn — its marker stays, and pressing
+       * it still says what it is. Turning the Earth or moving closer spreads
+       * them out and the names come back on their own.
+       *
+       * Order is what keeps this from flickering: a place being looked at, then
+       * places holding more ages, then whatever is nearest the middle of the
+       * screen. Only the last of those changes as the globe turns, and it
+       * changes smoothly.
+       */
+      const order = [...found].sort((a, b) =>
+        Number(b.pinned) - Number(a.pinned) || b.weight - a.weight || a.fromCentre - b.fromCentre);
+
+      const taken: ReturnType<typeof labelBox>[] = [];
+      const crowded = new Set<HTMLElement>();
+      for (const entry of order) {
+        if (!entry.box) continue;
+        if (taken.some((box) => overlaps(entry.box!, box))) crowded.add(entry.element);
+        else taken.push(entry.box);
+      }
+
+      for (const entry of found) {
+        entry.element.style.visibility = entry.visible ? "visible" : "hidden";
+        if (entry.visible) {
+          entry.element.style.left = `${entry.x}px`;
+          entry.element.style.top = `${entry.y}px`;
         }
+        entry.element.classList.toggle("is-crowded", crowded.has(entry.element));
       }
     };
 

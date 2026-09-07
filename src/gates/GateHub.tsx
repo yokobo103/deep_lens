@@ -110,7 +110,9 @@ export function GateHub() {
   const hubPoints = allHubs.flatMap((hub) => {
     const youngest = [...hub.gates].sort((a, b) => a.ageMa.to - b.ageMa.to)[0];
     const summary = youngest ? gates.find((gate) => gate.id === youngest.id) : undefined;
-    return summary ? [{ id: hub.id, lat: summary.lat, lng: summary.lng }] : [];
+    // A place holding several ages keeps its name when names collide: it is
+    // the one with most behind it.
+    return summary ? [{ id: hub.id, lat: summary.lat, lng: summary.lng, weight: hub.gates.length }] : [];
   });
 
   return (
