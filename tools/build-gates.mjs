@@ -16,6 +16,9 @@
 
 import { writeFile, mkdir } from "node:fs/promises";
 import { readGates, GATES_SOURCE } from "./gates-source.mjs";
+
+// Cast entries PBDB places nowhere. Printed at the end so the gap is visible.
+const placeless = new Set();
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -111,6 +114,29 @@ async function buildGate(gate) {
     cast.set(name, entry);
   }
 
+  // What PBDB's describers recorded about where each of them lived. Stored raw,
+  // not classified: the folding into bands a picture can show is the app's
+  // reading and belongs where it can be changed without re-baking, and keeping
+  // the original strings means the reading can always be checked against them.
+  // Asked once per gate for the cast that is kept, never for the whole tail.
+  const shortlist = [...cast.values()].sort((a, b) => b.count - a.count).slice(0, CAST_LIMIT);
+  const genera = [...new Set(shortlist.map((entry) => entry.name.split(" ")[0].replace(/[()]/g, "")))];
+  if (genera.length > 0) {
+    const taxa = await fetchJson(`${BASE}/taxa/list.json?show=ecospace,class&name=${encodeURIComponent(genera.join(","))}`);
+    const ecospace = new Map((taxa.records ?? []).map((record) => [record.nam, record]));
+    for (const entry of shortlist) {
+      const taxon = ecospace.get(entry.name.split(" ")[0].replace(/[()]/g, ""));
+      if (taxon?.phl) entry.phylum = taxon.phl;
+      // I = ichnotaxon (a footprint), F = form taxon (an eggshell, a detached
+      // organ). A name like Macroolithus is a record of an egg, not of an
+      // animal standing somewhere, and it was landing in "on land".
+      if (taxon?.flg) entry.form = taxon.flg;
+      if (taxon?.jev) entry.env = taxon.jev;
+      if (taxon?.jlh) entry.habit = taxon.jlh;
+      if (!taxon?.jev && !taxon?.jlh) placeless.add(`${gate.id}: ${entry.name}`);
+    }
+  }
+
   return {
     id: gate.id,
     band: gate.band,
@@ -119,7 +145,7 @@ async function buildGate(gate) {
     medianAgeMa: ageCount ? round(ageSum / ageCount, 1) : null,
     environments: [...environments.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6),
     formations: [...formations.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6),
-    cast: [...cast.values()].sort((a, b) => b.count - a.count).slice(0, CAST_LIMIT),
+    cast: shortlist,
     castTotal: cast.size,
     ...centreOfLargestCluster(localities),
     localities: localities.map((p) => [p.lng, p.lat, p.paleoLng, p.paleoLat]),
@@ -182,3 +208,8 @@ await writeFile(join(OUT_DIR, "manifest.json"), JSON.stringify({
 
 const total = manifest.reduce((sum, gate) => sum + gate.sites, 0);
 console.log(`\n${manifest.length} gates, ${total} localities -> ${OUT_DIR}`);
+
+if (placeless.size > 0) {
+  console.log(`${placeless.size} cast entries have no recorded habitat:`);
+  for (const entry of placeless) console.log(`  ${entry}`);
+}

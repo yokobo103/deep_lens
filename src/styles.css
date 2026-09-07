@@ -887,7 +887,26 @@ body { overscroll-behavior: none; }
 .world-ages button b { color: #ffd690; font: 750 9px ui-monospace, monospace; letter-spacing: .08em; }
 .world-ages button:hover { border-color: #ffd690; background: rgb(42 32 14 / 70%); }
 
-.world-cast { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgb(129 210 198 / 16%); }
+/* Who lived here, and where. A few names a band, because the band is the point:
+   Green River's insects with nothing at all under the water, Sarka's cast half
+   buried in it. The whole list is one press away and stays there. */
+.world-life { margin-top: 17px; padding-top: 15px; border-top: 1px solid rgb(129 210 198 / 16%); }
+.world-life h3 { margin: 0 0 12px; color: #6f8b87; font: 650 8px ui-monospace, monospace; letter-spacing: .14em; }
+.world-life__layer {
+  display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 12px;
+  padding: 9px 0; border-top: 1px solid rgb(129 210 198 / 9%);
+}
+.world-life__layer:first-of-type { border-top: 0; padding-top: 0; }
+.world-life__layer > span {
+  color: #b69b6c; font: 700 9px/1.5 ui-monospace, monospace; letter-spacing: .1em;
+}
+.world-life ul { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.world-life li { display: block; min-width: 0; }
+.world-life li b { display: block; color: #f2fffb; font: 500 13px/1.35 ui-monospace, monospace; letter-spacing: .02em; }
+.world-life li em { display: block; color: #7f9b9b; font: 400 10px/1.5 ui-monospace, monospace; font-style: italic; }
+.world-life small { display: block; margin-top: 13px; color: #55706c; font: 500 8px/1.7 ui-monospace, monospace; }
+
+.world-cast { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgb(129 210 198 / 16%); }
 .world-cast h3 { margin: 0 0 10px; color: #6f8b87; font: 650 8px ui-monospace, monospace; letter-spacing: .14em; }
 .world-cast__group { margin-bottom: 12px; }
 .world-cast__group > span { display: block; margin-bottom: 4px; color: #b69b6c; font: 700 8px ui-monospace, monospace; letter-spacing: .1em; }
@@ -896,6 +915,13 @@ body { overscroll-behavior: none; }
 .world-cast li em { color: #e7f6f2; font: 500 11px/1.4 ui-monospace, monospace; font-style: italic; }
 .world-cast li b { color: #5f7a76; font: 650 9px ui-monospace, monospace; }
 .world-cast small { display: block; margin-top: 12px; color: #6f8b87; font: 500 8px/1.6 ui-monospace, monospace; }
+
+.world-panel__more {
+  width: 100%; margin-top: 15px; padding: 10px; cursor: pointer;
+  color: #8ca7a2; border: 1px solid rgb(129 210 198 / 20%); background: transparent;
+  font: 700 9px ui-monospace, monospace; letter-spacing: .1em;
+}
+.world-panel__more:hover { color: #a9eee0; border-color: rgb(121 227 210 / 40%); }
 
 .world-panel__fold {
   width: 100%; margin-top: 14px; padding: 9px; cursor: pointer;

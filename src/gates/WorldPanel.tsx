@@ -3,6 +3,8 @@ import type { GateDefinition } from "../data/gates";
 import type { GateDetail } from "../data/gateData";
 import { bandById } from "../data/gates";
 import { dominantEnvironment, ENV_COLOR, ENV_LABEL } from "../data/environment";
+import { layerOf, LAYER_LABEL, LAYER_ORDER, type Layer } from "../data/habitat";
+import { japaneseName } from "../data/names";
 import type { Locale } from "./copy";
 import { hubCopy } from "./copy";
 import { GateScene } from "./GateScene";
@@ -68,8 +70,28 @@ export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onDismiss }
   // of place stay on screen.
   const compact = useCompactLayout();
   const [openOnPhone, setOpenOnPhone] = useState(false);
+  // The whole record, behind its own press on every screen. It is evidence, not
+  // the point, and it is long enough to bury the thing it is evidence for.
+  const [listOpen, setListOpen] = useState(false);
   const showCast = !compact || openOnPhone;
   const kind = dominantEnvironment(detail.environments);
+
+  // Who lived here, and where in the world they lived — from what PBDB's own
+  // describers recorded, not from captions we would have to invent.
+  //
+  // Three a band, not two. Two was tidier and dropped Tyrannosaurus out of Hell
+  // Creek: it is the third most-recorded animal on land there, behind a
+  // multituberculate and a turtle, and a card about that world with no
+  // tyrannosaur on it is a card nobody believes.
+  const byLayer = new Map<Layer, typeof detail.cast>();
+  for (const member of detail.cast) {
+    const layer = layerOf(member.phylum ?? null, member.env ?? null, member.habit ?? null, member.group, member.form ?? null);
+    byLayer.set(layer, [...(byLayer.get(layer) ?? []), member]);
+  }
+  const layers = LAYER_ORDER.flatMap((layer) => {
+    const members = byLayer.get(layer);
+    return members?.length ? [[layer, members.slice(0, 3)] as const] : [];
+  });
 
   const grouped = new Map<string, typeof detail.cast>();
   for (const member of detail.cast) {
@@ -113,13 +135,40 @@ export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onDismiss }
         </div>
       )}
 
+      {showCast && <div className="world-life">
+        <h3>{text.residents}</h3>
+        {layers.map(([layer, members]) => (
+          <div key={layer} className="world-life__layer">
+            <span>{LAYER_LABEL[layer][locale]}</span>
+            <ul>
+              {members.map((member) => {
+                const ja = locale === "ja" ? japaneseName(member.name) : undefined;
+                return (
+                  <li key={member.name}>
+                    {ja && <b>{ja}</b>}
+                    <em>{member.name}</em>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+        <small>{text.residentsNote}</small>
+      </div>}
+
       {compact && (
         <button type="button" className="world-panel__fold" aria-expanded={showCast} onClick={() => setOpenOnPhone((open) => !open)}>
-          {showCast ? text.hideCast : text.showCast}
+          {showCast ? text.hideCast : text.residents}
         </button>
       )}
 
-      {showCast && <div className="world-cast">
+      {showCast && (
+        <button type="button" className="world-panel__more" aria-expanded={listOpen} onClick={() => setListOpen((open) => !open)}>
+          {listOpen ? text.hideList : text.showList(detail.castTotal)}
+        </button>
+      )}
+
+      {showCast && listOpen && <div className="world-cast">
         <h3>{text.cast(detail.castTotal)}</h3>
         {groups.map(([group, members]) => (
           <div key={group} className="world-cast__group">

@@ -24,8 +24,15 @@ export interface GateManifest {
 
 export interface CastMember {
   name: string;
+  /** PBDB's class, or its phylum where no class is recorded. */
   group: string | null;
   count: number;
+  /** What PBDB's describers recorded about this genus. Raw, as stored. */
+  phylum?: string;
+  env?: string;
+  habit?: string;
+  /** PBDB taxon flags: I is a footprint, F an egg or a detached organ. */
+  form?: string;
 }
 
 export interface GateDetail extends Omit<GateSummary, "cast"> {
