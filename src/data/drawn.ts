@@ -78,6 +78,67 @@ export const DRAWN_IN_SCENE: Record<string, readonly string[]> = {
     "Otodus obliquus", "Carcharias macrotus", "Cimomia imperialis",
     "Dinochelus steeplensis", "Nypa fruticans",
   ],
+
+  chengjiang: [
+    "Eoredlichia intermediata", "Naraoia spinosa", "Leanchoilia illecebrosa",
+    "Cricocosmia jinningensis", "Isoxys auritus",
+  ],
+  "burgess-shale": [
+    "Marrella splendens", "Wiwaxia corrugata", "Ottoia prolifica",
+    "Canadaspis perfecta", "Waptia fieldensis",
+  ],
+  "anti-atlas": [
+    "Agoniatites expansus", "Anarcestes lateseptatus", "Chotecops breviceps",
+    "Pedinopariops degener", "Aulacopleura beyrichi",
+  ],
+  gogo: [
+    "Gogosardina coatesi", "Mimipiscis toombsi", "Moythomasia durgaringa",
+    "Manticoceras guppyi", "Ponticeras discoidale",
+  ],
+  "mazon-creek": [
+    "Euphoberia armigera", "Eoscorpius carbonarius", "Euproops danae",
+    "Eucaenus ovalis", "Architarbus rotundatus",
+  ],
+  "bear-gulch": [
+    "Falcatus falcatus", "Harpagofututor volsellorhinus", "Discoserra pectinodon",
+    "Wendyichthys dicksoni", "Caridosuctor populosum",
+  ],
+  beaufort: [
+    "Oudenodon bainii", "Diictodon feliceps", "Aelurognathus tigriceps",
+    "Pareiasaurus serridens", "Phyllotheca australis",
+  ],
+  zechstein: [
+    "Weigeltisaurus jaekeli", "Horridonia horrida", "Calophyllum columnare",
+    "Spinofenestella geinitzi", "Schizodus schlotheimi",
+  ],
+  katberg: [
+    "Lystrosaurus declivis", "Proterosuchus fergusi", "Procolophon trigoniceps",
+    "Micropholis stowi", "Moschorhinus kitchingi",
+  ],
+  moenkopi: [
+    "Protogusarella smithi", "Eumorphotis multiformis", "Lenticidaris utahensis",
+    "Naticopsis (Naticopsis) utahensis", "Piarorhynchella triassica",
+  ],
+  yixian: [
+    "Confuciusornis sanctus", "Psittacosaurus lujiatunensis", "Monjurosuchus splendens",
+    "Dalinghosaurus longidigitus", "Ephemeropsis trisetalis",
+  ],
+  wealden: [
+    "Iguanodon bernissartensis", "Hylaeosaurus armatus", "Ornithopsis hulkei",
+    "Goniopholis crassidens", "Loxaulax valdensis",
+  ],
+  "lopez-de-bertodano": [
+    "Diplomoceras cylindraceum", "Maorites densicostatus", "Pachydiscus riccardi",
+    "Gaudryceras seymouriense", "Eutrephoceras dorbignyanum",
+  ],
+  "la-meseta": [
+    "Cucullaea raea", "Ostrea antarctica", "Struthioptera camachoi",
+    "Ctenophoraster downeyae", "Eoscaphella fordycei",
+  ],
+  ischigualasto: [
+    "Herrerasaurus ischigualastensis", "Eoraptor lunensis", "Saurosuchus galilei",
+    "Exaeretodon argentinus", "Ischigualastia jenseni",
+  ],
 };
 
 export function drawnIn(gateId: string): readonly string[] {
