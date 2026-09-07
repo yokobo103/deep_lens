@@ -7,6 +7,7 @@ import { hubCopy, type Locale } from "./copy";
 import { TimeScale } from "./TimeScale";
 import { ExplorerLog } from "./ExplorerLog";
 import { About } from "./About";
+import { HeaderMenu } from "./HeaderMenu";
 import { readLog, recordVisit, type Visit } from "./log";
 
 /**
@@ -37,6 +38,7 @@ export function GateHub() {
   const [visits, setVisits] = useState<Visit[]>(() => readLog());
   const [logOpen, setLogOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [timescale, setTimescale] = useState<boolean>(() => {
     try {
       return window.localStorage.getItem("deep-lens-timescale") !== "off";
@@ -165,47 +167,32 @@ export function GateHub() {
       />
 
       <header className="gate-header">
-        <div>
-          <p>DEEP LENS</p>
-          <h1>{text.title}</h1>
-        </div>
+        <p className="gate-wordmark">
+          <svg viewBox="0 0 22 22" width="17" height="17" fill="none" aria-hidden="true">
+            <path d="M17.5 3.4a9 9 0 1 0 0 15.2A10.6 10.6 0 0 1 17.5 3.4Z" stroke="currentColor" strokeWidth="1.2" />
+          </svg>
+          DEEP LENS
+        </p>
+
         <div className="gate-controls">
-          {/* A place to go, not a setting. It is set apart from the pair beside
-              it and wears the log's own colour, because three identical chips
-              in a row read as three switches. */}
-          <button
-            type="button"
-            className="gate-log-open"
-            onClick={() => setLogOpen(true)}
-            aria-label={text.logLong}
-          >
-            <span className="is-wide">{text.logLong}</span>
-            <span className="is-narrow">{text.log}</span>
-            {visits.length > 0 && <i aria-hidden="true">{visits.length}</i>}
-          </button>
-          <button
-            type="button"
-            className="gate-about-open"
-            onClick={() => setAboutOpen(true)}
-            aria-label={text.aboutTitle}
-          >
-            {text.about}
-          </button>
-          <div className="gate-settings">
-          <button
-            type="button"
-            className="gate-timescale-toggle"
-            aria-pressed={timescale}
-            title={text.timescaleOn}
-            onClick={() => setTimescale((on) => !on)}
-          >
-            {text.timescale}
-          </button>
-          <nav className="gate-language" aria-label="Language">
+          <nav className="gate-language" aria-label={text.language}>
             <button type="button" aria-pressed={locale === "ja"} onClick={() => setLocale("ja")}>JA</button>
             <button type="button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>EN</button>
           </nav>
-          </div>
+
+          <HeaderMenu
+            open={menuOpen}
+            locale={locale}
+            timescale={timescale}
+            visits={visits.length}
+            atGlobe={!entered && !selected && !logOpen && !aboutOpen}
+            onToggle={() => setMenuOpen((wasOpen) => !wasOpen)}
+            onClose={() => setMenuOpen(false)}
+            onFindGate={() => { setMenuOpen(false); setLogOpen(false); setAboutOpen(false); setSelectedId(null); if (entered) enterGate(null); }}
+            onLog={() => { setMenuOpen(false); setAboutOpen(false); setLogOpen(true); }}
+            onTimescale={() => setTimescale((on) => !on)}
+            onAbout={() => { setMenuOpen(false); setLogOpen(false); setAboutOpen(true); }}
+          />
         </div>
       </header>
 

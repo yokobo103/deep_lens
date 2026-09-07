@@ -505,21 +505,6 @@ body { overscroll-behavior: none; }
 .gate-globe-overlay > * { pointer-events: auto; }
 .earth-globe { width: 100%; height: 100%; }
 
-.gate-header {
-  position: absolute; z-index: 6; top: 0; left: 0; right: 0;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 14px; padding: 20px 26px; pointer-events: none;
-}
-.gate-header > div { min-width: 0; pointer-events: none; }
-.gate-header h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.gate-header p { margin: 0; color: #6f8b87; font: 700 9px ui-monospace, monospace; letter-spacing: .34em; }
-.gate-header h1 { margin: 3px 0 0; color: #e7f6f2; font: 500 15px/1.3 ui-monospace, monospace; letter-spacing: .04em; }
-.gate-language { display: flex; gap: 3px; pointer-events: auto; }
-.gate-language button {
-  min-width: 34px; padding: 5px 0; color: #6f8b87; border: 1px solid rgb(121 227 210 / 20%);
-  background: rgb(4 20 22 / 70%); cursor: pointer; font: 700 9px ui-monospace, monospace; letter-spacing: .1em;
-}
-.gate-language button[aria-pressed="true"] { color: #06201f; border-color: #79e3d2; background: #79e3d2; }
 
 /* A gate is a way in, so it is drawn as an opening rather than a pin: a ring
    with something lit inside it, and a name that only has to be read once the
@@ -560,6 +545,81 @@ body { overscroll-behavior: none; }
   background: rgb(6 18 20 / 70%); cursor: pointer; font: 700 9px ui-monospace, monospace; letter-spacing: .06em;
 }
 .gate-ages button[aria-pressed="true"] { color: #1b1207; border-color: #ffd690; background: #ffd690; }
+
+/* The header carries identity, the one switch worth seeing, and a way in to
+   everything else. Chrome here is rounded; content panels stay square, so a
+   reader can tell the app's furniture from the app's contents. */
+.gate-header {
+  /* Above the age banner and the panels. The header makes its own stacking
+     context, so the menu inside it can never rise past this number however
+     high its own z-index goes — and the banner at 8 was landing on the
+     menu's first row. */
+  position: absolute; z-index: 12; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; padding: 18px 22px; pointer-events: none;
+}
+.gate-wordmark {
+  display: flex; align-items: center; gap: 10px; margin: 0; min-width: 0;
+  overflow: hidden; white-space: nowrap;
+  color: #cfe6e1; font: 400 15px ui-monospace, monospace; letter-spacing: .38em;
+}
+.gate-wordmark svg { flex: none; color: #79e3d2; }
+.gate-controls { display: flex; align-items: center; gap: 11px; pointer-events: auto; }
+
+.gate-language {
+  display: flex; overflow: hidden; border-radius: 999px;
+  border: 1px solid rgb(121 227 210 / 26%); background: rgb(6 18 20 / 74%);
+}
+.gate-language button {
+  min-width: 40px; padding: 7px 0; cursor: pointer; color: #6f8b87;
+  border: 0; background: transparent; font: 700 9px ui-monospace, monospace; letter-spacing: .1em;
+}
+.gate-language button:hover { color: #a9eee0; }
+.gate-language button[aria-pressed="true"] { color: #06201f; background: #79e3d2; }
+
+.gate-menu__button {
+  display: grid; gap: 4px; place-content: center; width: 36px; height: 36px; padding: 0;
+  cursor: pointer; border-radius: 999px; pointer-events: auto;
+  border: 1px solid rgb(121 227 210 / 26%); background: rgb(6 18 20 / 74%);
+}
+.gate-menu__button span { display: block; width: 15px; height: 1px; background: #a9c4bf; transition: transform .17s, opacity .17s; }
+.gate-menu__button:hover { border-color: rgb(121 227 210 / 55%); }
+.gate-menu__button:hover span { background: #a9eee0; }
+.gate-menu__button.is-open span:first-child { transform: translateY(5px) rotate(45deg); }
+.gate-menu__button.is-open span:nth-child(2) { opacity: 0; }
+.gate-menu__button.is-open span:last-child { transform: translateY(-5px) rotate(-45deg); }
+
+.gate-menu__scrim { position: fixed; z-index: 8; inset: 0; border: 0; background: transparent; cursor: default; }
+.gate-menu__panel {
+  position: absolute; z-index: 9; top: 66px; right: 22px; width: min(330px, calc(100vw - 44px));
+  padding: 6px; overflow: hidden; border-radius: 16px; pointer-events: auto;
+  border: 1px solid rgb(121 227 210 / 24%);
+  background: linear-gradient(168deg, rgb(11 32 36 / 97%), rgb(4 14 19 / 97%));
+  box-shadow: 0 26px 64px rgb(0 0 0 / 62%); backdrop-filter: blur(18px);
+}
+.gate-menu__row {
+  display: flex; align-items: center; gap: 13px; width: 100%; padding: 14px 14px;
+  cursor: pointer; text-align: left; border: 0; border-radius: 11px; background: transparent;
+  color: #cfe6e1; font: 500 12px ui-monospace, monospace; letter-spacing: .05em;
+}
+.gate-menu__row + .gate-menu__row { box-shadow: 0 -1px 0 rgb(129 210 198 / 12%); border-radius: 11px; }
+.gate-menu__row svg { flex: none; color: #7f9b9b; }
+.gate-menu__row span { flex: 1; min-width: 0; }
+.gate-menu__row em { color: rgb(129 210 198 / 42%); font: 400 15px ui-monospace, monospace; font-style: normal; }
+.gate-menu__row b {
+  padding: 2px 8px; border-radius: 999px; color: #ffd690;
+  background: rgb(255 214 144 / 12%); font: 700 9px ui-monospace, monospace; letter-spacing: .08em;
+}
+.gate-menu__row b.is-off { color: #55706c; background: rgb(129 210 198 / 8%); }
+.gate-menu__row:hover { background: rgb(121 227 210 / 9%); }
+.gate-menu__row:hover svg { color: #a9eee0; }
+.gate-menu__row.is-here { color: #a9eee0; background: rgb(121 227 210 / 11%); }
+.gate-menu__row.is-here svg { color: #79e3d2; }
+.gate-menu__tag {
+  margin: 6px 0 4px; padding: 12px 14px 6px; color: #55706c;
+  border-top: 1px solid rgb(129 210 198 / 12%);
+  font: 500 9px/1.7 ui-monospace, monospace; letter-spacing: .1em;
+}
 
 .gate-hint {
   position: absolute; z-index: 5; bottom: 34px; left: 50%; transform: translateX(-50%);
@@ -745,14 +805,6 @@ body { overscroll-behavior: none; }
 }
 .log__tail { margin: 26px 0 0; color: #55706c; font: 500 10px/1.8 ui-monospace, monospace; letter-spacing: .08em; }
 
-.gate-log-open {
-  display: flex; align-items: center; gap: 7px; padding: 7px 13px; cursor: pointer;
-  color: #e7dcc4; border: 1px solid rgb(255 214 144 / 34%); background: rgb(26 20 10 / 55%);
-  font: 700 9px ui-monospace, monospace; letter-spacing: .12em; pointer-events: auto;
-}
-.gate-log-open:hover { color: #ffd690; border-color: #ffd690; background: rgb(42 32 14 / 70%); }
-.gate-log-open i { color: #ffd690; font: 750 10px ui-monospace, monospace; font-style: normal; }
-.gate-log-open .is-narrow { display: none; }
 
 /* The header itself lets clicks through to the globe behind it, so anything
    in it that is meant to be pressed has to say so. Only .gate-language did,
@@ -783,22 +835,11 @@ body { overscroll-behavior: none; }
 .about__sources dt { color: #b69b6c; font: 700 8px ui-monospace, monospace; letter-spacing: .12em; }
 .about__sources dd { margin: 4px 0 0; color: #7f9b9b; font: 500 9px/1.75 ui-monospace, monospace; }
 
-.gate-about-open {
-  padding: 7px 11px; cursor: pointer; color: #8ca7a2; pointer-events: auto;
-  border: 1px solid rgb(129 210 198 / 22%); background: transparent;
-  font: 700 9px ui-monospace, monospace; letter-spacing: .12em;
-}
-.gate-about-open:hover { color: #a9eee0; border-color: rgb(121 227 210 / 40%); }
 
-.gate-controls { display: flex; align-items: center; gap: 14px; pointer-events: auto; }
-.gate-settings { display: flex; align-items: center; gap: 6px; pointer-events: auto; }
-.gate-timescale-toggle {
-  padding: 6px 9px; cursor: pointer; color: #55706c; pointer-events: auto;
-  border: 1px solid rgb(129 210 198 / 16%); background: transparent;
-  font: 700 8px ui-monospace, monospace; letter-spacing: .12em;
-}
-.gate-timescale-toggle:hover { color: #8ca7a2; border-color: rgb(129 210 198 / 32%); }
-.gate-timescale-toggle[aria-pressed="true"] { color: #a9eee0; border-color: rgb(121 227 210 / 34%); }
+/* One button for everything that is not a place to go. */
+
+/* Catches the click that closes the panel, and nothing else. */
+
 
 .world-age {
   position: absolute; z-index: 8; top: 76px; left: 50%; transform: translateX(-50%);
@@ -893,21 +934,12 @@ body { overscroll-behavior: none; }
   .gate-hint { bottom: 18px; }
   /* Four controls and a title do not fit 375px. The title gives way — it is
      the one thing on this bar that is not a control. */
-  /* Five controls and a two-line title do not fit 375px. The subtitle goes:
-     the wordmark still says what this is, and the line under it is repeated
-     inside About anyway. */
-  .gate-header { padding: 14px 12px; gap: 10px; }
-  .gate-header h1 { display: none; }
-  .gate-about-open { padding: 7px 8px; }
+  .gate-header { padding: 14px 14px; gap: 10px; }
+  .gate-wordmark { font-size: 12px; letter-spacing: .26em; }
+  .gate-menu__panel { top: 60px; right: 14px; width: calc(100vw - 28px); }
   .about__sheet { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 34px 16px 52px; }
   .about__poster { max-width: 300px; margin: 0 auto; }
   .about__words h2 { font-size: 21px; }
-  .gate-controls { gap: 6px; }
-  .gate-log-open { padding: 7px 10px; }
-  .gate-log-open .is-wide { display: none; }
-  .gate-log-open .is-narrow { display: inline; }
-  .gate-timescale-toggle { padding: 6px 7px; }
-  .gate-language button { min-width: 28px; }
 
   .log__sheet { padding: 22px 14px 48px; }
   .log__head h2 { font-size: 24px; }
