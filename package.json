@@ -11,7 +11,8 @@
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview",
     "data:gates": "node tools/build-gates.mjs",
-    "gates:map": "node tools/gate-map.mjs"
+    "gates:map": "node tools/gate-map.mjs",
+    "verify:scenes": "node tools/verify-scenes.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.1.0",

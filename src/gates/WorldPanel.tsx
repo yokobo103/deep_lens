@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import type { GateDefinition } from "../data/gates";
+import { bandById, type GateDefinition } from "../data/gates";
 import type { GateDetail } from "../data/gateData";
-import { bandById } from "../data/gates";
+import { agePlate, eraOf } from "../data/eras";
 import { dominantEnvironment, ENV_COLOR, ENV_LABEL } from "../data/environment";
-import { layerOf, LAYER_LABEL, LAYER_ORDER, type Layer } from "../data/habitat";
-import { japaneseName } from "../data/names";
+import { sceneSource } from "./scenes";
+import { AgePicker } from "./AgePicker";
+import { WorldDetail } from "./WorldDetail";
 import type { Locale } from "./copy";
 import { hubCopy } from "./copy";
-import { GateScene } from "./GateScene";
 
 interface WorldPanelProps {
   gate: GateDefinition;
@@ -20,95 +20,40 @@ interface WorldPanelProps {
   onDismiss: () => void;
 }
 
-/** PBDB's class names, as a reader would say them. */
-const GROUP_LABEL: Record<string, { ja: string; en: string }> = {
-  Reptilia: { ja: "爬虫類", en: "Reptiles" },
-  Saurischia: { ja: "竜盤類", en: "Saurischians" },
-  Ornithischia: { ja: "鳥盤類", en: "Ornithischians" },
-  Mammalia: { ja: "哺乳類", en: "Mammals" },
-  Amphibia: { ja: "両生類", en: "Amphibians" },
-  Aves: { ja: "鳥類", en: "Birds" },
-  Chondrichthyes: { ja: "軟骨魚類", en: "Sharks and rays" },
-  Osteichthyes: { ja: "硬骨魚類", en: "Bony fish" },
-  Actinopterygii: { ja: "条鰭類", en: "Ray-finned fish" },
-  Insecta: { ja: "昆虫", en: "Insects" },
-  Malacostraca: { ja: "軟甲類", en: "Crabs and shrimps" },
-  Anthozoa: { ja: "花虫類", en: "Corals and anemones" },
-  Rostroconchia: { ja: "喙殻類", en: "Rostroconchs" },
-  Stylophora: { ja: "柄海果類", en: "Stylophorans" },
-  Trilobita: { ja: "三葉虫", en: "Trilobites" },
-  Cephalopoda: { ja: "頭足類", en: "Cephalopods" },
-  Bivalvia: { ja: "二枚貝", en: "Bivalves" },
-  Gastropoda: { ja: "腹足類", en: "Gastropods" },
-  Tergomya: { ja: "単板類", en: "Tergomyans" },
-  Eocrinoidea: { ja: "始海百合類", en: "Eocrinoids" },
-  Demospongiae: { ja: "普通海綿類", en: "Demosponges" },
-  Soluta: { ja: "ソルタ類", en: "Solutans" },
-  NO_CLASS_SPECIFIED: { ja: "分類の記録なし", en: "Class not recorded" },
-};
-
-function groupName(group: string | null, locale: Locale): string {
-  if (!group) return GROUP_LABEL.NO_CLASS_SPECIFIED![locale];
-  return GROUP_LABEL[group]?.[locale] ?? group;
-}
-
 /**
- * What is inside a world: what it looked like, the kind of place it was, and
- * who is recorded there.
+ * The front of a world: what it was called, when, what kind of place, and two
+ * ways further in.
  *
- * The cast list carries no pictures. The icon set was drawn for a handful of
- * hand-picked Cretaceous animals, and what these gates actually contain is
- * classes — reptiles, sharks, trilobites, bony fish. Only a third of the
- * entries could be given an honest icon from that set, and a trilobite drawn
- * as a fish is worse than a trilobite drawn as nothing.
+ * Deliberately short. This card sits over the globe, and the globe is the thing
+ * it is describing — everything that wants room of its own is behind a press.
+ * The second press is only offered where there is somewhere to go: ten of the
+ * fifteen gates are the only age their place has, and a button that opens an
+ * empty list is worse than no button.
  */
 export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onDismiss }: WorldPanelProps) {
   const text = hubCopy[locale];
-  // On a phone this panel would cover the globe, and the globe is the thing it
-  // is describing — pulling back to see the rest of the age is half the point
-  // of being in a world. So the cast folds away, and only the name and the kind
-  // of place stay on screen.
+  const [picking, setPicking] = useState(false);
+  const [looking, setLooking] = useState(false);
   const compact = useCompactLayout();
-  const [openOnPhone, setOpenOnPhone] = useState(false);
-  // The whole record, behind its own press on every screen. It is evidence, not
-  // the point, and it is long enough to bury the thing it is evidence for.
-  const [listOpen, setListOpen] = useState(false);
-  const showCast = !compact || openOnPhone;
   const kind = dominantEnvironment(detail.environments);
-
-  // Who lived here, and where in the world they lived — from what PBDB's own
-  // describers recorded, not from captions we would have to invent.
-  //
-  // Three a band, not two. Two was tidier and dropped Tyrannosaurus out of Hell
-  // Creek: it is the third most-recorded animal on land there, behind a
-  // multituberculate and a turtle, and a card about that world with no
-  // tyrannosaur on it is a card nobody believes.
-  const byLayer = new Map<Layer, typeof detail.cast>();
-  for (const member of detail.cast) {
-    const layer = layerOf(member.phylum ?? null, member.env ?? null, member.habit ?? null, member.group, member.form ?? null);
-    byLayer.set(layer, [...(byLayer.get(layer) ?? []), member]);
-  }
-  const layers = LAYER_ORDER.flatMap((layer) => {
-    const members = byLayer.get(layer);
-    return members?.length ? [[layer, members.slice(0, 3)] as const] : [];
-  });
-
-  const grouped = new Map<string, typeof detail.cast>();
-  for (const member of detail.cast) {
-    const key = member.group ?? "NO_CLASS_SPECIFIED";
-    grouped.set(key, [...(grouped.get(key) ?? []), member]);
-  }
-  const groups = [...grouped.entries()].sort((a, b) => b[1].length - a[1].length);
+  const band = bandById(gate.band);
+  const ma = band?.terrainMa ?? detail.medianAgeMa ?? 0;
+  const scene = sceneSource(gate.id);
 
   return (
-    <aside className={`world-panel${compact ? " is-compact" : ""}${showCast ? " is-open" : ""}`} aria-label={gate.name[locale]}>
-      {/* Closes the card, and only the card. Leaving the age is a different
-          size of action and lives on the age banner instead: from in here the
-          globe is the reconstructed Earth, and wanting to see it unobstructed
-          is not the same as wanting to go back to the present. */}
-      <button type="button" className="world-panel__close" onClick={onDismiss} aria-label={text.close} title={text.close}>×</button>
+    <aside className={`world-panel${compact ? " is-compact" : ""}`} aria-label={gate.name[locale]}>
+      <header className="world-panel__bar">
+        <b>{agePlate(ma)}</b>
+        <span>{eraOf(ma)[locale]} · {band?.label[locale].split(" · ")[0]}</span>
+        <button type="button" onClick={onDismiss} aria-label={text.close} title={text.close}>×</button>
+      </header>
 
-      <GateScene gateId={gate.id} title={gate.name[locale]} locale={locale} />
+      {scene && (
+        <button type="button" className="world-panel__scene" onClick={() => setLooking(true)} aria-label={text.peek}>
+          <img src={scene} alt="" />
+          <span>{text.sceneTag}</span>
+        </button>
+      )}
 
       <h2>{gate.name[locale]}</h2>
       <p className="world-panel__world">{gate.world[locale]}</p>
@@ -118,73 +63,32 @@ export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onDismiss }
         {ENV_LABEL[kind][locale]}
       </p>
 
-      {/* The move the app exists for, offered from inside rather than from the
-          front door: leaving to the present and coming back in through the
-          same marker is the long way round to say "this place, but then".
-          Above the fold on a phone, because it is worth doing while the globe
-          is still the thing being looked at. */}
-      {alsoHere.length > 0 && (
-        <div className="world-ages" role="group" aria-label={text.downTo}>
-          <span>{text.downTo}</span>
-          {alsoHere.map((other) => (
-            <button key={other.id} type="button" onClick={() => onGoTo(other.id)}>
-              <b>{bandById(other.band)?.label[locale].split(" · ")[1] ?? `${other.ageMa.from} Ma`}</b>
-              <span>{other.name[locale]}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {showCast && <div className="world-life">
-        <h3>{text.residents}</h3>
-        {layers.map(([layer, members]) => (
-          <div key={layer} className="world-life__layer">
-            <span>{LAYER_LABEL[layer][locale]}</span>
-            <ul>
-              {members.map((member) => {
-                const ja = locale === "ja" ? japaneseName(member.name) : undefined;
-                return (
-                  <li key={member.name}>
-                    {ja && <b>{ja}</b>}
-                    <em>{member.name}</em>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-        <small>{text.residentsNote}</small>
-      </div>}
-
-      {compact && (
-        <button type="button" className="world-panel__fold" aria-expanded={showCast} onClick={() => setOpenOnPhone((open) => !open)}>
-          {showCast ? text.hideCast : text.residents}
+      <div className="world-panel__ways">
+        {alsoHere.length > 0 && (
+          <button type="button" className="world-panel__ages" onClick={() => setPicking(true)}>
+            {text.otherAges}<i aria-hidden="true">›</i>
+          </button>
+        )}
+        <button type="button" className="world-panel__peek" onClick={() => setLooking(true)}>
+          {text.peek}<i aria-hidden="true">›</i>
         </button>
+      </div>
+
+      <small className="world-panel__note">{text.residentsNote}</small>
+
+      {picking && (
+        <AgePicker
+          here={gate}
+          alsoHere={alsoHere}
+          locale={locale}
+          onGoTo={(id) => { setPicking(false); onGoTo(id); }}
+          onClose={() => setPicking(false)}
+        />
       )}
 
-      {showCast && (
-        <button type="button" className="world-panel__more" aria-expanded={listOpen} onClick={() => setListOpen((open) => !open)}>
-          {listOpen ? text.hideList : text.showList(detail.castTotal)}
-        </button>
+      {looking && (
+        <WorldDetail gate={gate} detail={detail} locale={locale} onClose={() => setLooking(false)} />
       )}
-
-      {showCast && listOpen && <div className="world-cast">
-        <h3>{text.cast(detail.castTotal)}</h3>
-        {groups.map(([group, members]) => (
-          <div key={group} className="world-cast__group">
-            <span>{groupName(group === "NO_CLASS_SPECIFIED" ? null : group, locale)}</span>
-            <ul>
-              {members.map((member) => (
-                <li key={member.name}>
-                  <em>{member.name}</em>
-                  <b>{member.count}</b>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-        <small>{text.castNote}</small>
-      </div>}
     </aside>
   );
 }
