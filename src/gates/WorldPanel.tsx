@@ -51,57 +51,59 @@ export function WorldPanel({ gate, detail, locale, alsoHere, hintBand, onGoTo, o
   const scene = sceneSource(gate.id);
 
   return (
-    <aside className={`world-panel${compact ? " is-compact" : ""}`} aria-label={gate.name[locale]}>
-      <header className="world-panel__bar">
-        <b>{agePlate(ma)}</b>
-        <span>{eraOf(ma)[locale]} · {band?.label[locale].split(" · ")[0]}</span>
-        <button type="button" onClick={onDismiss} aria-label={text.close} title={text.close}>×</button>
-      </header>
+    <div className={`world-panel-shell${compact ? " is-compact" : ""}`}>
+      <button type="button" className="world-panel__dismiss" onClick={onDismiss} aria-label={text.close} title={text.close}>×</button>
+      <aside className="world-panel" aria-label={gate.name[locale]}>
+        <header className="world-panel__bar">
+          <b>{agePlate(ma)}</b>
+          <span>{eraOf(ma)[locale]} · {band?.label[locale].split(" · ")[0]}</span>
+        </header>
 
-      {scene && (
-        <button type="button" className="world-panel__scene" onClick={() => setLooking(true)} aria-label={text.peek}>
-          <img src={scene} alt="" />
-          <span>{text.sceneTag}</span>
-        </button>
-      )}
-
-      <h2>{gate.name[locale]}</h2>
-      <p className="world-panel__world">{gate.world[locale]}</p>
-
-      <p className="world-panel__kind">
-        <span className="world-panel__swatch" style={{ background: ENV_COLOR[kind] }} aria-hidden="true" />
-        {ENV_LABEL[kind][locale]}
-      </p>
-
-      <div className="world-panel__ways">
-        {alsoHere.length > 0 && (
-          <button type="button" className="world-panel__ages" onClick={() => setPicking(true)}>
-            {text.otherAges}<i aria-hidden="true">›</i>
+        {scene && (
+          <button type="button" className="world-panel__scene" onClick={() => setLooking(true)} aria-label={text.peek}>
+            <img src={scene} alt="" />
+            <span>{text.sceneTag}</span>
           </button>
         )}
-        <button type="button" className="world-panel__peek" onClick={() => setLooking(true)}>
-          {text.peek}<i aria-hidden="true">›</i>
-        </button>
-      </div>
 
-      {hintBand && <small className="world-panel__maybe">{text.maybeMore}</small>}
+        <h2>{gate.name[locale]}</h2>
+        <p className="world-panel__world">{gate.world[locale]}</p>
 
-      <small className="world-panel__note">{text.residentsNote}</small>
+        <p className="world-panel__kind">
+          <span className="world-panel__swatch" style={{ background: ENV_COLOR[kind] }} aria-hidden="true" />
+          {ENV_LABEL[kind][locale]}
+        </p>
 
-      {picking && (
-        <AgePicker
-          here={gate}
-          alsoHere={alsoHere}
-          locale={locale}
-          onGoTo={(id) => { setPicking(false); onGoTo(id); }}
-          onClose={() => setPicking(false)}
-        />
-      )}
+        <div className="world-panel__ways">
+          {alsoHere.length > 0 && (
+            <button type="button" className="world-panel__ages" onClick={() => setPicking(true)}>
+              {text.otherAges}<i aria-hidden="true">›</i>
+            </button>
+          )}
+          <button type="button" className="world-panel__peek" onClick={() => setLooking(true)}>
+            {text.peek}<i aria-hidden="true">›</i>
+          </button>
+        </div>
 
-      {looking && (
-        <WorldDetail gate={gate} detail={detail} locale={locale} onClose={() => setLooking(false)} />
-      )}
-    </aside>
+        {hintBand && <small className="world-panel__maybe">{text.maybeMore}</small>}
+
+        <small className="world-panel__note">{text.residentsNote}</small>
+
+        {picking && (
+          <AgePicker
+            here={gate}
+            alsoHere={alsoHere}
+            locale={locale}
+            onGoTo={(id) => { setPicking(false); onGoTo(id); }}
+            onClose={() => setPicking(false)}
+          />
+        )}
+
+        {looking && (
+          <WorldDetail gate={gate} detail={detail} locale={locale} onClose={() => setLooking(false)} />
+        )}
+      </aside>
+    </div>
   );
 }
 

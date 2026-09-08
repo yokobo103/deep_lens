@@ -1014,13 +1014,27 @@ body { overscroll-behavior: none; }
 }
 .world-age button:hover { color: #79e3d2; border-color: #79e3d2; }
 
-.world-panel {
+.world-panel-shell {
   position: absolute; z-index: 7; top: 84px; right: 26px; width: min(340px, calc(100vw - 52px));
+  pointer-events: none;
+}
+.world-panel {
+  position: relative; width: 100%;
   max-height: calc(100dvh - 130px); padding: 20px 22px 18px; overflow: auto;
+  pointer-events: auto;
   border: 1px solid rgb(121 227 210 / 24%);
   background: linear-gradient(150deg, rgb(11 28 30 / 96%), rgb(4 13 17 / 95%));
   box-shadow: 0 22px 70px rgb(0 0 0 / 55%); backdrop-filter: blur(18px);
 }
+.world-panel__dismiss {
+  position: absolute; z-index: 2; top: 10px; right: 11px; display: grid; place-items: center;
+  width: 30px; height: 30px; padding: 0; cursor: pointer; pointer-events: auto;
+  color: rgb(140 167 162 / 72%); border: 1px solid rgb(129 210 198 / 16%);
+  background: rgb(4 14 18 / 72%); backdrop-filter: blur(10px);
+  font: 400 18px/1 ui-monospace, monospace;
+}
+.world-panel__dismiss:hover, .world-panel__dismiss:focus-visible { color: #a9eee0; border-color: rgb(121 227 210 / 38%); }
+.world-panel__dismiss:focus-visible { outline: 1px solid rgb(121 227 210 / 55%); outline-offset: 2px; }
 .world-panel::before { position: absolute; top: -1px; left: -1px; width: 64px; height: 2px; background: #79e3d2; box-shadow: 0 0 12px #79e3d2; content: ""; }
 .world-panel h2 { margin: 0 0 3px; color: #effffc; font: 500 21px/1.2 ui-monospace, monospace; letter-spacing: .02em; }
 .world-panel__world { margin: 0; color: #cfe6e1; font: 500 12px/1.6 ui-monospace, monospace; }
@@ -1037,10 +1051,11 @@ body { overscroll-behavior: none; }
   /* The panel sits at the bottom and, folded, is only as tall as its name. The
      globe keeps the rest of the screen, because the globe is what the panel is
      talking about. */
-  .world-panel {
+  .world-panel-shell {
     top: auto; right: 10px; left: 10px; bottom: 10px; width: auto;
-    padding: 14px 16px 14px; max-height: 38dvh;
   }
+  .world-panel { padding: 14px 16px 14px; max-height: 38dvh; }
+  .world-panel__dismiss { top: -43px; right: 10px; width: 32px; height: 32px; font-size: 19px; }
   .world-panel.is-open { max-height: 62dvh; }
   /* Three ages is three full-width rows, and with a picture above them the
      folded panel would start scrolling — putting the way to the cast out of
@@ -1092,16 +1107,11 @@ body { overscroll-behavior: none; }
 /* The front of a world. Short on purpose: it sits over the globe it describes,
    and everything that wants room is one press behind it. */
 .world-panel__bar {
-  display: flex; align-items: center; gap: 10px; margin: -20px -22px 15px; padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px; margin: -20px -22px 15px; padding: 11px 54px 11px 14px;
   border-bottom: 1px solid rgb(129 210 198 / 16%); background: rgb(4 14 18 / 70%);
 }
 .world-panel__bar b { color: #ffd690; font: 750 10px ui-monospace, monospace; letter-spacing: .1em; }
 .world-panel__bar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #7f9b9b; font: 500 9px ui-monospace, monospace; letter-spacing: .06em; }
-.world-panel__bar button {
-  flex: none; width: 26px; height: 26px; line-height: 1; cursor: pointer; font-size: 17px;
-  color: #8ca7a2; border: 1px solid rgb(129 210 198 / 20%); background: transparent;
-}
-.world-panel__bar button:hover { color: #79e3d2; border-color: rgb(121 227 210 / 45%); }
 
 .world-panel__scene {
   position: relative; display: block; width: 100%; margin: 0 0 15px; padding: 0; overflow: hidden;
