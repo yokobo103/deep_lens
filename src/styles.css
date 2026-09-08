@@ -1240,3 +1240,8 @@ body { overscroll-behavior: none; }
   .detail__full figure img { width: auto; max-width: none; height: 58dvh; max-height: none; }
   .picker__option img { width: 52px; height: 36px; }
 }
+
+/* Six shelves instead of two piles. The count is the useful part: it says how
+   much of a kind of travelling this journey has tried. */
+.achievements__section h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.achievements__section h3 b { color: #55706c; font: 650 9px ui-monospace, monospace; letter-spacing: .1em; }

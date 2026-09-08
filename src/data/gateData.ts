@@ -14,7 +14,10 @@ export interface GateSummary {
   lng: number;
   paleoLat: number;
   paleoLng: number;
+  /** How many of the cast the bake kept — always the display limit. */
   cast: number;
+  /** How many named species the whole record holds. The honest size. */
+  castTotal: number;
 }
 
 export interface GateManifest {

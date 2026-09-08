@@ -64,9 +64,15 @@ export function GateHub() {
   const allHubs = hubs();
   const visitedGateIds = new Set(visits.map((visit) => visit.gateId));
 
+  // The bake's own numbers, so a discovery can ask about paleolatitude or how
+  // much record a world holds without those being copied into gates.ts.
+  const gateSummaries = useMemo(
+    () => new Map(gates.map((gate) => [gate.id, gate])),
+    [gates],
+  );
   const earnedAchievements = useMemo(
-    () => evaluateAchievements({ visits, environments: achievementEnvironments }),
-    [achievementEnvironments, visits],
+    () => evaluateAchievements({ visits, environments: achievementEnvironments, summaries: gateSummaries }),
+    [achievementEnvironments, gateSummaries, visits],
   );
   const earnedAchievementIds = useMemo(
     () => new Set(earnedAchievements.map(({ id }) => id)),

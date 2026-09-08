@@ -10,6 +10,20 @@ const marks: Record<MarkName, ReactNode> = {
   horizon: <><path d="M2.2 8h11.6M4 5.5h8M4 10.5h8" /><circle cx="8" cy="8" r="1.5" /></>,
   tide: <><path d="M2 6.2c1.5-1.3 2.7-1.3 4.2 0s2.8 1.3 4.3 0 2.5-1.3 3.5-.5M2 9.7c1.5-1.3 2.7-1.3 4.2 0s2.8 1.3 4.3 0 2.5-1.3 3.5-.5" /></>,
   compass: <><circle cx="8" cy="8" r="5.6" /><path d="m9.8 5.2-1.1 3.5-3.5 2.1 2.1-3.5 2.5-2.1Z" /></>,
+  cluster: <><circle cx="5.2" cy="5.6" r="2.1" /><circle cx="10.9" cy="6.4" r="1.7" /><circle cx="7.4" cy="11" r="2.4" /></>,
+  ring: <><circle cx="8" cy="8" r="5.6" /><circle cx="8" cy="8" r="2.6" /></>,
+  column: <><path d="M4 3.4h8M4.8 6.2h6.4M4 9h8M4.8 11.8h6.4" /></>,
+  span: <><path d="M2.4 8h11.2M2.4 5.6v4.8M13.6 5.6v4.8" /></>,
+  pole: <><circle cx="8" cy="8" r="5.6" /><path d="M2.9 5.6h10.2" /><path d="M8 2.4v3.2" /></>,
+  sun: <><circle cx="8" cy="8" r="3" /><path d="M8 1.6v1.6M8 12.8v1.6M1.6 8h1.6M12.8 8h1.6M3.5 3.5l1.1 1.1M11.4 11.4l1.1 1.1M12.5 3.5l-1.1 1.1M4.6 11.4l-1.1 1.1" /></>,
+  drift: <><path d="M2.6 11.2c3-4.6 6.4-6.6 10.6-7" /><path d="m10.2 2.6 3 1.6-1.4 3" /></>,
+  ledger: <><rect x="3" y="2.6" width="10" height="10.8" rx="1" /><path d="M5.4 5.6h5.2M5.4 8h5.2M5.4 10.4h3.2" /></>,
+  thin: <><rect x="3" y="2.6" width="10" height="10.8" rx="1" /><path d="M5.4 6.4h3.4M5.4 9.6h1.8" /></>,
+  break: <><path d="M2.2 5.4h4.6l1.5 5.2 1.5-5.2h4" /><path d="M2.2 10.6h4.4M9.6 10.6h4.2" /></>,
+  day: <><circle cx="8" cy="9.4" r="2.8" /><path d="M1.8 12.6h12.4M8 3.2v1.6M3.6 4.9l1.1 1.1M12.4 4.9l-1.1 1.1" /></>,
+  calendar: <><rect x="2.6" y="3.6" width="10.8" height="9.8" rx="1" /><path d="M2.6 6.6h10.8M5.4 2.4v2.4M10.6 2.4v2.4" /></>,
+  globe: <><circle cx="8" cy="8" r="5.6" /><path d="M2.4 8h11.2" /><ellipse cx="8" cy="8" rx="2.5" ry="5.6" /></>,
+  ice: <><path d="M8 2.2 13 8l-5 5.8L3 8Z" /><path d="M8 2.2v11.6M3 8h10" /></>,
 };
 
 export function AchievementMark({ name, hidden = false }: { name: MarkName; hidden?: boolean }) {

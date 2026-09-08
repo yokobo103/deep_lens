@@ -180,7 +180,7 @@ for (const gate of gates) {
   await writeFile(join(OUT_DIR, `${gate.id}.json`), JSON.stringify(row));
   manifest.push({
     id: row.id, band: row.band, sites: row.sites, occurrences: row.occurrences,
-    medianAgeMa: row.medianAgeMa, cast: row.cast.length,
+    medianAgeMa: row.medianAgeMa, cast: row.cast.length, castTotal: row.castTotal,
     lat: row.lat, lng: row.lng, paleoLat: row.paleoLat, paleoLng: row.paleoLng,
   });
   console.log(
