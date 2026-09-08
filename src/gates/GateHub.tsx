@@ -8,7 +8,7 @@ import { TimeScale } from "./TimeScale";
 import { ExplorerLog } from "./ExplorerLog";
 import { About } from "./About";
 import { HeaderMenu } from "./HeaderMenu";
-import { readLog, recordVisit, type Visit } from "./log";
+import { readLog, recordVisit, resetLog, type Visit } from "./log";
 
 /**
  * The present-day Earth as a hub: gates on it, and nothing else.
@@ -58,6 +58,15 @@ export function GateHub() {
     loadGate(id)
       .then((detail) => setWorld((current) => (current?.id === detail.id ? current : detail)))
       .catch((error: unknown) => console.warn("World could not be loaded", error));
+  };
+
+  const restartJourney = () => {
+    resetLog();
+    setVisits([]);
+    setSelectedId(null);
+    setEnteredId(null);
+    setWorld(null);
+    setPanelOpen(true);
   };
 
   useEffect(() => {
@@ -211,6 +220,7 @@ export function GateHub() {
           ages={new Map(gates.flatMap((gate) => (gate.medianAgeMa === null ? [] : [[gate.id, gate.medianAgeMa] as const])))}
           locale={locale}
           onGoTo={(id) => { setLogOpen(false); setSelectedId(null); enterGate(id); }}
+          onReset={restartJourney}
           onClose={() => setLogOpen(false)}
         />
       )}

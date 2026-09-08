@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   bandById,
@@ -16,6 +16,7 @@ interface ExplorerLogProps {
   ages: ReadonlyMap<string, number>;
   locale: Locale;
   onGoTo: (gateId: string) => void;
+  onReset: () => void;
   onClose: () => void;
 }
 
@@ -44,15 +45,25 @@ function ageThenName(direction: "oldest" | "newest", locale: Locale) {
  * place. It is an album, not a checklist — there is deliberately no total,
  * percentage, progress bar, or locked slot.
  */
-export function ExplorerLog({ visits, ages, locale, onGoTo, onClose }: ExplorerLogProps) {
+export function ExplorerLog({ visits, ages, locale, onGoTo, onReset, onClose }: ExplorerLogProps) {
   const text = hubCopy[locale];
   const [sortMode, setSortMode] = useState<SortMode>("visited");
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const resetConfirmRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (resetConfirmOpen) setResetConfirmOpen(false);
+      else onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, resetConfirmOpen]);
+
+  useEffect(() => {
+    if (resetConfirmOpen) resetConfirmRef.current?.querySelector("button")?.focus();
+  }, [resetConfirmOpen]);
 
   const entries = useMemo(() => visits.flatMap((visit, visitIndex) => {
     const gate = gateById(visit.gateId);
@@ -146,8 +157,42 @@ export function ExplorerLog({ visits, ages, locale, onGoTo, onClose }: ExplorerL
           ))}
         </div>
 
-        {entries.length > 0 && <p className="log__tail">{text.logMore}</p>}
+        {entries.length > 0 && (
+          <footer className="log__end">
+            <p className="log__tail">{text.logMore}</p>
+            <button type="button" className="log__restart" onClick={() => setResetConfirmOpen(true)}>
+              {text.logRestart}
+            </button>
+          </footer>
+        )}
       </div>
+
+      {resetConfirmOpen && (
+        <div className="log-reset">
+          <button type="button" className="log-reset__scrim" aria-label={text.logResetCancel} onClick={() => setResetConfirmOpen(false)} />
+          <div
+            ref={resetConfirmRef}
+            className="log-reset__panel"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="log-reset-title"
+            aria-describedby="log-reset-body"
+          >
+            <h3 id="log-reset-title">{text.logResetTitle}</h3>
+            <p id="log-reset-body">{text.logResetBody}</p>
+            <div className="log-reset__actions">
+              <button type="button" onClick={() => setResetConfirmOpen(false)}>{text.logResetCancel}</button>
+              <button
+                type="button"
+                className="is-destructive"
+                onClick={() => { onReset(); setResetConfirmOpen(false); }}
+              >
+                {text.logResetConfirm}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>,
     document.body,
   );

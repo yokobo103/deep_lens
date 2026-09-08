@@ -842,6 +842,34 @@ body { overscroll-behavior: none; }
 .log__return { position: absolute; right: 13px; bottom: 14px; color: #62817c; font: 500 13px/1 ui-monospace, monospace; }
 .log__list button:hover .log__return { color: #79e3d2; }
 .log__tail { margin: 34px 0 0; color: #55706c; font: 500 10px/1.8 ui-monospace, monospace; letter-spacing: .08em; }
+.log__end { display: grid; justify-items: start; }
+.log__restart {
+  margin: 48px 0 0; padding: 8px 3px; cursor: pointer; opacity: .52;
+  color: #526a67; border: 0; background: transparent;
+  font: 500 7px/1.4 ui-monospace, monospace; letter-spacing: .06em;
+}
+.log__restart:hover, .log__restart:focus-visible { opacity: 1; color: #8ca7a2; text-decoration: underline; text-underline-offset: 3px; }
+.log__restart:focus-visible { outline: 1px solid rgb(121 227 210 / 35%); outline-offset: 3px; }
+
+.log-reset { position: fixed; z-index: 61; inset: 0; display: grid; place-items: center; padding: 20px; }
+.log-reset__scrim { position: absolute; inset: 0; cursor: default; border: 0; background: rgb(1 7 9 / 72%); backdrop-filter: blur(7px); }
+.log-reset__panel {
+  position: relative; width: min(390px, 100%); padding: 24px;
+  border: 1px solid rgb(129 210 198 / 22%); background: linear-gradient(160deg, #0a2025, #061317);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 62%);
+}
+.log-reset__panel h3 { margin: 0; color: #effffc; font: 500 16px/1.55 ui-monospace, monospace; letter-spacing: .03em; }
+.log-reset__panel p { margin: 12px 0 0; color: #8ca7a2; font: 500 10px/1.8 ui-monospace, monospace; letter-spacing: .04em; }
+.log-reset__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+.log-reset__actions button {
+  padding: 9px 13px; cursor: pointer; color: #9db8b3;
+  border: 1px solid rgb(129 210 198 / 22%); background: rgb(3 14 18 / 58%);
+  font: 650 9px ui-monospace, monospace; letter-spacing: .06em;
+}
+.log-reset__actions button:hover, .log-reset__actions button:focus-visible { color: #d9f5ef; border-color: rgb(121 227 210 / 45%); }
+.log-reset__actions button:focus-visible { outline: 1px solid #79e3d2; outline-offset: 2px; }
+.log-reset__actions .is-destructive { color: #d5a99c; border-color: rgb(226 137 111 / 28%); }
+.log-reset__actions .is-destructive:hover, .log-reset__actions .is-destructive:focus-visible { color: #f1c5b8; border-color: rgb(226 137 111 / 52%); background: rgb(91 37 25 / 24%); }
 
 
 /* The header itself lets clicks through to the globe behind it, so anything

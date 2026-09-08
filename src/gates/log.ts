@@ -51,6 +51,15 @@ export function recordVisit(gateId: string, log: Visit[]): Visit[] {
   return next;
 }
 
+/** Clears only the journey. Language and display preferences stay intact. */
+export function resetLog(): void {
+  try {
+    window.localStorage.removeItem(KEY);
+  } catch {
+    // The in-memory log is still cleared by the caller.
+  }
+}
+
 /** `2026-09-06` as the log prints it. */
 export function formatDay(iso: string): string {
   return iso.replaceAll("-", ".");
