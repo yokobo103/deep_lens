@@ -15,6 +15,16 @@ interface WorldPanelProps {
   locale: Locale;
   /** The other ages of this same place. Empty when the place has only one. */
   alsoHere: readonly GateDefinition[];
+  /**
+   * Whether to whisper that this Earth has other doors on it.
+   *
+   * Every band holds at least two gates, so the sentence is always true and
+   * would become wallpaper if it always showed. It is shown only until the
+   * reader has stood in two worlds of one age — after that they have found the
+   * move themselves and do not need telling. It names no number and no
+   * direction on purpose: finding them is the reader's, not ours.
+   */
+  hintBand: boolean;
   onGoTo: (gateId: string) => void;
   /** Puts the panel away. Does not leave the world — that is the age banner's. */
   onDismiss: () => void;
@@ -30,7 +40,7 @@ interface WorldPanelProps {
  * fifteen gates are the only age their place has, and a button that opens an
  * empty list is worse than no button.
  */
-export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onDismiss }: WorldPanelProps) {
+export function WorldPanel({ gate, detail, locale, alsoHere, hintBand, onGoTo, onDismiss }: WorldPanelProps) {
   const text = hubCopy[locale];
   const [picking, setPicking] = useState(false);
   const [looking, setLooking] = useState(false);
@@ -73,6 +83,8 @@ export function WorldPanel({ gate, detail, locale, alsoHere, onGoTo, onDismiss }
           {text.peek}<i aria-hidden="true">›</i>
         </button>
       </div>
+
+      {hintBand && <small className="world-panel__maybe">{text.maybeMore}</small>}
 
       <small className="world-panel__note">{text.residentsNote}</small>
 

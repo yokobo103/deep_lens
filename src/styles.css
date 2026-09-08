@@ -1125,6 +1125,14 @@ body { overscroll-behavior: none; }
 .world-panel__ages:hover { border-color: #ffd690; background: rgb(42 32 14 / 70%); }
 .world-panel__peek { color: #a9eee0; border: 1px solid rgb(121 227 210 / 38%); background: rgb(6 26 28 / 60%); }
 .world-panel__peek:hover { border-color: #79e3d2; background: rgb(10 40 42 / 70%); }
+/* One sentence saying other doors exist, without saying how many or where.
+   Small enough to stay out of the way, but measured against its ground rather
+   than dimmed by eye: at #3f5754 it came out at 2.47:1, quieter than the
+   disclaimer below it, which is backwards — the disclaimer is there to be
+   skipped and this line is the one thing on the card meant to be caught. */
+.world-panel__maybe { display: block; margin-top: 14px; color: #7d9c97; font: 500 8px/1.6 ui-monospace, monospace; letter-spacing: 0.03em; }
+.world-panel__maybe + .world-panel__note { margin-top: 7px; }
+
 .world-panel__note { display: block; margin-top: 13px; color: #55706c; font: 500 8px/1.7 ui-monospace, monospace; }
 
 /* Which age of this place to step into. */

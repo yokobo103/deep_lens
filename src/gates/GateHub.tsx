@@ -186,6 +186,22 @@ export function GateHub() {
   const enteredHub = entered ? allHubs.find((hub) => hub.id === hubIdOf(entered)) : undefined;
   const alsoHere = (enteredHub?.gates ?? []).filter((gate) => gate.id !== entered?.id);
 
+  // The horizontal move has no button, on purpose: the other worlds of an age
+  // are already standing on the globe, and finding them is the better half of
+  // this. But nothing on screen says they are there, so a reader can enter
+  // fifty worlds without learning that the Earth under the card is shared.
+  //
+  // So: one quiet sentence, until it has been earned. Two visits inside one
+  // band means the reader has already crossed one, and the sentence retires.
+  const bandsSeen = new Set<string>();
+  const crossedABand = visits.some((visit) => {
+    const band = gateById(visit.gateId)?.band;
+    if (band === undefined) return false;
+    if (bandsSeen.has(band)) return true;
+    bandsSeen.add(band);
+    return false;
+  });
+
   // Inside a world the globe carries that Earth's gates at the positions they
   // held then — which is what makes pulling back worth doing.
   const bandPoints = entered
@@ -362,6 +378,7 @@ export function GateHub() {
           detail={world}
           locale={locale}
           alsoHere={alsoHere}
+          hintBand={!crossedABand}
           onGoTo={enterGate}
           onDismiss={() => setPanelOpen(false)}
         />
