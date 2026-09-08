@@ -197,6 +197,45 @@ export const DRAWN_IN_SCENE: Record<string, readonly string[]> = {
     "Thylacoleo carnifex", "Thylacinus cynocephalus", "Procoptodon browneorum",
     "Zygomaturus trilobus", "Simosthenurus occidentalis",
   ],
+  // Six of Wenlock's top fourteen are conodonts, which are known almost only
+  // from tooth-sized elements of animals a few centimetres long. Drawing the
+  // top of this record would be drawing specks. The reef it lived in is in the
+  // record too, further down, and that is what a picture of the place is.
+  "much-wenlock": [
+    "Halysites catenularius", "Favosites gothlandicus", "Calymene blumenbachii",
+    "Crotalocrinites rugosus", "Atrypa reticularis",
+  ],
+  bertie: [
+    "Acutiramus macrophthalmus", "Eurypterus remipes", "Dolichopterus herkimerensis",
+    "Proscorpius osborni", "Pyrgocystis batheri",
+  ],
+  "oxford-clay": [
+    "Liopleurodon ferox", "Cryptoclidus eurymerus", "Ophthalmosaurus icenicus",
+    "Metriorhynchus brachyrhynchus", "Leedsichthys problematicus",
+  ],
+  // 854 of Daohugou's 874 species are insects, so the top fourteen is an insect
+  // list. The gliders and swimmers this place is known for are all in the
+  // record, one occurrence each. One insect stands for the other 853.
+  daohugou: [
+    "Epidexipteryx hui", "Volaticotherium antiquus", "Castorocauda lutrasimilis",
+    "Jeholopterus ningchengensis", "Allaboilus gigantus",
+  ],
+  fayum: [
+    "Aegyptopithecus zeuxis", "Apidium phiomense", "Arsinoitherium zitteli",
+    "Moeritherium lyonsi", "Titanohyrax angustidens",
+  ],
+  "hsanda-gol": [
+    "Paraceratherium grangeri", "Hyaenodon gigas", "Tsaganomys altaicus",
+    "Desmatolagus gobiensis", "Cricetops dormitor",
+  ],
+  riversleigh: [
+    "Nimiokoala greystanesi", "Wakaleo oldfieldi", "Obdurodon dicksoni",
+    "Baru darrowi", "Ganguroo bilamina",
+  ],
+  "la-venta": [
+    "Granastrapotherium snorki", "Purussaurus neivensis", "Neosaimiri fieldsi",
+    "Boreostemma acostae", "Lepidosiren paradoxa",
+  ],
 };
 
 export function drawnIn(gateId: string): readonly string[] {
