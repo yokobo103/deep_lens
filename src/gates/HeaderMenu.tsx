@@ -21,7 +21,7 @@ interface HeaderMenuProps {
 const icon: Record<string, ReactNode> = {
   gate: <><circle cx="8" cy="8" r="6.2" /><circle cx="8" cy="8" r="1.8" /></>,
   log: <><rect x="2.6" y="2.6" width="10.8" height="10.8" rx="1" /><path d="M5.2 6h5.6M5.2 8.4h5.6M5.2 10.8h3.4" /></>,
-  achievement: <><circle cx="8" cy="8" r="5.8" /><path d="M8 4.2v7.6M4.2 8h7.6" /><circle cx="8" cy="8" r="1.7" /></>,
+  achievement: <><path d="M5.1 3.1h5.8v2c0 2.7-1.1 4.2-2.9 4.2S5.1 7.8 5.1 5.1v-2Z" /><path d="M5.1 4.2H3.3v1c0 1.5.8 2.3 2.3 2.3M10.9 4.2h1.8v1c0 1.5-.8 2.3-2.3 2.3M8 9.3v2M5.7 13h4.6M6.8 11.3h2.4" /></>,
   scale: <><path d="M3 12.4V8M6.3 12.4V4.6M9.6 12.4V6.8M12.9 12.4V3.4" /></>,
   about: <><circle cx="8" cy="8" r="6.2" /><path d="M8 7.2v4M8 4.9v.1" /></>,
 };

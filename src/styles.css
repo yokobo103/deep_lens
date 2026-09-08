@@ -918,26 +918,49 @@ body { overscroll-behavior: none; }
 .achievement-card.is-hidden p { color: #506864; }
 .achievement-mark.is-hidden { color: #66807c; border-color: rgb(129 210 198 / 16%); background: transparent; }
 
-/* A brief margin note over the globe. It never captures a pointer and leaves
-   without asking to be dismissed. */
+/* A small found object over the globe. Gold is kept to the hairline, trophy
+   and a few grains of light so the notice feels special without becoming a
+   game banner. It never captures a pointer and leaves by itself. */
 .achievement-toast {
-  position: fixed; z-index: 20; bottom: 26px; left: 26px; display: grid;
-  grid-template-columns: 40px minmax(0, 1fr); align-items: center; gap: 13px;
-  width: min(330px, calc(100vw - 52px)); min-height: 68px; padding: 13px 16px;
-  pointer-events: none; border: 1px solid rgb(255 214 144 / 34%);
-  background: linear-gradient(150deg, rgb(13 31 32 / 95%), rgb(5 15 18 / 95%));
-  box-shadow: 0 16px 48px rgb(0 0 0 / 52%), inset 0 0 26px rgb(255 214 144 / 3%);
-  backdrop-filter: blur(16px); animation: achievement-toast 4.6s ease both;
+  position: fixed; z-index: 20; top: 164px; left: 50%; isolation: isolate;
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 12px;
+  width: min(316px, calc(100vw - 36px)); min-height: 60px; padding: 8px 20px 8px 9px;
+  overflow: visible; pointer-events: none; border: 1px solid rgb(255 214 144 / 42%); border-radius: 999px;
+  background:
+    radial-gradient(circle at 17% 50%, rgb(255 214 144 / 13%), transparent 31%),
+    linear-gradient(145deg, rgb(10 35 37 / 97%), rgb(4 18 22 / 97%));
+  box-shadow: 0 15px 44px rgb(0 0 0 / 52%), 0 0 22px rgb(255 214 144 / 8%), inset 0 1px 0 rgb(255 243 218 / 9%);
+  backdrop-filter: blur(17px); animation: achievement-toast 4.6s ease both;
 }
-.achievement-toast::after { position: absolute; right: 8px; width: 3px; height: 3px; border-radius: 50%; content: ""; background: #ffd690; box-shadow: 0 0 9px #ffd690; }
-.achievement-toast .achievement-mark { width: 38px; height: 38px; }
-.achievement-toast small { display: block; color: #b69b6c; font: 700 8px ui-monospace, monospace; letter-spacing: .13em; }
-.achievement-toast strong { display: block; margin-top: 4px; color: #effffc; font: 550 12px/1.35 ui-monospace, monospace; letter-spacing: .04em; }
+.achievement-toast::before {
+  position: absolute; z-index: -1; inset: 3px; overflow: hidden; border-radius: inherit; content: "";
+  background: linear-gradient(105deg, transparent 28%, rgb(255 238 196 / 13%) 48%, transparent 68%);
+  background-size: 210% 100%; animation: achievement-toast-glint 4.6s ease-out both;
+}
+.achievement-toast::after {
+  position: absolute; right: 13px; width: 3px; height: 3px; border-radius: 50%; content: "";
+  background: #ffd690; box-shadow: 0 0 9px #ffd690;
+}
+.achievement-toast__trophy {
+  position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  color: #ffe0a5; border: 1px solid rgb(255 214 144 / 44%);
+  background: radial-gradient(circle, rgb(255 214 144 / 13%), rgb(20 30 25 / 45%) 66%);
+  box-shadow: 0 0 0 5px rgb(255 214 144 / 5%), inset 0 0 14px rgb(255 214 144 / 8%);
+}
+.achievement-toast__copy { min-width: 0; }
+.achievement-toast small { display: block; color: #d2af72; font: 700 8px ui-monospace, monospace; letter-spacing: .13em; }
+.achievement-toast strong { display: block; margin-top: 3px; overflow: hidden; color: #fff7e8; font: 550 13px/1.35 ui-monospace, monospace; letter-spacing: .035em; text-overflow: ellipsis; white-space: nowrap; }
+.achievement-toast__sparks { position: absolute; z-index: 2; top: 5px; left: -8px; width: 24px; height: 48px; }
+.achievement-toast__sparks i { position: absolute; display: block; width: 4px; height: 4px; background: #ffd690; box-shadow: 0 0 8px rgb(255 214 144 / 82%); transform: rotate(45deg); }
+.achievement-toast__sparks i:first-child { top: 3px; left: 8px; }
+.achievement-toast__sparks i:nth-child(2) { top: 24px; left: 1px; width: 2px; height: 2px; opacity: .7; }
+.achievement-toast__sparks i:last-child { right: 1px; bottom: 3px; width: 3px; height: 3px; opacity: .55; }
 @keyframes achievement-toast {
-  0% { opacity: 0; transform: translateY(10px); }
-  9%, 84% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(4px); }
+  0% { opacity: 0; transform: translate(-50%, -9px) scale(.98); }
+  9%, 84% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -3px) scale(.99); }
 }
+@keyframes achievement-toast-glint { 0%, 18% { background-position: 145% 0; } 48%, 100% { background-position: -65% 0; } }
 
 
 /* The header itself lets clicks through to the globe behind it, so anything
@@ -1055,7 +1078,7 @@ body { overscroll-behavior: none; }
   .achievements__section { margin-top: 28px; }
   .achievements__list { grid-template-columns: minmax(0, 1fr); gap: 9px; }
   .achievement-card { min-height: 84px; padding: 14px; }
-  .achievement-toast { top: 68px; right: 14px; bottom: auto; left: auto; width: min(320px, calc(100vw - 28px)); }
+  .achievement-toast { top: 148px; width: min(316px, calc(100vw - 34px)); }
   .timescale { top: 100px; left: 16px; width: calc(100vw - 32px); }
   .world-age { top: 62px; max-width: calc(100vw - 20px); }
   .world-age p { padding: 5px 10px; letter-spacing: .1em; }
