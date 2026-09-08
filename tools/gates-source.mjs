@@ -55,10 +55,13 @@ export async function readBands() {
   const text = await source();
   const block = text.slice(text.indexOf("export const bandDefinitions"), text.indexOf("export const hubDefinitions"));
   const bands = new Map();
-  for (const line of block.split("\n")) {
-    const id = line.match(/id:\s*"([^"]+)"/)?.[1];
-    const terrainMa = line.match(/terrainMa:\s*([\d.]+)/)?.[1];
-    const label = line.match(/label:\s*\{\s*ja:\s*"([^"]+)"/)?.[1];
+  // Split on entries rather than on lines. A band that has to say more than its
+  // age — the Pleistocene borrows the 0 Ma map and lowers the sea — is written
+  // over several lines, and a line-at-a-time reader drops it without a word.
+  for (const entry of block.split(/\n  \{/).slice(1)) {
+    const id = entry.match(/id:\s*"([^"]+)"/)?.[1];
+    const terrainMa = entry.match(/terrainMa:\s*([\d.]+)/)?.[1];
+    const label = entry.match(/label:\s*\{\s*ja:\s*"([^"]+)"/)?.[1];
     if (id && terrainMa) bands.set(id, { terrainMa: +terrainMa, label: label ?? id });
   }
   return bands;

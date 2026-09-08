@@ -208,8 +208,18 @@ export function GateHub() {
       <GateGlobe
         ariaLabel={text.globe}
         terrain={enteredBand ? {
-          url: `${import.meta.env.BASE_URL}geo/paleodem-${enteredBand.terrainMa}.webp`,
-          credit: `Scotese & Wright (2018) PALEOMAP PaleoDEM · ${enteredBand.terrainMa} Ma · 1° grid · CC BY 4.0`,
+          url: `${import.meta.env.BASE_URL}geo/paleodem-${enteredBand.terrainKey ?? enteredBand.terrainMa}.webp`,
+          // The note is part of the credit, not decoration: the Pleistocene Earth
+          // is the 0 Ma elevation field drawn at a lower sea level, and a picture
+          // that moves the coast without saying so is claiming a shoreline the
+          // source never drew.
+          credit: [
+            "Scotese & Wright (2018) PALEOMAP PaleoDEM",
+            `${enteredBand.terrainNote ? 0 : enteredBand.terrainMa} Ma`,
+            "1° grid",
+            enteredBand.terrainNote?.[locale],
+            "CC BY 4.0",
+          ].filter(Boolean).join(" · "),
         } : null}
         focus={world ? { lat: world.paleoLat, lng: world.paleoLng, height: 9_000_000 } : null}
         points={entered ? bandPoints : hubPoints}

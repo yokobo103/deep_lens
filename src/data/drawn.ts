@@ -160,6 +160,43 @@ export const DRAWN_IN_SCENE: Record<string, readonly string[]> = {
     "Protoischnurus axelrodorum", "Cratoelcana zessini", "Gomphaeschnaoides obliquus",
     "Protoligoneuria limai", "Ponopterix axelrodi",
   ],
+  kayenta: [
+    "Dilophosaurus wetherilli", "Scutellosaurus lawleri", "Sarahsaurus aurifontanalis",
+    "Kayentatherium wellesi", "Eocaecilia micropodia",
+  ],
+  posidonia: [
+    "Harpoceras falciferum", "Dactylioceras athleticum", "Saurorhynchus hauffi",
+    "Saurostomus esocinus", "Sinosura brodiei",
+  ],
+  // Four, not five. Ten of Clarens' fourteen are footprints, and the record
+  // holds only these four body fossils. Better a picture of four than a fifth
+  // invented to fill the row.
+  clarens: [
+    "Massospondylus carinatus", "Heterodontosaurus tucki", "Notochampsa istedana",
+    "Pedeticosaurus leviseuri",
+  ],
+  cerrejon: [
+    "Titanoboa cerrejonensis", "Acherontisuchus guajiraensis", "Carbonemys cofrinii",
+    "Puentemys mushaisaensis", "Cerrejonisuchus improcerus",
+  ],
+  nacimiento: [
+    "Periptychus carinidens", "Tetraclaenodon puercensis", "Psittacotherium multifragum",
+    "Arctocyon ferox", "Anisonchus sectorius",
+  ],
+  // Rancho La Brea has no Smilodon. Not low in the record - absent from it.
+  // The tar pit everyone pictures as sabre-tooths is, in the record, beetles
+  // and birds; so the dire wolf and the mammoth carry the famous half and the
+  // owl that tops the count carries the true one.
+  "la-brea": [
+    "Aenocyon dirus", "Mammuthus columbi", "Paramylodon harlani",
+    "Teratornis merriami", "Oraristrix brea",
+  ],
+  // The opposite trouble: the top of Naracoorte's record is animals still alive
+  // in Australia today. The extinct giants are in there, further down.
+  naracoorte: [
+    "Thylacoleo carnifex", "Thylacinus cynocephalus", "Procoptodon browneorum",
+    "Zygomaturus trilobus", "Simosthenurus occidentalis",
+  ],
 };
 
 export function drawnIn(gateId: string): readonly string[] {

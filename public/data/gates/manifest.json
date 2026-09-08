@@ -461,6 +461,97 @@
    "lng": -39.622,
    "paleoLat": -8.23,
    "paleoLng": -7.56
+  },
+  {
+   "id": "kayenta",
+   "band": "early-jurassic",
+   "sites": 49,
+   "occurrences": 225,
+   "medianAgeMa": 192,
+   "cast": 14,
+   "castTotal": 22,
+   "lat": 36.809,
+   "lng": -110.935,
+   "paleoLat": 21.2,
+   "paleoLng": -53.39
+  },
+  {
+   "id": "posidonia",
+   "band": "early-jurassic",
+   "sites": 13,
+   "occurrences": 83,
+   "medianAgeMa": 182.7,
+   "cast": 14,
+   "castTotal": 40,
+   "lat": 49.314,
+   "lng": 10.004,
+   "paleoLat": 38.7,
+   "paleoLng": 18.85
+  },
+  {
+   "id": "clarens",
+   "band": "early-jurassic",
+   "sites": 25,
+   "occurrences": 70,
+   "medianAgeMa": 190.1,
+   "cast": 14,
+   "castTotal": 41,
+   "lat": -29.731,
+   "lng": 27.727,
+   "paleoLat": -41.54,
+   "paleoLng": -4.09
+  },
+  {
+   "id": "cerrejon",
+   "band": "paleocene",
+   "sites": 18,
+   "occurrences": 227,
+   "medianAgeMa": 58.6,
+   "cast": 14,
+   "castTotal": 29,
+   "lat": 11.141,
+   "lng": -72.631,
+   "paleoLat": 8.54,
+   "paleoLng": -59.42
+  },
+  {
+   "id": "nacimiento",
+   "band": "paleocene",
+   "sites": 24,
+   "occurrences": 591,
+   "medianAgeMa": 63.1,
+   "cast": 14,
+   "castTotal": 144,
+   "lat": 36.2,
+   "lng": -107.535,
+   "paleoLat": 42.74,
+   "paleoLng": -87.98
+  },
+  {
+   "id": "la-brea",
+   "band": "pleistocene",
+   "sites": 18,
+   "occurrences": 1017,
+   "medianAgeMa": 0.1,
+   "cast": 14,
+   "castTotal": 568,
+   "lat": 34.039,
+   "lng": -118.414,
+   "paleoLat": 34.04,
+   "paleoLng": -118.41
+  },
+  {
+   "id": "naracoorte",
+   "band": "pleistocene",
+   "sites": 5,
+   "occurrences": 382,
+   "medianAgeMa": 0.3,
+   "cast": 14,
+   "castTotal": 85,
+   "lat": -37.009,
+   "lng": 140.842,
+   "paleoLat": -37.01,
+   "paleoLng": 140.84
   }
  ]
 }

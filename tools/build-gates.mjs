@@ -14,7 +14,7 @@
 // Seeing the rest of the world at one age does not need that bake either: gates
 // carry a band, and the other gates of a band are simply the ones sharing it.
 
-import { writeFile, mkdir } from "node:fs/promises";
+import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { readGates, GATES_SOURCE } from "./gates-source.mjs";
 
 // Cast entries PBDB places nowhere. Printed at the end so the gap is visible.
@@ -82,7 +82,21 @@ async function buildGate(gate) {
 
   for (const record of body.records ?? []) {
     if (!inWindow(record, gate)) continue;
-    if (record.lng == null || record.lat == null || record.pln == null || record.pla == null) continue;
+    if (record.lng == null || record.lat == null) continue;
+    // Below a few million years the reconstruction is not worth asking for, and
+    // asking anyway is worse than not asking. Plates move about five
+    // centimetres a year, so at 5 Ma the ground has gone perhaps 25 km — less
+    // than this app can draw. Meanwhile PBDB gives paleocoordinates for none of
+    // Naracoorte's ten Pleistocene collections and for three of La Brea's
+    // forty-six, two of which are wrong: one puts a tar pit 700 km inland and
+    // the other 4,300 km out in the Pacific off Ecuador, for ground that has
+    // had seventy thousand years to move about four metres.
+    //
+    // So under 5 Ma the present position is the reconstruction, and is used as
+    // one. Above it, a record with no reconstruction is skipped as before.
+    const recent = (Number(record.eag) + Number(record.lag)) / 2 < 5;
+    const reconstructed = !recent && record.pln != null && record.pla != null;
+    if (!recent && !reconstructed) continue;
     ageSum += (Number(record.eag) + Number(record.lag)) / 2;
     ageCount += 1;
     if (record.env) environments.set(record.env, (environments.get(record.env) ?? 0) + 1);
@@ -91,7 +105,7 @@ async function buildGate(gate) {
     const lat = round(Number(record.lat), 3);
     const key = `${lng},${lat}`;
     if (!seen.has(key)) {
-      seen.set(key, { lng, lat, paleoLng: round(Number(record.pln), 2), paleoLat: round(Number(record.pla), 2), country: record.cc2 ?? null });
+      seen.set(key, { lng, lat, paleoLng: reconstructed ? round(Number(record.pln), 2) : lng, paleoLat: reconstructed ? round(Number(record.pla), 2) : lat, country: record.cc2 ?? null });
     }
   }
 
@@ -137,6 +151,13 @@ async function buildGate(gate) {
     }
   }
 
+  // Two requests, two ways to come back empty. PBDB has answered the collections
+  // query and returned nothing for the occurrences query in the same minute, and
+  // a gate built from that half is a world with ground and nobody on it — which
+  // would be written out as a success. No gate in this app has zero occurrences,
+  // so zero means the question did not get answered.
+  if (occurrenceCount === 0) return null;
+
   return {
     id: gate.id,
     band: gate.band,
@@ -165,12 +186,31 @@ if (gates.length === 0) {
 
 await mkdir(OUT_DIR, { recursive: true });
 const manifest = [];
+/** Gates carried over from an earlier bake because this run got nothing. */
+const stale = [];
 let license = null;
 let accessTime = null;
 
 for (const gate of gates) {
   const built = await buildGate(gate);
   if (!built) {
+    // The same rule as the empty-manifest guard above, one level down. A gate
+    // that has baked before and comes back empty today is almost always PBDB
+    // having a moment, not a world that stopped existing — Huincul did exactly
+    // this once, and skipping it dropped a gate out of the app in silence
+    // while its JSON sat on disk untouched. Keep what was measured, and say so.
+    const kept = await readFile(join(OUT_DIR, `${gate.id}.json`), "utf8").catch(() => null);
+    if (kept) {
+      const row = JSON.parse(kept);
+      manifest.push({
+        id: row.id, band: row.band, sites: row.sites, occurrences: row.occurrences,
+        medianAgeMa: row.medianAgeMa, cast: row.cast.length, castTotal: row.castTotal,
+        lat: row.lat, lng: row.lng, paleoLat: row.paleoLat, paleoLng: row.paleoLng,
+      });
+      stale.push(gate.id);
+      console.log(`  ${gate.id.padEnd(18)} no records this run — KEPT the last bake, not rewritten`);
+      continue;
+    }
     console.log(`  ${gate.id.padEnd(18)} no records in window — check the query or the age`);
     continue;
   }
@@ -208,6 +248,9 @@ await writeFile(join(OUT_DIR, "manifest.json"), JSON.stringify({
 
 const total = manifest.reduce((sum, gate) => sum + gate.sites, 0);
 console.log(`\n${manifest.length} gates, ${total} localities -> ${OUT_DIR}`);
+if (stale.length > 0) {
+  console.log(`${stale.length} carried over from the last bake, not measured today: ${stale.join(", ")}`);
+}
 
 if (placeless.size > 0) {
   console.log(`${placeless.size} cast entries have no recorded habitat:`);

@@ -37,6 +37,8 @@ const hasScene = new Set(scenes.map((file) => file.replace(/\.[^.]+$/, "")));
 const gates = await readGates();
 const failures = [];
 const unpainted = [];
+/** Gates PBDB gave nothing for today. Not a verdict on what is drawn in them. */
+const unanswered = [];
 let checked = 0;
 
 for (const gate of gates) {
@@ -54,6 +56,16 @@ for (const gate of gates) {
   const response = await fetch(`${BASE}/occs/list.json?${parameters.join("&")}`);
   const body = await response.json();
   const recorded = new Set((body.records ?? []).filter((r) => r.rnk === 3 && r.tna).map((r) => r.tna));
+  // An empty answer is not the same claim as a missing species. PBDB returned
+  // nothing at all for Huincul one afternoon — a gate that had answered with 49
+  // species that morning — and reporting that as five drawn animals "not in the
+  // record" invites the next person to delete five correct entries to make the
+  // check pass. A gate that answers with nothing is unanswered, and is said so.
+  if (recorded.size === 0) {
+    unanswered.push(gate.id);
+    console.log(`  ${gate.id.padEnd(18)} PBDB returned no records — not checked this run`);
+    continue;
+  }
   for (const name of names) {
     checked += 1;
     if (!recorded.has(name)) failures.push(`${gate.id}: "${name}" is drawn but not in the record`);
@@ -67,6 +79,9 @@ if (failures.length > 0) {
   process.exit(1);
 }
 console.log(`${checked} drawn creatures, all present in their gate's records.`);
+if (unanswered.length > 0) {
+  console.log(`${unanswered.length} gates went unchecked because PBDB returned nothing: ${unanswered.join(", ")}`);
+}
 if (unpainted.length > 0) {
   console.log(`${unpainted.length} gates have no picture yet: ${unpainted.join(", ")}`);
 }

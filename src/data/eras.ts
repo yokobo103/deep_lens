@@ -13,5 +13,8 @@ export function eraOf(ma: number): (typeof ERAS)[number] {
 
 /** "約475 Ma" — the way every part of the app writes an age. */
 export function agePlate(ma: number): string {
+  // Under a million years, Ma rounds to zero and says nothing. The Pleistocene
+  // gate is the whole point of this app's last step, so it gets its own unit.
+  if (ma < 1) return `約${Math.round(ma * 1000)} ka`;
   return `約${Math.round(ma)} Ma`;
 }

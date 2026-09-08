@@ -111,10 +111,24 @@ def boundary_mask(field: np.ndarray, level: float) -> np.ndarray:
     return crossing
 
 
-def render(source: Path, destination: Path) -> None:
+def render(source: Path, destination: Path, sea_level_m: float = 0.0) -> None:
+    """
+    Draw one reconstructed Earth.
+
+    `sea_level_m` lowers or raises the shoreline. Everything downstream colours
+    by absolute height with the coast at zero, so shifting the field by the same
+    amount is the whole change: the fill, the 0 m contour, the depth bands and
+    the relief all follow. At -120 m — glacial sea level — Beringia, Doggerland,
+    Sundaland and the Torres Strait come up as land, and the land area of the
+    globe goes from 27.5 to 32.2 per cent.
+
+    It is still Scotese's elevation field. Say the sea level in the credit, or
+    the picture claims a coastline the source does not draw.
+    """
     with netCDF4.Dataset(source) as dataset:
         latitudes = np.asarray(dataset.variables["lat"][:])
         elevation = np.asarray(dataset.variables["z"][:], dtype=np.float32)
+    elevation = elevation - sea_level_m
 
     # Cesium expects north at the top of a global equirectangular image.
     if latitudes[0] < latitudes[-1]:
@@ -171,8 +185,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
     parser.add_argument("destination", type=Path)
+    parser.add_argument("--sea-level", type=float, default=0.0,
+                        help="metres relative to today; -120 is the glacial lowstand")
     args = parser.parse_args()
-    render(args.source, args.destination)
+    render(args.source, args.destination, args.sea_level)
 
 
 if __name__ == "__main__":

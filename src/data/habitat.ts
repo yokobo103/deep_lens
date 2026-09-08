@@ -48,12 +48,16 @@ export function layerOf(
   environment: string | null,
   habit: string | null,
   klass: string | null = null,
-  /** PBDB's taxon flags: I is a footprint, F is an egg or a detached organ. */
+  /** PBDB's taxon flags, as a set of letters: I a footprint, F an egg or a
+   * detached organ, and "IF" both at once. */
   form: string | null = null,
 ): Layer {
   if (has(phylum, "angiosperm", "gymnosperm", "plantae", "spermatophyt")) return "plant";
   // A footprint and an eggshell are records of an animal, not places it stood.
-  if (form === "I" || form === "F") return "trace";
+  // The flags are a set, not a value: PBDB writes "IF" for a footprint that is
+  // also a form taxon, and three of Clarens' ten footprints carry it. Matching
+  // the whole string put them on land, standing.
+  if (form?.includes("I") || form?.includes("F")) return "trace";
   if (has(habit, "volant")) return "air";
   if (has(habit, "infaunal")) return "inFloor";
   if (has(habit, "epifaunal")) return "onFloor";

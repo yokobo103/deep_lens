@@ -93,6 +93,17 @@ export interface BandDefinition {
   id: string;
   /** The reconstruction this band's Earth is drawn from. */
   terrainMa: number;
+  /**
+   * Which rendered file to load, when it is not simply `paleodem-<terrainMa>`.
+   *
+   * Scotese steps 5 Myr and stops at 0, so a band a hundred thousand years old
+   * has no map of its own. The Pleistocene borrows the 0 Ma elevation field and
+   * draws it at glacial sea level instead — same data, one different contour —
+   * and says so in `terrainNote`, because a picture that lowers the sea without
+   * saying it claims a coastline the source never drew.
+   */
+  terrainKey?: string;
+  terrainNote?: { ja: string; en: string };
   label: { ja: string; en: string };
 }
 
@@ -115,6 +126,18 @@ export const bandDefinitions: readonly BandDefinition[] = [
   { id: "carboniferous", terrainMa: 315, label: { ja: "石炭紀 · 約315 Ma", en: "Carboniferous · ~315 Ma" } },
   { id: "devonian", terrainMa: 380, label: { ja: "デボン紀後期 · 約380 Ma", en: "Late Devonian · ~380 Ma" } },
   { id: "cambrian", terrainMa: 510, label: { ja: "カンブリア紀 · 約510 Ma", en: "Cambrian · ~510 Ma" } },
+  { id: "early-jurassic", terrainMa: 190, label: { ja: "ジュラ紀前期 · 約190 Ma", en: "Early Jurassic · ~190 Ma" } },
+  { id: "paleocene", terrainMa: 60, label: { ja: "暁新世 · 約60 Ma", en: "Paleocene · ~60 Ma" } },
+  {
+    id: "pleistocene",
+    terrainMa: 0.1,
+    terrainKey: "0-glacial",
+    terrainNote: {
+      ja: "氷期の海面（現在より約120 m低い）",
+      en: "glacial sea level, about 120 m below today",
+    },
+    label: { ja: "更新世 · 約10万年前", en: "Pleistocene · ~100,000 years ago" },
+  },
 ];
 
 /**
@@ -141,6 +164,7 @@ export const hubDefinitions: readonly HubDefinition[] = [
      which is Tokyo to Hong Kong and not one region by any reading. */
   { id: "yunnan", name: { ja: "雲南", en: "Yunnan" }, place: { ja: "中国南部", en: "Southern China" } },
   { id: "liaoning", name: { ja: "遼寧", en: "Liaoning" }, place: { ja: "中国北東部", en: "Northeast China" } },
+  { id: "colombia", name: { ja: "コロンビア", en: "Colombia" }, place: { ja: "南アメリカ北部", en: "Northern South America" } },
   { id: "england", name: { ja: "イングランド", en: "England" }, place: { ja: "イギリス", en: "United Kingdom" } },
 ];
 
@@ -549,6 +573,86 @@ export const gateDefinitions: readonly GateDefinition[] = [
     place: { ja: "ブラジル", en: "Brazil" },
     name: { ja: "クラト", en: "Crato" },
     world: { ja: "静かな潟に沈んだ、無数の昆虫と翼竜", en: "A still lagoon, and the insects and pterosaurs that sank into it" },
+    featured: true,
+  },
+
+  {
+    id: "kayenta",
+    band: "early-jurassic",
+    query: { stratum: "Kayenta" },
+    ageMa: { from: 199, to: 182 },
+    currentRegion: "north-america",
+    place: { ja: "アメリカ合衆国", en: "United States" },
+    name: { ja: "カイエンタ", en: "Kayenta" },
+    world: { ja: "砂漠のふちの、季節ごとに流れる川", en: "Seasonal rivers along the edge of a desert" },
+    featured: true,
+  },
+  {
+    id: "posidonia",
+    band: "early-jurassic",
+    query: { stratum: "Posidonienschiefer" },
+    ageMa: { from: 185, to: 178 },
+    currentRegion: "europe",
+    place: { ja: "ドイツ", en: "Germany" },
+    name: { ja: "ポシドニア頁岩", en: "Posidonia Shale" },
+    world: { ja: "底に酸素のない、静かな黒い海", en: "A still black sea with no oxygen at the bottom" },
+    featured: true,
+  },
+  {
+    id: "clarens",
+    hub: "karoo",
+    band: "early-jurassic",
+    query: { stratum: "Clarens" },
+    ageMa: { from: 200, to: 180 },
+    currentRegion: "africa",
+    place: { ja: "南アフリカ", en: "South Africa" },
+    name: { ja: "クラレンス", en: "Clarens" },
+    world: { ja: "砂に埋もれていく、乾いた高地", en: "A dry upland going under the sand" },
+    featured: true,
+  },
+  {
+    id: "cerrejon",
+    hub: "colombia",
+    band: "paleocene",
+    query: { box: { west: -73.2, east: -72.0, south: 10.8, north: 11.6 } },
+    ageMa: { from: 62, to: 56 },
+    currentRegion: "south-america",
+    place: { ja: "コロンビア", en: "Colombia" },
+    name: { ja: "セレホン", en: "Cerrejón" },
+    world: { ja: "恐竜のいなくなった熱帯雨林と、巨大なヘビ", en: "A rainforest with no dinosaurs in it, and an enormous snake" },
+    featured: true,
+  },
+  {
+    id: "nacimiento",
+    band: "paleocene",
+    query: { stratum: "Nacimiento" },
+    ageMa: { from: 65, to: 60 },
+    currentRegion: "north-america",
+    place: { ja: "アメリカ合衆国", en: "United States" },
+    name: { ja: "ナシミエント", en: "Nacimiento" },
+    world: { ja: "空いた席を、哺乳類が埋めはじめた平野", en: "A floodplain where mammals began filling the empty seats" },
+    featured: true,
+  },
+  {
+    id: "la-brea",
+    band: "pleistocene",
+    query: { box: { west: -118.6, east: -118.0, south: 33.9, north: 34.3 } },
+    ageMa: { from: 0.2, to: 0.005 },
+    currentRegion: "north-america",
+    place: { ja: "アメリカ合衆国", en: "United States" },
+    name: { ja: "ランチョ・ラ・ブレア", en: "Rancho La Brea" },
+    world: { ja: "天然のアスファルトに沈んだ、氷期の獣たち", en: "Ice-age animals, caught in natural asphalt" },
+    featured: true,
+  },
+  {
+    id: "naracoorte",
+    band: "pleistocene",
+    query: { box: { west: 140.5, east: 141.0, south: -37.3, north: -36.9 } },
+    ageMa: { from: 0.5, to: 0.005 },
+    currentRegion: "oceania",
+    place: { ja: "オーストラリア", en: "Australia" },
+    name: { ja: "ナラクーテ", en: "Naracoorte" },
+    world: { ja: "洞窟に落ちて残った、巨大な有袋類", en: "Giant marsupials, kept by the caves they fell into" },
     featured: true,
   },
 ];
