@@ -12,7 +12,7 @@
  *     npm run verify:scenes
  */
 
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readGates } from "./gates-source.mjs";
@@ -31,13 +31,23 @@ for (const match of source.matchAll(/["']?([\w-]+)["']?:\s*\[([^\]]*)\]/g)) {
   if (names.length > 0) drawn.set(match[1], names);
 }
 
+const scenes = await readdir(join(ROOT, "src", "assets", "scenes")).catch(() => []);
+const hasScene = new Set(scenes.map((file) => file.replace(/\.[^.]+$/, "")));
+
 const gates = await readGates();
 const failures = [];
+const unpainted = [];
 let checked = 0;
 
 for (const gate of gates) {
   const names = drawn.get(gate.id);
-  if (!names) { failures.push(`${gate.id}: no scene cast recorded`); continue; }
+  // A gate with no picture yet has nothing to check. Only a gate that has a
+  // scene and no recorded cast is a fault: that is a picture nobody verified.
+  if (!names) {
+    if (hasScene.has(gate.id)) failures.push(`${gate.id}: has a scene but no cast recorded in drawn.ts`);
+    else unpainted.push(gate.id);
+    continue;
+  }
   const parameters = ["limit=10000", `max_ma=${gate.from}`, `min_ma=${gate.to}`];
   if (gate.stratum) parameters.push(`strat=${encodeURIComponent(gate.stratum)}`);
   if (gate.box) parameters.push(`lngmin=${gate.box.west}`, `lngmax=${gate.box.east}`, `latmin=${gate.box.south}`, `latmax=${gate.box.north}`);
@@ -57,3 +67,6 @@ if (failures.length > 0) {
   process.exit(1);
 }
 console.log(`${checked} drawn creatures, all present in their gate's records.`);
+if (unpainted.length > 0) {
+  console.log(`${unpainted.length} gates have no picture yet: ${unpainted.join(", ")}`);
+}

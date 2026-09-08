@@ -139,6 +139,27 @@ export const DRAWN_IN_SCENE: Record<string, readonly string[]> = {
     "Herrerasaurus ischigualastensis", "Eoraptor lunensis", "Saurosuchus galilei",
     "Exaeretodon argentinus", "Ischigualastia jenseni",
   ],
+
+  huincul: [
+    "Argentinosaurus huinculensis", "Mapusaurus roseae", "Skorpiovenator bustingorryi",
+    "Limaysaurus tessonei", "Sidersaura marae",
+  ],
+  winton: [
+    "Diamantinasaurus matildae", "Wintonotitan wattsi", "Australovenator wintonensis",
+    "Austrosequoia wintonensis", "Ginkgo wintonensis",
+  ],
+  djadokhta: [
+    "Protoceratops andrewsi", "Velociraptor mongoliensis", "Pinacosaurus grangeri",
+    "Shuvuuia deserti", "Zalambdalestes lechei",
+  ],
+  luoping: [
+    "Atopodentatus unicus", "Saurichthys spinosa", "Kyphosichthys grandei",
+    "Dianopachysaurus dingi", "Yunnanocopia grandis",
+  ],
+  crato: [
+    "Protoischnurus axelrodorum", "Cratoelcana zessini", "Gomphaeschnaoides obliquus",
+    "Protoligoneuria limai", "Ponopterix axelrodi",
+  ],
 };
 
 export function drawnIn(gateId: string): readonly string[] {

@@ -396,6 +396,71 @@
    "lng": -68.082,
    "paleoLat": -46.24,
    "paleoLng": -35.36
+  },
+  {
+   "id": "huincul",
+   "band": "mid-cretaceous",
+   "sites": 17,
+   "occurrences": 96,
+   "medianAgeMa": 95.6,
+   "cast": 14,
+   "castTotal": 49,
+   "lat": -38.951,
+   "lng": -69.093,
+   "paleoLat": -45.83,
+   "paleoLng": -46.04
+  },
+  {
+   "id": "winton",
+   "band": "mid-cretaceous",
+   "sites": 27,
+   "occurrences": 148,
+   "medianAgeMa": 95.7,
+   "cast": 14,
+   "castTotal": 44,
+   "lat": -22.75,
+   "lng": 142.74,
+   "paleoLat": -52.45,
+   "paleoLng": 134.28
+  },
+  {
+   "id": "djadokhta",
+   "band": "late-cretaceous",
+   "sites": 27,
+   "occurrences": 343,
+   "medianAgeMa": 77.9,
+   "cast": 14,
+   "castTotal": 101,
+   "lat": 44.098,
+   "lng": 103.002,
+   "paleoLat": 40.77,
+   "paleoLng": 92.83
+  },
+  {
+   "id": "luoping",
+   "band": "early-triassic",
+   "sites": 10,
+   "occurrences": 76,
+   "medianAgeMa": 244,
+   "cast": 14,
+   "castTotal": 59,
+   "lat": 24.758,
+   "lng": 104.232,
+   "paleoLat": 10.64,
+   "paleoLng": 95.18
+  },
+  {
+   "id": "crato",
+   "band": "early-cretaceous",
+   "sites": 21,
+   "occurrences": 974,
+   "medianAgeMa": 116.4,
+   "cast": 14,
+   "castTotal": 492,
+   "lat": -7.142,
+   "lng": -39.622,
+   "paleoLat": -8.23,
+   "paleoLng": -7.56
   }
  ]
 }
