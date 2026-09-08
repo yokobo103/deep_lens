@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GateGlobe } from "./GateGlobe";
 import { gateById, gatesInBand, bandById, hubs, hubIdOf, type GateDefinition, type Hub } from "../data/gates";
 import { loadGateManifest, loadGate, type GateDetail, type GateSummary } from "../data/gateData";
@@ -9,6 +9,14 @@ import { ExplorerLog } from "./ExplorerLog";
 import { About } from "./About";
 import { HeaderMenu } from "./HeaderMenu";
 import { readLog, recordVisit, resetLog, type Visit } from "./log";
+import { dominantEnvironment, type EnvClass } from "../data/environment";
+import { Achievements } from "./Achievements";
+import { AchievementToast } from "./AchievementToast";
+import {
+  achievementDefinitions,
+  evaluateAchievements,
+  type AchievementId,
+} from "./AchievementCatalog";
 
 /**
  * The present-day Earth as a hub: gates on it, and nothing else.
@@ -37,8 +45,15 @@ export function GateHub() {
   // reader's thumb held in the book, and some readers do not want one.
   const [visits, setVisits] = useState<Visit[]>(() => readLog());
   const [logOpen, setLogOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const initialVisits = useRef(visits);
+  const knownAchievements = useRef<Set<AchievementId>>(new Set());
+  const achievementsInitialised = useRef(false);
+  const [achievementEvidenceReady, setAchievementEvidenceReady] = useState(false);
+  const [achievementEnvironments, setAchievementEnvironments] = useState<Map<string, EnvClass>>(new Map());
+  const [achievementQueue, setAchievementQueue] = useState<AchievementId[]>([]);
   const [timescale, setTimescale] = useState<boolean>(() => {
     try {
       return window.localStorage.getItem("deep-lens-timescale") !== "off";
@@ -49,6 +64,16 @@ export function GateHub() {
   const allHubs = hubs();
   const visitedGateIds = new Set(visits.map((visit) => visit.gateId));
 
+  const earnedAchievements = useMemo(
+    () => evaluateAchievements({ visits, environments: achievementEnvironments }),
+    [achievementEnvironments, visits],
+  );
+  const earnedAchievementIds = useMemo(
+    () => new Set(earnedAchievements.map(({ id }) => id)),
+    [earnedAchievements],
+  );
+  const currentAchievement = achievementDefinitions.find(({ id }) => id === achievementQueue[0]);
+
   const enterGate = (id: string | null) => {
     setEnteredId(id);
     setWorld(null);
@@ -56,7 +81,14 @@ export function GateHub() {
     if (!id) return;
     setVisits((log) => recordVisit(id, log));
     loadGate(id)
-      .then((detail) => setWorld((current) => (current?.id === detail.id ? current : detail)))
+      .then((detail) => {
+        setWorld((current) => (current?.id === detail.id ? current : detail));
+        setAchievementEnvironments((known) => {
+          const next = new Map(known);
+          next.set(detail.id, dominantEnvironment(detail.environments));
+          return next;
+        });
+      })
       .catch((error: unknown) => console.warn("World could not be loaded", error));
   };
 
@@ -67,6 +99,8 @@ export function GateHub() {
     setEnteredId(null);
     setWorld(null);
     setPanelOpen(true);
+    knownAchievements.current.clear();
+    setAchievementQueue([]);
   };
 
   useEffect(() => {
@@ -91,6 +125,44 @@ export function GateHub() {
       .then(({ gates: baked }) => setGates(baked))
       .catch((error: unknown) => console.warn("Gates could not be loaded", error));
   }, []);
+
+  // Existing journeys are evaluated once, including the PBDB environment of
+  // every visited world. They become part of the archive without producing a
+  // stack of notifications when this feature first appears.
+  useEffect(() => {
+    let current = true;
+    const ids = [...new Set(initialVisits.current.map(({ gateId }) => gateId))];
+    Promise.allSettled(ids.map((id) => loadGate(id))).then((results) => {
+      if (!current) return;
+      setAchievementEnvironments((known) => {
+        const next = new Map(known);
+        for (const result of results) {
+          if (result.status === "fulfilled") {
+            next.set(result.value.id, dominantEnvironment(result.value.environments));
+          }
+        }
+        return next;
+      });
+      setAchievementEvidenceReady(true);
+    });
+    return () => { current = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!achievementEvidenceReady) return;
+    if (!achievementsInitialised.current) {
+      knownAchievements.current = new Set(earnedAchievementIds);
+      achievementsInitialised.current = true;
+      return;
+    }
+    const foundNow = earnedAchievements.filter(({ id }) => !knownAchievements.current.has(id));
+    if (foundNow.length === 0) return;
+    for (const { id } of foundNow) knownAchievements.current.add(id);
+    setAchievementQueue((queue) => [
+      ...queue,
+      ...foundNow.map(({ id }) => id).filter((id) => !queue.includes(id)),
+    ]);
+  }, [achievementEvidenceReady, earnedAchievementIds, earnedAchievements]);
 
   const text = hubCopy[locale];
   const selected = selectedId ? gates.find((gate) => gate.id === selectedId) : undefined;
@@ -201,18 +273,27 @@ export function GateHub() {
             locale={locale}
             timescale={timescale}
             visits={visits.length}
-            atGlobe={!entered && !selected && !logOpen && !aboutOpen}
+            atGlobe={!entered && !selected && !logOpen && !achievementsOpen && !aboutOpen}
             onToggle={() => setMenuOpen((wasOpen) => !wasOpen)}
             onClose={() => setMenuOpen(false)}
-            onFindGate={() => { setMenuOpen(false); setLogOpen(false); setAboutOpen(false); setSelectedId(null); if (entered) enterGate(null); }}
-            onLog={() => { setMenuOpen(false); setAboutOpen(false); setLogOpen(true); }}
+            onFindGate={() => { setMenuOpen(false); setLogOpen(false); setAchievementsOpen(false); setAboutOpen(false); setSelectedId(null); if (entered) enterGate(null); }}
+            onLog={() => { setMenuOpen(false); setAchievementsOpen(false); setAboutOpen(false); setLogOpen(true); }}
+            onAchievements={() => { setMenuOpen(false); setLogOpen(false); setAboutOpen(false); setAchievementsOpen(true); }}
             onTimescale={() => setTimescale((on) => !on)}
-            onAbout={() => { setMenuOpen(false); setLogOpen(false); setAboutOpen(true); }}
+            onAbout={() => { setMenuOpen(false); setLogOpen(false); setAchievementsOpen(false); setAboutOpen(true); }}
           />
         </div>
       </header>
 
       {aboutOpen && <About locale={locale} onClose={() => setAboutOpen(false)} />}
+
+      {achievementsOpen && (
+        <Achievements
+          earnedIds={earnedAchievementIds}
+          locale={locale}
+          onClose={() => setAchievementsOpen(false)}
+        />
+      )}
 
       {logOpen && (
         <ExplorerLog
@@ -222,6 +303,15 @@ export function GateHub() {
           onGoTo={(id) => { setLogOpen(false); setSelectedId(null); enterGate(id); }}
           onReset={restartJourney}
           onClose={() => setLogOpen(false)}
+        />
+      )}
+
+      {currentAchievement && (
+        <AchievementToast
+          key={currentAchievement.id}
+          achievement={currentAchievement}
+          locale={locale}
+          onDone={() => setAchievementQueue((queue) => queue.slice(1))}
         />
       )}
 

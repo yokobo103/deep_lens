@@ -12,6 +12,7 @@ interface HeaderMenuProps {
   onClose: () => void;
   onFindGate: () => void;
   onLog: () => void;
+  onAchievements: () => void;
   onTimescale: () => void;
   onAbout: () => void;
 }
@@ -20,6 +21,7 @@ interface HeaderMenuProps {
 const icon: Record<string, ReactNode> = {
   gate: <><circle cx="8" cy="8" r="6.2" /><circle cx="8" cy="8" r="1.8" /></>,
   log: <><rect x="2.6" y="2.6" width="10.8" height="10.8" rx="1" /><path d="M5.2 6h5.6M5.2 8.4h5.6M5.2 10.8h3.4" /></>,
+  achievement: <><circle cx="8" cy="8" r="5.8" /><path d="M8 4.2v7.6M4.2 8h7.6" /><circle cx="8" cy="8" r="1.7" /></>,
   scale: <><path d="M3 12.4V8M6.3 12.4V4.6M9.6 12.4V6.8M12.9 12.4V3.4" /></>,
   about: <><circle cx="8" cy="8" r="6.2" /><path d="M8 7.2v4M8 4.9v.1" /></>,
 };
@@ -47,7 +49,7 @@ function Glyph({ name }: { name: keyof typeof icon }) {
  */
 export function HeaderMenu({
   open, locale, timescale, visits, atGlobe,
-  onToggle, onClose, onFindGate, onLog, onTimescale, onAbout,
+  onToggle, onClose, onFindGate, onLog, onAchievements, onTimescale, onAbout,
 }: HeaderMenuProps) {
   const text = hubCopy[locale];
   const panelRef = useRef<HTMLDivElement>(null);
@@ -93,6 +95,12 @@ export function HeaderMenu({
               <Glyph name="log" />
               <span>{text.logLong}</span>
               {visits > 0 && <b>{visits}</b>}
+              <em aria-hidden="true">›</em>
+            </button>
+
+            <button type="button" role="menuitem" className="gate-menu__row" onClick={onAchievements}>
+              <Glyph name="achievement" />
+              <span>{text.achievement}</span>
               <em aria-hidden="true">›</em>
             </button>
 
