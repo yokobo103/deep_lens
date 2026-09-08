@@ -4,7 +4,8 @@ export const hubCopy = {
   ja: {
     title: "地球に眠る過去への入り口",
     globe: "地球儀。回すとゲートが見つかる",
-    hint: "地球を回して、入り口を見つけよう",
+    hint: "地球を回して、入口の気配を探そう",
+    gateTrace: "かすかな入口の気配",
     ways: (n: number) => `${n}の入り口`,
     sites: "地点",
     records: "記録",
@@ -77,7 +78,8 @@ export const hubCopy = {
   en: {
     title: "Ways into the Earth's past",
     globe: "Globe. Turn it to find gates",
-    hint: "Turn the Earth and find a way in",
+    hint: "Turn the Earth and look for a trace of a way in",
+    gateTrace: "A faint trace of a way in",
     ways: (n: number) => `${n} ways in`,
     sites: "sites",
     records: "records",

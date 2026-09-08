@@ -108,11 +108,14 @@ export function GateGlobe({ points, renderPoint, ariaLabel, terrain = null, focu
         // thing on the planet.
         const visible = Boolean(projected) && occluder.isPointVisible(world);
         const label = element.querySelector<HTMLElement>(".gate-marker__label");
+        const labelCanShow = !element.classList.contains("is-undiscovered")
+          || element.classList.contains("is-selected")
+          || element.classList.contains("is-here");
         const x = projected ? projected.x : 0;
         const y = projected ? projected.y : 0;
         found.push({
           element, x, y, visible,
-          box: label && visible ? labelBox(x, y, label.offsetWidth, label.offsetHeight) : null,
+          box: label && visible && labelCanShow ? labelBox(x, y, label.offsetWidth, label.offsetHeight) : null,
           weight: point.weight ?? 0,
           // A place being looked at keeps its name whatever is next to it.
           pinned: element.classList.contains("is-selected") || element.classList.contains("is-here"),

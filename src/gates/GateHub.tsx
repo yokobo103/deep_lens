@@ -47,6 +47,7 @@ export function GateHub() {
     }
   });
   const allHubs = hubs();
+  const visitedGateIds = new Set(visits.map((visit) => visit.gateId));
 
   const enterGate = (id: string | null) => {
     setEnteredId(id);
@@ -130,14 +131,16 @@ export function GateHub() {
             const neighbour = gateById(point.id);
             if (!neighbour) return null;
             const isHere = neighbour.id === entered.id;
+            const isDiscovered = visitedGateIds.has(neighbour.id);
+            const isRevealed = isHere || isDiscovered;
             return (
               <button
                 key={point.id}
                 data-globe-point={point.id}
                 type="button"
-                className={`gate-marker${isHere ? " is-here" : ""}`}
+                className={`gate-marker${isHere ? " is-here" : ""}${isDiscovered ? " is-discovered" : " is-undiscovered"}`}
                 onClick={() => (isHere ? setPanelOpen(true) : enterGate(neighbour.id))}
-                aria-label={neighbour.name[locale]}
+                aria-label={isRevealed ? neighbour.name[locale] : text.gateTrace}
               >
                 <span className="gate-marker__ring" aria-hidden="true" />
                 <span className="gate-marker__core" aria-hidden="true" />
@@ -148,14 +151,16 @@ export function GateHub() {
           const hub = allHubs.find((entry) => entry.id === point.id);
           if (!hub) return null;
           const isSelected = selectedHub?.id === hub.id;
+          const isDiscovered = hub.gates.some((gate) => visitedGateIds.has(gate.id));
+          const isRevealed = isSelected || isDiscovered;
           return (
             <button
               key={point.id}
               data-globe-point={point.id}
               type="button"
-              className={`gate-marker${isSelected ? " is-selected" : ""}${hub.gates.length > 1 ? " has-ages" : ""}`}
+              className={`gate-marker${isSelected ? " is-selected" : ""}${isDiscovered ? " is-discovered" : " is-undiscovered"}${hub.gates.length > 1 && isRevealed ? " has-ages" : ""}`}
               onClick={() => setSelectedId(hub.gates[0]!.id)}
-              aria-label={`${hub.name[locale]} — ${hub.place[locale]}`}
+              aria-label={isRevealed ? `${hub.name[locale]} — ${hub.place[locale]}` : text.gateTrace}
             >
               <span className="gate-marker__ring" aria-hidden="true" />
               <span className="gate-marker__core" aria-hidden="true" />
@@ -219,10 +224,7 @@ export function GateHub() {
       )}
 
       {!selected && !entered && (
-        <p className="gate-hint">
-          {text.hint}
-          <small>{text.ways(hubPoints.length)}</small>
-        </p>
+        <p className="gate-hint">{text.hint}</p>
       )}
 
       {!entered && selected && definition && (

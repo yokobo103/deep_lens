@@ -551,6 +551,51 @@ body { overscroll-behavior: none; }
 
 .gate-marker__label i { margin-left: 6px; padding: 0 4px; color: #1b1207; background: #ffd690; border-radius: 6px; font-style: normal; font-size: 7px; }
 
+/* Before a place has been visited it is a trace, not a destination label. The
+   full 34px button remains easy to touch, while only a dim 18px opening is
+   drawn over the Earth. Selecting it reveals the ordinary gate in place; a
+   return visit keeps that ordinary state through the existing travel log. */
+.gate-marker.is-undiscovered .gate-marker__ring {
+  inset: 8px; border-color: rgb(255 214 144 / 18%);
+  box-shadow: 0 0 7px rgb(255 214 144 / 10%), inset 0 0 5px rgb(255 214 144 / 7%);
+  animation: gate-whisper 4.2s ease-in-out infinite;
+}
+.gate-marker.is-undiscovered .gate-marker__core {
+  width: 3px; height: 3px; opacity: .62; background: rgb(255 214 144 / 68%);
+  box-shadow: 0 0 6px rgb(255 214 144 / 42%);
+}
+.gate-marker.is-undiscovered .gate-marker__label {
+  visibility: hidden; opacity: 0; transform: translate(-50%, -3px);
+  transition: opacity .32s ease, transform .32s ease;
+}
+.gate-marker.is-undiscovered:hover .gate-marker__ring,
+.gate-marker.is-undiscovered:focus-visible .gate-marker__ring {
+  inset: 6px; border-color: rgb(255 214 144 / 32%);
+  box-shadow: 0 0 10px rgb(255 214 144 / 18%), inset 0 0 6px rgb(255 214 144 / 10%);
+}
+.gate-marker.is-undiscovered:hover .gate-marker__core,
+.gate-marker.is-undiscovered:focus-visible .gate-marker__core { opacity: .9; }
+.gate-marker.is-undiscovered.is-selected .gate-marker__ring {
+  inset: 0; border-color: #ffd690;
+  box-shadow: 0 0 26px rgb(255 214 144 / 45%), inset 0 0 16px rgb(255 214 144 / 22%);
+  animation: none;
+}
+.gate-marker.is-undiscovered.is-selected .gate-marker__core {
+  width: 7px; height: 7px; opacity: 1; background: #ffd690; box-shadow: 0 0 12px #ffd690;
+}
+.gate-marker.is-undiscovered.is-selected .gate-marker__label {
+  visibility: visible; opacity: 1; transform: translateX(-50%);
+}
+
+@keyframes gate-whisper {
+  0%, 100% { opacity: .48; transform: scale(.86); }
+  55% { opacity: .86; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-marker.is-undiscovered .gate-marker__ring { animation: none; }
+}
+
 .gate-ages { display: flex; gap: 5px; margin-top: 13px; }
 .gate-ages button {
   flex: 1; padding: 8px 4px; color: #8ca7a2; border: 1px solid rgb(255 214 144 / 22%);
