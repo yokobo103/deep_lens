@@ -515,6 +515,12 @@ export const JAPANESE_NAME: Record<string, string> = {
   Sminthopsis: "スミントプシス",
   Potorous: "ネズミカンガルー",
   // Much Wenlock — Late Silurian, England. The top of this record is conodonts.
+  // Burgess Shale — the four a reader is likely to know.
+  Anomalocaris: "アノマロカリス",
+  Opabinia: "オパビニア",
+  Pikaia: "ピカイア",
+  Hallucigenia: "ハルキゲニア",
+
   Panderodus: "コノドント",
   Wurmiella: "コノドント",
   Ozarkodina: "コノドント",

@@ -139,11 +139,11 @@ export const SCENE_HIGHLIGHTS: Readonly<Record<string, Readonly<Record<string, S
     "Isoxys auritus": { x: 0.860, y: 0.270 },
   },
   "burgess-shale": {
-    "Marrella splendens": { x: 0.550, y: 0.880 },
-    "Wiwaxia corrugata": { x: 0.480, y: 0.480 },
-    "Ottoia prolifica": { x: 0.140, y: 0.440 },
-    "Canadaspis perfecta": { x: 0.880, y: 0.670 },
-    "Waptia fieldensis": { x: 0.780, y: 0.160 },
+    "Anomalocaris canadensis": { x: 0.435, y: 0.135 },
+    "Opabinia regalis": { x: 0.242, y: 0.496 },
+    "Pikaia gracilens": { x: 0.744, y: 0.266 },
+    "Hallucigenia sparsa": { x: 0.716, y: 0.592 },
+    "Marrella splendens": { x: 0.467, y: 0.845 },
   },
   gogo: {
     "Gogosardina coatesi": { x: 0.550, y: 0.670 },

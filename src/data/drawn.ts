@@ -83,9 +83,14 @@ export const DRAWN_IN_SCENE: Record<string, readonly string[]> = {
     "Eoredlichia intermediata", "Naraoia spinosa", "Leanchoilia illecebrosa",
     "Cricocosmia jinningensis", "Isoxys auritus",
   ],
+  // Chosen by fame rather than by count, and the only scene where that was the
+  // right call. The top of Burgess's record is Selkirkia, Ehmaniella, Wiwaxia,
+  // Pentagnostus — all real, all in the record, and nobody has heard of any of
+  // them. Four animals a reader is likely to recognise sit a little further
+  // down, at two to six occurrences each, and they are what this place means.
   "burgess-shale": [
-    "Marrella splendens", "Wiwaxia corrugata", "Ottoia prolifica",
-    "Canadaspis perfecta", "Waptia fieldensis",
+    "Anomalocaris canadensis", "Opabinia regalis", "Pikaia gracilens",
+    "Hallucigenia sparsa", "Marrella splendens",
   ],
   "anti-atlas": [
     "Agoniatites expansus", "Anarcestes lateseptatus", "Chotecops breviceps",
