@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { GateGlobe } from "./GateGlobe";
 import { gateById, gatesInBand, bandById, hubs, hubIdOf, type GateDefinition, type Hub } from "../data/gates";
 import { loadGateManifest, loadGate, type GateDetail, type GateSummary } from "../data/gateData";
+import { agePlate, eraOf } from "../data/eras";
 import { WorldPanel } from "./WorldPanel";
 import { hubCopy, type Locale } from "./copy";
 import { TimeScale } from "./TimeScale";
@@ -364,7 +365,7 @@ export function GateHub() {
         <TimeScale
           ageMa={enteredBand?.terrainMa ?? null}
           locale={locale}
-          label={text.timescaleAt(enteredBand?.label[locale] ?? text.now)}
+          label={text.timescaleAt(enteredBand ? `${eraOf(enteredBand.terrainMa)[locale]} · ${agePlate(enteredBand.terrainMa, locale)}` : text.now)}
         />
       )}
 
@@ -402,7 +403,7 @@ export function GateHub() {
           on screen whether the card is open or not. */}
       {entered && enteredBand && (
         <div className="world-age">
-          <p>{enteredBand.label[locale]}</p>
+          <p>{eraOf(enteredBand.terrainMa)[locale]} · {agePlate(enteredBand.terrainMa, locale)}</p>
           <button type="button" onClick={() => enterGate(null)}>{text.leave}</button>
         </div>
       )}
@@ -443,7 +444,7 @@ function GateCard({ gate, hub, summary, locale, onClose, onGoTo, onEnter }: Gate
     <div className="gate-card-shell">
       <button type="button" className="gate-card__close" onClick={onClose} aria-label={text.close}>×</button>
       <aside className="gate-card" aria-label={gate.name[locale]}>
-        <p className="gate-card__age">{band?.label[locale] ?? `${summary.medianAgeMa} Ma`}</p>
+        <p className="gate-card__age">{band ? `${eraOf(band.terrainMa)[locale]} · ${agePlate(band.terrainMa, locale)}` : agePlate(summary.medianAgeMa ?? 0, locale)}</p>
         <h2>{gate.name[locale]}</h2>
         <p className="gate-card__place">{gate.place[locale]}</p>
 
@@ -456,7 +457,7 @@ function GateCard({ gate, hub, summary, locale, onClose, onGoTo, onEnter }: Gate
                 aria-pressed={entry.id === gate.id}
                 onClick={() => onGoTo(entry.id)}
               >
-                {bandById(entry.band)?.label[locale].split(" · ")[1] ?? entry.name[locale]}
+                {bandById(entry.band) ? agePlate(bandById(entry.band)!.terrainMa, locale) : entry.name[locale]}
               </button>
             ))}
           </div>

@@ -55,7 +55,7 @@ export function WorldPanel({ gate, detail, locale, alsoHere, hintBand, onGoTo, o
       <button type="button" className="world-panel__dismiss" onClick={onDismiss} aria-label={text.close} title={text.close}>×</button>
       <aside className="world-panel" aria-label={gate.name[locale]}>
         <header className="world-panel__bar">
-          <b>{agePlate(ma)}</b>
+          <b>{agePlate(ma, locale)}</b>
           <span>{eraOf(ma)[locale]} · {band?.label[locale].split(" · ")[0]}</span>
         </header>
 

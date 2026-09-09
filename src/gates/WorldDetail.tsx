@@ -70,7 +70,7 @@ export function WorldDetail({ gate, detail, locale, onClose }: WorldDetailProps)
     <div className="detail" role="dialog" aria-modal="true" aria-label={gate.name[locale]}>
       <div className="detail__sheet">
         <header className="detail__bar">
-          <b>{agePlate(ma)}</b>
+          <b>{agePlate(ma, locale)}</b>
           <span>{eraOf(ma)[locale]} · {band?.label[locale].split(" · ")[0]}</span>
           <button type="button" onClick={onClose} aria-label={text.close}>×</button>
         </header>

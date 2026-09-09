@@ -59,7 +59,7 @@ export function AgePicker({ here, alsoHere, locale, onGoTo, onClose }: AgePicker
                   <span className="picker__dot" aria-hidden="true" />
                   {scene && <img src={scene} alt="" />}
                   <span className="picker__what">
-                    <b>{agePlate(ma)}</b>
+                    <b>{agePlate(ma, locale)}</b>
                     <i>{band?.label[locale].split(" · ")[0] ?? gate.name[locale]}</i>
                     <em>{gate.world[locale]}</em>
                   </span>

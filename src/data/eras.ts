@@ -11,10 +11,22 @@ export function eraOf(ma: number): (typeof ERAS)[number] {
   return ERAS.find((era) => ma <= era.from && ma > era.to) ?? ERAS[2];
 }
 
-/** "約475 Ma" — the way every part of the app writes an age. */
-export function agePlate(ma: number): string {
-  // Under a million years, Ma rounds to zero and says nothing. The Pleistocene
-  // gate is the whole point of this app's last step, so it gets its own unit.
-  if (ma < 1) return `約${Math.round(ma * 1000)} ka`;
-  return `約${Math.round(ma)} Ma`;
+/**
+ * A compact, human-facing age for the exploration UI.
+ *
+ * Keep this formatter here so cards, age pickers, and the world detail all
+ * speak the same language. The archive has its own agePhrase() because it is
+ * intentionally a quieter, sentence-like view of the journey.
+ */
+export function agePlate(ma: number, locale: "ja" | "en" = "ja"): string {
+  if (locale === "en") {
+    if (ma < 1) return `~${Math.max(1, Math.round(ma * 1000))}K yrs ago`;
+    return `~${Math.max(1, Math.round(ma))}M yrs ago`;
+  }
+
+  if (ma < 0.01) return `約${Math.max(1, Math.round(ma * 1_000_000)).toLocaleString("ja-JP")}年前`;
+  if (ma < 100) return `約${Math.max(1, Math.round(ma * 100)).toLocaleString("ja-JP")}万年前`;
+
+  const oku = Math.round((ma / 100) * 100) / 100;
+  return `約${oku.toLocaleString("ja-JP", { maximumFractionDigits: 2 })}億年前`;
 }
