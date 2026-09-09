@@ -56,3 +56,9 @@ npm run build
 ```
 
 UI変更は実ブラウザでも確認する。
+
+## 想像図ラベルのハイライトを増やすとき
+
+必ず [`docs/SCENE_HIGHLIGHT_RUNBOOK.md`](docs/SCENE_HIGHLIGHT_RUNBOOK.md) に従う。
+座標採取は開発専用ラボを使い、画像の目測値を直接書かない。通常の横展開では
+`src/data/sceneHighlights.ts` 以外のUI・演出を変更しない。

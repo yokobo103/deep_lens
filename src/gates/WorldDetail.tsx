@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { bandById, type GateDefinition } from "../data/gates";
 import type { GateDetail } from "../data/gateData";
@@ -82,7 +82,10 @@ export function WorldDetail({ gate, detail, locale, onClose }: WorldDetailProps)
               <span
                 key={highlighted.token}
                 className="detail__scene-highlight"
-                style={{ left: `${highlightedPosition.x * 100}%`, top: `${highlightedPosition.y * 100}%` }}
+                style={{
+                  "--highlight-x": `${highlightedPosition.x * 100}%`,
+                  "--highlight-y": `${highlightedPosition.y * 100}%`,
+                } as CSSProperties}
                 aria-hidden="true"
               />
             )}

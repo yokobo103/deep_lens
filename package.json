@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run verify:highlights && tsc -b && vite build",
     "verify:separation": "node tools/verify-separation.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview",
     "data:gates": "node tools/build-gates.mjs",
     "gates:map": "node tools/gate-map.mjs",
-    "verify:scenes": "node tools/verify-scenes.mjs"
+    "verify:scenes": "node tools/verify-scenes.mjs",
+    "verify:highlights": "node tools/verify-scene-highlights.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.1.0",

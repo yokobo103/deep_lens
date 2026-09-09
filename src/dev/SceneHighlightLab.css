@@ -1,0 +1,28 @@
+:root { color: #dff8f3; background: #030b0e; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
+body { margin: 0; }
+.highlight-lab { box-sizing: border-box; width: min(1180px, 100%); min-height: 100dvh; margin: auto; padding: 28px; }
+.highlight-lab header > p { margin: 0; color: #79e3d2; font-size: 11px; letter-spacing: .16em; }
+.highlight-lab h1 { margin: 8px 0 0; font-size: 28px; font-weight: 500; }
+.highlight-lab h1 small { color: #6f8b87; font-size: 12px; font-weight: 500; }
+.highlight-lab ol { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 20px 0 26px; padding-left: 22px; color: #9db8b3; font-size: 12px; }
+.highlight-lab code { color: #ffd690; }
+.highlight-lab__workspace { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; align-items: start; }
+.highlight-lab__scene { position: relative; overflow: hidden; border: 1px solid rgb(121 227 210 / 32%); border-radius: 10px; background: #071418; }
+.highlight-lab__scene img { display: block; width: 100%; height: auto; cursor: crosshair; }
+.highlight-lab__point { position: absolute; display: grid; place-items: center; width: 28px; aspect-ratio: 1; color: #031013; border: 2px solid #031013; border-radius: 50%; background: #ffd690; box-shadow: 0 0 0 2px #e8fff9, 0 0 16px #79e3d2; font-size: 11px; font-weight: 800; pointer-events: none; transform: translate(-50%, -50%); }
+.highlight-lab__point.is-selected { background: #79e3d2; box-shadow: 0 0 0 3px #031013, 0 0 0 5px #e8fff9, 0 0 22px #79e3d2; }
+.highlight-lab__species { display: grid; gap: 8px; }
+.highlight-lab__species button { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 2px 10px; align-items: center; padding: 11px; color: #bdd4cf; text-align: left; border: 1px solid rgb(121 227 210 / 20%); border-radius: 7px; background: #071418; cursor: pointer; }
+.highlight-lab__species button:hover, .highlight-lab__species button.is-selected { color: #f0fffb; border-color: #79e3d2; background: #0a2428; }
+.highlight-lab__species b { grid-row: 1 / 3; display: grid; place-items: center; width: 26px; aspect-ratio: 1; color: #031013; border-radius: 50%; background: #79e3d2; font-size: 11px; }
+.highlight-lab__species span { overflow: hidden; text-overflow: ellipsis; font-size: 12px; font-style: italic; }
+.highlight-lab__species i { color: #6f8b87; font-size: 10px; font-style: normal; }
+.highlight-lab__output { margin-top: 24px; }
+.highlight-lab__output h2 { margin: 0 0 10px; color: #9db8b3; font-size: 13px; font-weight: 600; }
+.highlight-lab__output pre { overflow-x: auto; margin: 0; padding: 18px; color: #dff8f3; border: 1px solid rgb(121 227 210 / 24%); border-radius: 8px; background: #071418; font-size: 12px; line-height: 1.75; }
+.highlight-lab__output p { color: #6f8b87; font-size: 10px; }
+.highlight-lab--error p { color: #ffb9a7; }
+@media (max-width: 760px) {
+  .highlight-lab { padding: 18px 12px; }
+  .highlight-lab__workspace { grid-template-columns: 1fr; }
+}

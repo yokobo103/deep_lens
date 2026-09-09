@@ -1210,7 +1210,7 @@ body { overscroll-behavior: none; }
 .detail__scene { position: relative; margin: 16px 16px 0; overflow: hidden; border-radius: 12px; border: 1px solid rgb(129 210 198 / 18%); }
 .detail__scene img { display: block; width: 100%; height: auto; }
 .detail__scene-highlight {
-  position: absolute; z-index: 2; width: clamp(44px, 10vw, 60px); aspect-ratio: 1; border-radius: 50%;
+  position: absolute; z-index: 2; left: clamp(30px, var(--highlight-x), calc(100% - 30px)); top: clamp(30px, var(--highlight-y), calc(100% - 30px)); width: clamp(44px, 10vw, 60px); aspect-ratio: 1; border-radius: 50%;
   pointer-events: none; border: 2px solid rgb(202 255 244 / 100%);
   background: radial-gradient(circle, rgb(232 255 250 / 48%) 0 8%, rgb(3 16 20 / 24%) 34%, transparent 67%);
   box-shadow: 0 0 0 2px rgb(3 13 17 / 82%), 0 0 28px 9px rgb(121 227 210 / 62%), inset 0 0 17px rgb(190 255 241 / 40%);
