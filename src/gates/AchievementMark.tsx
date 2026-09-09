@@ -23,6 +23,17 @@ const marks: Record<MarkName, ReactNode> = {
   day: <><circle cx="8" cy="9.4" r="2.8" /><path d="M1.8 12.6h12.4M8 3.2v1.6M3.6 4.9l1.1 1.1M12.4 4.9l-1.1 1.1" /></>,
   calendar: <><rect x="2.6" y="3.6" width="10.8" height="9.8" rx="1" /><path d="M2.6 6.6h10.8M5.4 2.4v2.4M10.6 2.4v2.4" /></>,
   globe: <><circle cx="8" cy="8" r="5.6" /><path d="M2.4 8h11.2" /><ellipse cx="8" cy="8" rx="2.5" ry="5.6" /></>,
+  // 知っている顔 — abstract, because the mark is visible before the discovery
+  // is earned and is meant to read as a riddle rather than as a portrait.
+  grasp: <><path d="M4 3.6c-.6 4 1 6.8 4 8.4M12 3.6c.6 4-1 6.8-4 8.4" /><path d="M4.5 6.2h1.5M11.5 6.2H10M5.5 8.6h1.4M10.5 8.6H9.1" /></>,
+  after: <><path d="M2.4 8h1.4M5 8h1.4M7.6 8h.9" /><circle cx="11.9" cy="8" r="2.2" /></>,
+  origin: <><circle cx="4.4" cy="8" r="2" /><path d="M7.2 8h6.2M9.8 5.6 12.4 8l-2.6 2.4" /></>,
+  feather: <><path d="M11.8 3.2 4.6 12.6" /><path d="m10.4 5-2.8-.5M9.1 6.7 6.2 6.3M7.8 8.4 5 8.2M6.5 10.1 4.4 10" /></>,
+  reach: <><path d="M6.2 13.2V6.4c0-2 1.2-3.3 3-3.3 1.4 0 2.4.6 3 1.7" /><path d="M3.6 13.2h5.2" /></>,
+  sail: <><path d="M4 8.6c1-3.8 2.6-5.6 4.4-5.6 1.6 0 2.9 1.1 3.6 2.8" /><path d="M2.2 8.6h11.6" /><path d="M2.8 11.6c1.2-1 2.4-1 3.6 0s2.4 1 3.6 0 2.2-1 3-.4" /></>,
+  sickle: <><path d="M4 12.4c5-1.2 8-4.6 8.6-9.2" /><path d="m12.6 3.2-2.7 1.1M12.6 3.2l.5 2.7" /></>,
+  stripes: <><path d="M4.4 4v8M7 4.6v6.8M9.6 5.2v5.6M12.2 5.8v4.4" /></>,
+  tusk: <><path d="M5.4 3.4c-2 3.6-1.3 6.8 1.9 9M10.6 3.4c2 3.6 1.3 6.8-1.9 9" /></>,
   ice: <><path d="M8 2.2 13 8l-5 5.8L3 8Z" /><path d="M8 2.2v11.6M3 8h10" /></>,
 };
 

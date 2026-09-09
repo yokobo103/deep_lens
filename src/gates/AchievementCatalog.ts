@@ -1,4 +1,5 @@
 import { currentRegionDefinitions, gateById, gateDefinitions, hubIdOf, bandDefinitions, type GateDefinition } from "../data/gates";
+import { drawnIn } from "../data/drawn";
 import type { EnvClass } from "../data/environment";
 import type { GateSummary } from "../data/gateData";
 import type { Locale } from "./copy";
@@ -11,15 +12,18 @@ export type AchievementId =
   | "same-age" | "three-lands-one-age" | "four-lands-one-age" | "whole-band"
   | "seven-continents" | "antarctic" | "polar-world" | "tropical-world" | "pole-to-equator" | "drifted-far"
   | "sea-to-land" | "every-environment" | "thick-record" | "thin-record"
-  | "across-extinction" | "one-day-three" | "many-days";
+  | "across-extinction" | "one-day-three" | "many-days"
+  | "first-hunt" | "inherited-world" | "before-dinosaurs" | "feathers-and-teeth"
+  | "highest-branch" | "river-dinosaur" | "smaller-than-thought" | "until-1936" | "curve-of-tusk";
 
 export type AchievementMark =
   | "spark" | "depth" | "layers" | "echo" | "well" | "horizon" | "tide" | "compass"
   | "cluster" | "ring" | "column" | "span" | "pole" | "sun" | "drift" | "ledger"
-  | "thin" | "break" | "day" | "calendar" | "globe" | "ice";
+  | "thin" | "break" | "day" | "calendar" | "globe" | "ice"
+  | "grasp" | "after" | "origin" | "feather" | "reach" | "sail" | "sickle" | "stripes" | "tusk";
 
 /** Which shelf of the archive a discovery sits on. */
-export type AchievementGroup = "journey" | "time" | "vertical" | "horizontal" | "earth" | "record";
+export type AchievementGroup = "journey" | "time" | "vertical" | "horizontal" | "earth" | "record" | "faces";
 
 export interface AchievementDefinition {
   id: AchievementId;
@@ -145,6 +149,20 @@ function paleoLat(gate: GateDefinition, summaries: ReadonlyMap<string, GateSumma
  * the thing the app is actually about, and deleting the easy one would leave a
  * discovery only six of the hubs could ever reach.
  */
+/**
+ * Whether a species is painted into a scene the reader has stood in.
+ *
+ * The gate's record is the wrong test: a record holds hundreds of species and
+ * a picture holds five, so "in the record" would credit the reader with animals
+ * the app never showed them. drawn.ts is the list of what is actually on the
+ * canvas, and `npm run verify:scenes` already holds every entry in it against
+ * the live record, so asking drawn.ts asks both questions at once.
+ */
+function metIn(species: string) {
+  return ({ gates }: AchievementEvidence) =>
+    gates.some((gate) => drawnIn(gate.id).includes(species));
+}
+
 export const achievementDefinitions: readonly AchievementDefinition[] = [
   // ---- 旅のはじまり ------------------------------------------------------
   {
@@ -449,6 +467,107 @@ export const achievementDefinitions: readonly AchievementDefinition[] = [
       en: "Kept travelling across three or more days",
     },
     isEarned: ({ visits }) => new Set(visits.map((visit) => visit.on)).size >= 3,
+  },
+
+  // ---- 知っている顔 ------------------------------------------------------
+  //
+  // The other thirty-two are shapes of travel: how far, how deep, how many
+  // Earths. These nine are the opposite — one animal, met once, and the reader
+  // already knew its name before they opened this.
+  //
+  // Every one of them is drawn into its scene, and that is the whole rule. A
+  // species can sit in a gate's record without being in its picture — Hell
+  // Creek's record holds Tyrannosaurus while its picture holds a leaf, a gar
+  // and a turtle — and an achievement that fired on the record would be telling
+  // the reader they met something they never saw. So the test is the picture,
+  // asked of drawn.ts rather than hard-coded here: if a scene is ever redrawn
+  // and an animal leaves it, the discovery leaves with it.
+  //
+  // Nine, spread on purpose. One per gate, six of the seven present-day
+  // regions, and no two in the same band except the two pairs the map forces
+  // (Solnhofen with Tendaguru, Naracoorte with La Brea). Antarctica has no
+  // famous animal drawn in it, because its two gates are ammonites and clams,
+  // and inventing one there would be worse than the gap.
+  {
+    id: "first-hunt", group: "faces", mark: "grasp",
+    name: { ja: "最初の狩り", en: "The first hunt" },
+    description: {
+      ja: "アノマロカリスに会った。カンブリアの海に現れた、最初の大型捕食者",
+      en: "Met Anomalocaris, the first large predator to appear in the sea",
+    },
+    isEarned: metIn("Anomalocaris canadensis"),
+  },
+  {
+    id: "inherited-world", group: "faces", mark: "after",
+    name: { ja: "世界を継いだもの", en: "It inherited the world" },
+    description: {
+      ja: "リストロサウルスに会った。史上最大の絶滅のあと、陸の脊椎動物のほとんどがこの一属になった",
+      en: "Met Lystrosaurus, which after the greatest extinction made up most of the land's vertebrates",
+    },
+    isEarned: metIn("Lystrosaurus declivis"),
+  },
+  {
+    id: "before-dinosaurs", group: "faces", mark: "origin",
+    name: { ja: "すべての恐竜の前に", en: "Before any dinosaur" },
+    description: {
+      ja: "ヘレラサウルスに会った。知られている中で最初期の恐竜のひとつ",
+      en: "Met Herrerasaurus, one of the earliest dinosaurs known",
+    },
+    isEarned: metIn("Herrerasaurus ischigualastensis"),
+  },
+  {
+    id: "feathers-and-teeth", group: "faces", mark: "feather",
+    name: { ja: "羽と歯", en: "Feathers, and teeth" },
+    description: {
+      ja: "始祖鳥に会った。羽根を持ち、歯を持ち、翼の先に指があった",
+      en: "Met Archaeopteryx, which had feathers, teeth, and fingers on its wings",
+    },
+    isEarned: metIn("Archaeopteryx lithographica"),
+  },
+  {
+    id: "highest-branch", group: "faces", mark: "reach",
+    name: { ja: "いちばん高い枝", en: "The highest branch" },
+    description: {
+      ja: "ギラファティタンに会った。長くブラキオサウルスと呼ばれてきた、首の長い巨体",
+      en: "Met Giraffatitan, the long-necked giant long known as Brachiosaurus",
+    },
+    isEarned: metIn("Giraffatitan brancai"),
+  },
+  {
+    id: "river-dinosaur", group: "faces", mark: "sail",
+    name: { ja: "川にいた恐竜", en: "A dinosaur in the river" },
+    description: {
+      ja: "スピノサウルスに会った。背に帆を持ち、水に入って魚を追った",
+      en: "Met Spinosaurus, which carried a sail and went into the water after fish",
+    },
+    isEarned: metIn("Spinosaurus aegyptiacus"),
+  },
+  {
+    id: "smaller-than-thought", group: "faces", mark: "sickle",
+    name: { ja: "思っていたより小さい", en: "Smaller than you thought" },
+    description: {
+      ja: "ヴェロキラプトルに会った。全身に羽毛があり、七面鳥ほどの大きさだった",
+      en: "Met Velociraptor, feathered all over and about the size of a turkey",
+    },
+    isEarned: metIn("Velociraptor mongoliensis"),
+  },
+  {
+    id: "until-1936", group: "faces", mark: "stripes",
+    name: { ja: "1936年まで", en: "Until 1936" },
+    description: {
+      ja: "フクロオオカミに会った。最後の一頭が死んだのは1936年",
+      en: "Met the thylacine. The last one died in 1936",
+    },
+    isEarned: metIn("Thylacinus cynocephalus"),
+  },
+  {
+    id: "curve-of-tusk", group: "faces", mark: "tusk",
+    name: { ja: "牙の弧", en: "The curve of a tusk" },
+    description: {
+      ja: "コロンビアマンモスに会った。長く湾曲した牙を持つ、氷期の巨獣",
+      en: "Met the Columbian mammoth, an ice-age giant with long curving tusks",
+    },
+    isEarned: metIn("Mammuthus columbi"),
   },
 ] as const;
 
