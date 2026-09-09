@@ -922,6 +922,15 @@ body { overscroll-behavior: none; }
 }
 .achievement-card strong { display: block; color: #effffc; font: 550 13px/1.45 ui-monospace, monospace; letter-spacing: .04em; }
 .achievement-card p { margin: 6px 0 0; color: #8ca7a2; font: 500 9px/1.7 ui-monospace, monospace; letter-spacing: .04em; }
+/* Arrived at from a toast. Long enough to find with the eye after the smooth
+   scroll settles, then gone — it is a pointer, not a state. */
+.achievement-card.is-called { animation: achievement-called 2.8s ease both; }
+@keyframes achievement-called {
+  0%, 62% { border-color: rgb(210 175 114 / 68%); box-shadow: 0 0 0 1px rgb(210 175 114 / 30%), 0 0 22px rgb(210 175 114 / 16%); }
+  100% { border-color: rgb(129 210 198 / 22%); box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) { .achievement-card.is-called { animation-duration: 1ms; } }
+
 .achievement-card.is-hidden { opacity: .48; border-color: rgb(129 210 198 / 10%); background: rgb(4 15 19 / 46%); }
 .achievement-card.is-hidden strong { color: #75908c; letter-spacing: .18em; }
 .achievement-card.is-hidden p { color: #506864; }
@@ -932,7 +941,7 @@ body { overscroll-behavior: none; }
    game banner. It never captures a pointer and leaves by itself. */
 .achievement-toast {
   position: fixed; z-index: 20; top: 164px; left: 50%; isolation: isolate;
-  display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 12px;
+  display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 12px;
   width: min(316px, calc(100vw - 36px)); min-height: 60px; padding: 8px 20px 8px 9px;
   overflow: visible; pointer-events: none; border: 1px solid rgb(255 214 144 / 42%); border-radius: 999px;
   background:
@@ -956,6 +965,24 @@ body { overscroll-behavior: none; }
   background: radial-gradient(circle, rgb(255 214 144 / 13%), rgb(20 30 25 / 45%) 66%);
   box-shadow: 0 0 0 5px rgb(255 214 144 / 5%), inset 0 0 14px rgb(255 214 144 / 8%);
 }
+/* The whole toast is the target, laid over it rather than wrapping it so the
+   live region still announces a discovery instead of a button. */
+.achievement-toast__open {
+  position: absolute; inset: 0; z-index: 2; border: 0; border-radius: inherit;
+  background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  /* The toast itself is pointer-events:none so it never blocks the globe. That
+     inherits, so the button has to switch it back on or the press lands on the
+     Earth behind and nothing happens — which is exactly how the header buttons
+     failed once, and why this is verified with elementFromPoint. */
+  pointer-events: auto;
+}
+.achievement-toast__open:focus-visible { outline: 2px solid #8fd6c8; outline-offset: 2px; }
+.achievement-toast__chevron {
+  position: relative; z-index: 1; margin-left: auto; padding-left: 10px;
+  color: #d2af72; font-size: 15px; font-style: normal; opacity: .55; transition: opacity .18s ease, transform .18s ease;
+}
+.achievement-toast:hover .achievement-toast__chevron { opacity: 1; transform: translateX(2px); }
+
 .achievement-toast__copy { min-width: 0; }
 .achievement-toast small { display: block; color: #d2af72; font: 700 8px ui-monospace, monospace; letter-spacing: .13em; }
 .achievement-toast strong { display: block; margin-top: 3px; overflow: hidden; color: #fff7e8; font: 550 13px/1.35 ui-monospace, monospace; letter-spacing: .035em; text-overflow: ellipsis; white-space: nowrap; }

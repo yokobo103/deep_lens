@@ -46,6 +46,8 @@ export function GateHub() {
   const [visits, setVisits] = useState<Visit[]>(() => readLog());
   const [logOpen, setLogOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  /** Set when the archive is opened from a toast, so it can scroll to that card. */
+  const [achievementFocus, setAchievementFocus] = useState<AchievementId | null>(null);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const initialVisits = useRef(visits);
@@ -323,7 +325,8 @@ export function GateHub() {
         <Achievements
           earnedIds={earnedAchievementIds}
           locale={locale}
-          onClose={() => setAchievementsOpen(false)}
+          focusId={achievementFocus}
+          onClose={() => { setAchievementsOpen(false); setAchievementFocus(null); }}
         />
       )}
 
@@ -343,6 +346,16 @@ export function GateHub() {
           key={currentAchievement.id}
           achievement={currentAchievement}
           locale={locale}
+          onOpen={() => {
+            // Opening the archive answers every toast still queued behind this
+            // one, so the parade stops rather than resuming over the sheet.
+            setAchievementQueue([]);
+            setAchievementFocus(currentAchievement.id);
+            setMenuOpen(false);
+            setLogOpen(false);
+            setAboutOpen(false);
+            setAchievementsOpen(true);
+          }}
           onDone={() => setAchievementQueue((queue) => queue.slice(1))}
         />
       )}

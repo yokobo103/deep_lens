@@ -5,11 +5,23 @@ import { hubCopy, type Locale } from "./copy";
 interface AchievementToastProps {
   achievement: AchievementDefinition;
   locale: Locale;
+  /** Pressing it opens the archive at this discovery. */
+  onOpen: () => void;
   onDone: () => void;
 }
 
-/** Non-blocking by design: it leaves by itself and has no close affordance. */
-export function AchievementToast({ achievement, locale, onDone }: AchievementToastProps) {
+/**
+ * Non-blocking by design: it leaves by itself and has no close affordance.
+ *
+ * It can be pressed, though. A toast that names something and then takes the
+ * name away with it is the one moment a reader most wants to look, and it was
+ * asking them to remember a name and go find it in a list of forty-one.
+ * Pressing it opens the archive with that card already in view.
+ *
+ * The button is laid over the whole card rather than made of it, so the live
+ * region keeps announcing the discovery rather than announcing a control.
+ */
+export function AchievementToast({ achievement, locale, onOpen, onDone }: AchievementToastProps) {
   const text = hubCopy[locale];
   const onDoneRef = useRef(onDone);
 
@@ -33,6 +45,13 @@ export function AchievementToast({ achievement, locale, onDone }: AchievementToa
         <small>{text.achievementNew}</small>
         <strong>{achievement.name[locale]}</strong>
       </div>
+      <button
+        type="button"
+        className="achievement-toast__open"
+        onClick={onOpen}
+        aria-label={`${achievement.name[locale]} — ${text.achievementOpen}`}
+      />
+      <i className="achievement-toast__chevron" aria-hidden="true">›</i>
     </aside>
   );
 }

@@ -7,11 +7,13 @@ import { hubCopy, type Locale } from "./copy";
 interface AchievementsProps {
   earnedIds: ReadonlySet<AchievementId>;
   locale: Locale;
+  /** Opened by pressing a toast: scroll to that discovery and mark it briefly. */
+  focusId?: AchievementId | null;
   onClose: () => void;
 }
 
 /** A quiet record of perspectives the journey happened to uncover. */
-export function Achievements({ earnedIds, locale, onClose }: AchievementsProps) {
+export function Achievements({ earnedIds, locale, focusId, onClose }: AchievementsProps) {
   const text = hubCopy[locale];
   const closeRef = useRef<HTMLButtonElement>(null);
   /**
@@ -25,6 +27,14 @@ export function Achievements({ earnedIds, locale, onClose }: AchievementsProps) 
       const items = achievementDefinitions.filter((a) => a.group === group);
       return { group, items, found: items.filter(({ id }) => earnedIds.has(id)).length };
     });
+
+  // Arriving from a toast, the card that was announced is somewhere down a list
+  // of forty-one. Bringing it into view is the whole point of the press.
+  useEffect(() => {
+    if (!focusId) return;
+    const card = document.getElementById(`achievement-${focusId}`);
+    card?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [focusId]);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -54,16 +64,21 @@ export function Achievements({ earnedIds, locale, onClose }: AchievementsProps) 
             <ul className="achievements__list">
               {items.map((achievement) => {
                 const earned = earnedIds.has(achievement.id);
+                // "Not found yet" is wrong on a shelf of animals; that shelf
+                // says "not met yet". Any shelf may name its own.
+                const unknown = text.achievementUnknownGroups[group] ?? text.achievementUnknown;
                 return (
                   <li
-                    className={`achievement-card ${earned ? "is-found" : "is-hidden"}`}
+                    id={`achievement-${achievement.id}`}
+                    className={`achievement-card ${earned ? "is-found" : "is-hidden"}`
+                      + (achievement.id === focusId ? " is-called" : "")}
                     key={achievement.id}
-                    aria-label={earned ? undefined : text.achievementUnknown}
+                    aria-label={earned ? undefined : unknown}
                   >
                     <AchievementMark name={achievement.mark} hidden={!earned} />
                     <div>
                       <strong>{earned ? achievement.name[locale] : "？？？"}</strong>
-                      <p>{earned ? achievement.description[locale] : text.achievementUnknown}</p>
+                      <p>{earned ? achievement.description[locale] : unknown}</p>
                     </div>
                   </li>
                 );
