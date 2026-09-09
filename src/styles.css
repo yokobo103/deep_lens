@@ -511,16 +511,19 @@ body { overscroll-behavior: none; }
    eye has already stopped there. */
 .gate-marker {
   position: absolute; display: grid; place-items: center; width: 34px; height: 34px; padding: 0;
+  --gate-core: #6FE3D2;
+  --gate-halo: rgb(111 227 210 / 24%);
+  --gate-halo-strong: rgb(111 227 210 / 36%);
   transform: translate(-50%, -50%); border: 0; background: none; cursor: pointer;
 }
 .gate-marker__ring {
-  position: absolute; inset: 0; border: 1px solid rgb(255 214 144 / 55%); border-radius: 50%;
-  box-shadow: 0 0 16px rgb(255 214 144 / 22%), inset 0 0 12px rgb(255 214 144 / 12%);
-  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  position: absolute; inset: 0; border: 1.5px solid #0A2228; border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--gate-halo), 0 0 14px var(--gate-halo), inset 0 0 10px var(--gate-halo);
+  transition: box-shadow .2s ease, transform .2s ease;
 }
 .gate-marker__core {
-  width: 7px; height: 7px; border-radius: 50%; background: #ffd690;
-  box-shadow: 0 0 12px #ffd690; transition: transform .2s ease;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--gate-core);
+  box-shadow: 0 0 12px var(--gate-core); transition: transform .2s ease;
 }
 .gate-marker__label {
   position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
@@ -529,13 +532,14 @@ body { overscroll-behavior: none; }
   font: 750 8px ui-monospace, monospace; letter-spacing: .07em;
 }
 .gate-marker:hover .gate-marker__ring, .gate-marker.is-selected .gate-marker__ring {
-  border-color: #ffd690; box-shadow: 0 0 26px rgb(255 214 144 / 45%), inset 0 0 16px rgb(255 214 144 / 22%);
+  box-shadow: 0 0 0 3px var(--gate-halo-strong), 0 0 20px var(--gate-halo-strong), inset 0 0 14px var(--gate-halo);
 }
 .gate-marker.is-selected .gate-marker__core { transform: scale(1.5); }
 /* A place with more than one age gets a second ring, so the globe says there
    is more here before anything is opened. */
 .gate-marker.has-ages::after {
-  position: absolute; inset: -7px; border: 1px solid rgb(255 214 144 / 26%); border-radius: 50%; content: "";
+  position: absolute; inset: -7px; border: 1px solid #0A2228; border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--gate-halo); content: "";
 }
 /* A label that would land on one already drawn is not drawn. The marker stays
    and still says what it is when pressed.
@@ -545,24 +549,37 @@ body { overscroll-behavior: none; }
    label would then look collision-free, come back, collide, and go again —
    flickering, with real overlaps on screen while it happened. */
 .gate-marker.is-crowded .gate-marker__label { visibility: hidden; }
-.gate-marker.is-crowded .gate-marker__ring { border-color: rgb(255 214 144 / 34%); box-shadow: none; }
+.gate-marker.is-crowded .gate-marker__ring { border-color: #0A2228; box-shadow: 0 0 0 2px var(--gate-halo), 0 0 9px var(--gate-halo); }
 .gate-marker.is-crowded:hover .gate-marker__label { visibility: visible; z-index: 2; }
-.gate-marker.is-crowded:hover .gate-marker__ring { border-color: #ffd690; box-shadow: 0 0 26px rgb(255 214 144 / 45%); }
+.gate-marker.is-crowded:hover .gate-marker__ring { border-color: #0A2228; box-shadow: 0 0 0 3px var(--gate-halo-strong), 0 0 17px var(--gate-halo-strong); }
 
 .gate-marker__label i { margin-left: 6px; padding: 0 4px; color: #1b1207; background: #ffd690; border-radius: 6px; font-style: normal; font-size: 7px; }
+
+/* Marker color is tied only to visit state. The dark edge is shared by both
+   states so the opening remains legible over pale land and deep water. */
+.gate-marker.is-discovered {
+  --gate-core: #6FE3D2;
+  --gate-halo: rgb(111 227 210 / 24%);
+  --gate-halo-strong: rgb(111 227 210 / 36%);
+}
+.gate-marker.is-undiscovered {
+  --gate-core: #FF8A65;
+  --gate-halo: rgb(255 138 101 / 22%);
+  --gate-halo-strong: rgb(255 138 101 / 32%);
+}
 
 /* Before a place has been visited it is a trace, not a destination label. The
    full 34px button remains easy to touch, while only a dim 18px opening is
    drawn over the Earth. Selecting it reveals the ordinary gate in place; a
    return visit keeps that ordinary state through the existing travel log. */
 .gate-marker.is-undiscovered .gate-marker__ring {
-  inset: 8px; border-color: rgb(255 214 144 / 18%);
-  box-shadow: 0 0 7px rgb(255 214 144 / 10%), inset 0 0 5px rgb(255 214 144 / 7%);
+  inset: 8px; border-color: #0A2228;
+  box-shadow: 0 0 0 2px var(--gate-halo), 0 0 8px var(--gate-halo), inset 0 0 5px var(--gate-halo);
   animation: gate-whisper 4.2s ease-in-out infinite;
 }
 .gate-marker.is-undiscovered .gate-marker__core {
-  width: 3px; height: 3px; opacity: .62; background: rgb(255 214 144 / 68%);
-  box-shadow: 0 0 6px rgb(255 214 144 / 42%);
+  width: 4px; height: 4px; opacity: .84; background: var(--gate-core);
+  box-shadow: 0 0 7px var(--gate-core);
 }
 .gate-marker.is-undiscovered .gate-marker__label {
   visibility: hidden; opacity: 0; transform: translate(-50%, -3px);
@@ -570,18 +587,18 @@ body { overscroll-behavior: none; }
 }
 .gate-marker.is-undiscovered:hover .gate-marker__ring,
 .gate-marker.is-undiscovered:focus-visible .gate-marker__ring {
-  inset: 6px; border-color: rgb(255 214 144 / 32%);
-  box-shadow: 0 0 10px rgb(255 214 144 / 18%), inset 0 0 6px rgb(255 214 144 / 10%);
+  inset: 6px; border-color: #0A2228;
+  box-shadow: 0 0 0 3px var(--gate-halo), 0 0 12px var(--gate-halo-strong), inset 0 0 6px var(--gate-halo);
 }
 .gate-marker.is-undiscovered:hover .gate-marker__core,
 .gate-marker.is-undiscovered:focus-visible .gate-marker__core { opacity: .9; }
 .gate-marker.is-undiscovered.is-selected .gate-marker__ring {
-  inset: 0; border-color: #ffd690;
-  box-shadow: 0 0 26px rgb(255 214 144 / 45%), inset 0 0 16px rgb(255 214 144 / 22%);
+  inset: 0; border-color: #0A2228;
+  box-shadow: 0 0 0 3px var(--gate-halo-strong), 0 0 20px var(--gate-halo-strong), inset 0 0 14px var(--gate-halo);
   animation: none;
 }
 .gate-marker.is-undiscovered.is-selected .gate-marker__core {
-  width: 7px; height: 7px; opacity: 1; background: #ffd690; box-shadow: 0 0 12px #ffd690;
+  width: 7px; height: 7px; opacity: 1; background: var(--gate-core); box-shadow: 0 0 12px var(--gate-core);
 }
 .gate-marker.is-undiscovered.is-selected .gate-marker__label {
   visibility: visible; opacity: 1; transform: translateX(-50%);
@@ -735,9 +752,8 @@ body { overscroll-behavior: none; }
 
 /* --- Inside a world ------------------------------------------------------- */
 
-.gate-marker.is-here .gate-marker__ring { border-color: #79e3d2; box-shadow: 0 0 26px rgb(121 227 210 / 45%), inset 0 0 16px rgb(121 227 210 / 22%); }
-.gate-marker.is-here .gate-marker__core { background: #79e3d2; box-shadow: 0 0 12px #79e3d2; transform: scale(1.4); }
-.gate-marker.is-here .gate-marker__label { color: #a9eee0; border-color: rgb(121 227 210 / 34%); }
+.gate-marker.is-here .gate-marker__ring { box-shadow: 0 0 0 3px var(--gate-halo-strong), 0 0 20px var(--gate-halo-strong), inset 0 0 14px var(--gate-halo); }
+.gate-marker.is-here .gate-marker__core { transform: scale(1.4); }
 
 /* A thin held place in deep time. It sits under the header rather than over
    the globe's middle, carries no numbers, and is the first thing to go when
