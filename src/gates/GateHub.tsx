@@ -427,38 +427,39 @@ function GateCard({ gate, hub, summary, locale, onClose, onGoTo, onEnter }: Gate
   const ages = (hub?.gates ?? []).length > 1 ? hub!.gates : [];
 
   return (
-    <aside className="gate-card" aria-label={gate.name[locale]}>
+    <div className="gate-card-shell">
       <button type="button" className="gate-card__close" onClick={onClose} aria-label={text.close}>×</button>
-      <p className="gate-card__age">{band?.label[locale] ?? `${summary.medianAgeMa} Ma`}</p>
-      <h2>{gate.name[locale]}</h2>
-      <p className="gate-card__place">{gate.place[locale]}</p>
+      <aside className="gate-card" aria-label={gate.name[locale]}>
+        <p className="gate-card__age">{band?.label[locale] ?? `${summary.medianAgeMa} Ma`}</p>
+        <h2>{gate.name[locale]}</h2>
+        <p className="gate-card__place">{gate.place[locale]}</p>
 
-      {ages.length > 0 && (
-        <div className="gate-ages" role="group" aria-label={text.ages}>
-          {ages.map((entry) => (
-            <button
-              key={entry.id}
-              type="button"
-              aria-pressed={entry.id === gate.id}
-              onClick={() => onGoTo(entry.id)}
-            >
-              {bandById(entry.band)?.label[locale].split(" · ")[1] ?? entry.name[locale]}
-            </button>
-          ))}
-        </div>
-      )}
-      <p className="gate-card__world">{gate.world[locale]}</p>
+        {ages.length > 0 && (
+          <div className="gate-ages" role="group" aria-label={text.ages}>
+            {ages.map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                aria-pressed={entry.id === gate.id}
+                onClick={() => onGoTo(entry.id)}
+              >
+                {bandById(entry.band)?.label[locale].split(" · ")[1] ?? entry.name[locale]}
+              </button>
+            ))}
+          </div>
+        )}
+        <p className="gate-card__world">{gate.world[locale]}</p>
 
-      <p className="gate-card__counts">
-        <b>{summary.sites}</b> {text.sites}
-        <i aria-hidden="true">·</i>
-        <b>{summary.occurrences.toLocaleString()}</b> {text.records}
-        <i aria-hidden="true">·</i>
-        <b>{summary.cast}</b> {text.named}
-      </p>
+        <p className="gate-card__counts">
+          <b>{summary.sites}</b> {text.sites}
+          <i aria-hidden="true">·</i>
+          <b>{summary.occurrences.toLocaleString()}</b> {text.records}
+          <i aria-hidden="true">·</i>
+          <b>{summary.cast}</b> {text.named}
+        </p>
 
-      <button type="button" className="gate-card__enter" onClick={onEnter}>{text.enter}</button>
-
-    </aside>
+        <button type="button" className="gate-card__enter" onClick={onEnter}>{text.enter}</button>
+      </aside>
+    </div>
   );
 }

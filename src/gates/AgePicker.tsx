@@ -36,49 +36,51 @@ export function AgePicker({ here, alsoHere, locale, onGoTo, onClose }: AgePicker
   return createPortal(
     <div className="picker" role="dialog" aria-modal="true" aria-label={text.pickAge}>
       <button type="button" className="picker__scrim" aria-label={text.close} onClick={onClose} />
-      <div className="picker__sheet">
+      <div className="picker__shell">
         <button type="button" className="picker__close" onClick={onClose} aria-label={text.close}>×</button>
-        <h2>{text.pickAge}</h2>
-        <p className="picker__lede">{text.pickAgeLede}</p>
+        <div className="picker__sheet">
+          <h2>{text.pickAge}</h2>
+          <p className="picker__lede">{text.pickAgeLede}</p>
 
-        <div className="picker__options" role="radiogroup" aria-label={text.pickAge}>
-          {options.map((gate) => {
-            const band = bandById(gate.band);
-            const ma = band?.terrainMa ?? 0;
-            const scene = sceneSource(gate.id);
-            return (
-              <button
-                key={gate.id}
-                type="button"
-                role="radio"
-                aria-checked={chosen === gate.id}
-                className={`picker__option${chosen === gate.id ? " is-chosen" : ""}`}
-                onClick={() => setChosen(gate.id)}
-              >
-                <span className="picker__dot" aria-hidden="true" />
-                {scene && <img src={scene} alt="" />}
-                <span className="picker__what">
-                  <b>{agePlate(ma)}</b>
-                  <i>{band?.label[locale].split(" · ")[0] ?? gate.name[locale]}</i>
-                  <em>{gate.world[locale]}</em>
-                </span>
-              </button>
-            );
-          })}
-        </div>
+          <div className="picker__options" role="radiogroup" aria-label={text.pickAge}>
+            {options.map((gate) => {
+              const band = bandById(gate.band);
+              const ma = band?.terrainMa ?? 0;
+              const scene = sceneSource(gate.id);
+              return (
+                <button
+                  key={gate.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={chosen === gate.id}
+                  className={`picker__option${chosen === gate.id ? " is-chosen" : ""}`}
+                  onClick={() => setChosen(gate.id)}
+                >
+                  <span className="picker__dot" aria-hidden="true" />
+                  {scene && <img src={scene} alt="" />}
+                  <span className="picker__what">
+                    <b>{agePlate(ma)}</b>
+                    <i>{band?.label[locale].split(" · ")[0] ?? gate.name[locale]}</i>
+                    <em>{gate.world[locale]}</em>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="picker__actions">
-          <button type="button" className="picker__cancel" onClick={onClose}>{text.cancel}</button>
-          <button
-            type="button"
-            className="picker__go"
-            disabled={chosen === here.id}
-            onClick={() => onGoTo(chosen)}
-          >
-            {text.goToAge}
-          </button>
+          <div className="picker__actions">
+            <button type="button" className="picker__cancel" onClick={onClose}>{text.cancel}</button>
+            <button
+              type="button"
+              className="picker__go"
+              disabled={chosen === here.id}
+              onClick={() => onGoTo(chosen)}
+            >
+              {text.goToAge}
+            </button>
+          </div>
+          <p className="picker__era" aria-hidden="true">{eraOf(bandById(here.band)?.terrainMa ?? 0)[locale]}</p>
         </div>
-        <p className="picker__era" aria-hidden="true">{eraOf(bandById(here.band)?.terrainMa ?? 0)[locale]}</p>
       </div>
     </div>,
     document.body,
