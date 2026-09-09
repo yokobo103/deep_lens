@@ -48,6 +48,9 @@ export const hubCopy = {
       "このアプリは、そんな思いから生まれました。",
     ] as readonly string[],
     aboutSign: "YOKOBO AI LAB",
+    aboutLabTitle: "よこぼのAIラボ",
+    aboutLabBody: "AIと遊びながら、気づきと小さな装置をつくっている研究フィールドです。",
+    aboutLabLink: "ラボをのぞく ↗",
     aboutSources: [
       ["化石の記録", "Paleobiology Database (CC0)"],
       ["古地形・古座標", "Scotese & Wright (2018) PALEOMAP PaleoDEM (CC BY 4.0)"],
@@ -145,6 +148,9 @@ export const hubCopy = {
       "That is where this came from.",
     ] as readonly string[],
     aboutSign: "YOKOBO AI LAB",
+    aboutLabTitle: "Yokobo AI Lab",
+    aboutLabBody: "A small research field for playing with AI, noticing what changes, and building the next little instrument.",
+    aboutLabLink: "Visit the lab ↗",
     aboutSources: [
       ["The fossil record", "Paleobiology Database (CC0)"],
       ["Ancient terrain and coordinates", "Scotese & Wright (2018) PALEOMAP PaleoDEM (CC BY 4.0)"],

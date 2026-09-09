@@ -37,6 +37,19 @@ export function About({ locale, onClose }: AboutProps) {
           {text.aboutBody.map((line) => <p key={line}>{line}</p>)}
           <p className="about__sign">{text.aboutSign}</p>
 
+          <aside className="about__lab" aria-label={text.aboutLabTitle}>
+            <p className="about__lab-title">{text.aboutLabTitle}</p>
+            <p>{text.aboutLabBody}</p>
+            <a
+              className="about__lab-link"
+              href="https://yokobo-ai-lab.vercel.app/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {text.aboutLabLink}
+            </a>
+          </aside>
+
           <dl className="about__sources">
             {text.aboutSources.map(([what, who]) => (
               <div key={what}>
