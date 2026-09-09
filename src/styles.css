@@ -529,9 +529,7 @@ body { overscroll-behavior: none; }
   color: #ffe0a5; border: 1px solid rgb(255 214 144 / 26%); background: rgb(6 18 20 / 88%);
   font: 750 8px ui-monospace, monospace; letter-spacing: .07em;
 }
-.gate-marker:hover .gate-marker__ring, .gate-marker.is-selected .gate-marker__ring {
-  box-shadow: 0 0 5px var(--gate-halo);
-}
+.gate-marker:hover .gate-marker__ring { box-shadow: 0 0 5px var(--gate-halo); }
 /* Age counts remain available in the label; the marker itself stays a single
    bead so it never reads as a target or an eye. */
 .gate-marker.has-ages::after { display: none; }
@@ -546,6 +544,13 @@ body { overscroll-behavior: none; }
 .gate-marker.is-crowded .gate-marker__ring { border: 0; box-shadow: 0 0 3px var(--gate-halo); }
 .gate-marker.is-crowded:hover .gate-marker__label { visibility: visible; z-index: 2; }
 .gate-marker.is-crowded:hover .gate-marker__ring { border: 0; box-shadow: 0 0 5px var(--gate-halo); }
+.gate-marker.is-selected .gate-marker__ring {
+  inset: 9px; border: 1.5px solid rgb(255 248 230 / 84%);
+  box-shadow: 0 0 5px rgb(255 248 230 / 24%);
+}
+.gate-marker.is-selected .gate-marker__label {
+  visibility: visible; opacity: 1; transform: translateX(-50%);
+}
 
 .gate-marker__label i { margin-left: 6px; padding: 0 4px; color: #1b1207; background: #ffd690; border-radius: 6px; font-style: normal; font-size: 7px; }
 
@@ -560,7 +565,7 @@ body { overscroll-behavior: none; }
   --gate-halo: rgb(199 182 246 / 20%);
 }
 
-/* Before a place has been visited it is a coral bead, not a destination label.
+/* Before a place has been visited it is a pale-violet bead, not a destination label.
    Keep it compact so the trace can be noticed without becoming a target. */
 .gate-marker.is-undiscovered .gate-marker__ring {
   inset: 10px; border: 0;
@@ -582,8 +587,8 @@ body { overscroll-behavior: none; }
 .gate-marker.is-undiscovered:hover .gate-marker__core,
 .gate-marker.is-undiscovered:focus-visible .gate-marker__core { opacity: .96; }
 .gate-marker.is-undiscovered.is-selected .gate-marker__ring {
-  inset: 10px; border: 0;
-  box-shadow: 0 0 5px var(--gate-halo);
+  inset: 9px; border: 1.5px solid rgb(255 248 230 / 84%);
+  box-shadow: 0 0 5px rgb(255 248 230 / 24%);
 }
 .gate-marker.is-undiscovered.is-selected .gate-marker__core {
   width: 8px; height: 8px; opacity: .9; background: var(--gate-core); box-shadow: 0 0 4px var(--gate-halo);
