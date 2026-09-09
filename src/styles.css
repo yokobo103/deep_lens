@@ -556,8 +556,8 @@ body { overscroll-behavior: none; }
   --gate-halo: rgb(111 227 210 / 20%);
 }
 .gate-marker.is-undiscovered {
-  --gate-core: #FF8A65;
-  --gate-halo: rgb(255 138 101 / 20%);
+  --gate-core: #C7B6F6;
+  --gate-halo: rgb(199 182 246 / 20%);
 }
 
 /* Before a place has been visited it is a coral bead, not a destination label.
