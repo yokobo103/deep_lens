@@ -7,6 +7,7 @@ import { dominantEnvironment, ENV_COLOR, ENV_LABEL } from "../data/environment";
 import { layerOf, LAYER_LABEL, LAYER_ORDER, type Layer } from "../data/habitat";
 import { japaneseName } from "../data/names";
 import { drawnIn } from "../data/drawn";
+import { sceneHighlight } from "../data/sceneHighlights";
 import { sceneSource } from "./scenes";
 import { hubCopy, type Locale } from "./copy";
 
@@ -30,6 +31,7 @@ export function WorldDetail({ gate, detail, locale, onClose }: WorldDetailProps)
   const text = hubCopy[locale];
   const [listOpen, setListOpen] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [highlighted, setHighlighted] = useState<{ name: string; token: number } | null>(null);
   const scene = sceneSource(gate.id);
   const band = bandById(gate.band);
   const ma = band?.terrainMa ?? detail.medianAgeMa ?? 0;
@@ -44,7 +46,14 @@ export function WorldDetail({ gate, detail, locale, onClose }: WorldDetailProps)
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, zoomed]);
 
+  useEffect(() => {
+    if (!highlighted) return;
+    const timer = window.setTimeout(() => setHighlighted(null), 1800);
+    return () => window.clearTimeout(timer);
+  }, [highlighted]);
+
   const drawn = drawnIn(gate.id);
+  const highlightedPosition = highlighted ? sceneHighlight(gate.id, highlighted.name) : undefined;
   const byName = new Map(detail.cast.map((member) => [member.name, member]));
 
   const byLayer = new Map<Layer, typeof detail.cast>();
@@ -69,6 +78,14 @@ export function WorldDetail({ gate, detail, locale, onClose }: WorldDetailProps)
         {scene && (
           <div className="detail__scene">
             <img src={scene} alt={gate.name[locale]} />
+            {highlighted && highlightedPosition && (
+              <span
+                key={highlighted.token}
+                className="detail__scene-highlight"
+                style={{ left: `${highlightedPosition.x * 100}%`, top: `${highlightedPosition.y * 100}%` }}
+                aria-hidden="true"
+              />
+            )}
             <button type="button" className="detail__zoom" onClick={() => setZoomed(true)} aria-label={text.zoom}>
               <svg viewBox="0 0 18 18" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true">
                 <circle cx="7.6" cy="7.6" r="5.1" /><path d="M11.4 11.4 16 16M7.6 5.4v4.4M5.4 7.6h4.4" />
@@ -94,11 +111,28 @@ export function WorldDetail({ gate, detail, locale, onClose }: WorldDetailProps)
             {drawn.map((name) => {
               const ja = locale === "ja" ? japaneseName(name) : undefined;
               const member = byName.get(name);
-              return (
-                <li key={name}>
+              const canLocate = Boolean(sceneHighlight(gate.id, name));
+              const isHighlighted = highlighted?.name === name;
+              const contents = (
+                <>
                   {ja && <b>{ja}</b>}
                   <em>{name}</em>
                   {member && <i>{member.count}</i>}
+                </>
+              );
+              return (
+                <li key={name} className={`${canLocate ? "is-locatable" : ""}${isHighlighted ? " is-highlighted" : ""}`}>
+                  {canLocate ? (
+                    <button
+                      type="button"
+                      className="detail__drawn-locate"
+                      aria-pressed={isHighlighted}
+                      aria-label={`${name} — ${text.findInScene}`}
+                      onClick={() => setHighlighted({ name, token: Date.now() })}
+                    >
+                      {contents}
+                    </button>
+                  ) : contents}
                 </li>
               );
             })}
