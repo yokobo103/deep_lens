@@ -17,7 +17,7 @@ const SCENE_HIGHLIGHTS: Readonly<Record<string, Readonly<Record<string, SceneHig
     "Carcharodontosaurus saharicus": { x: 0.865, y: 0.124 },
     "Rebbachisaurus garasbae": { x: 0.112, y: 0.234 },
     "Onchopristis numidus": { x: 0.333, y: 0.843 },
-    "Oumtkoutia anae": { x: 0.909, y: 0.909 },
+    "Oumtkoutia anae": { x: 0.855, y: 0.909 },
   },
 };
 

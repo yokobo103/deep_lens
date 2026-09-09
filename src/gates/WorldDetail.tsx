@@ -48,7 +48,7 @@ export function WorldDetail({ gate, detail, locale, onClose }: WorldDetailProps)
 
   useEffect(() => {
     if (!highlighted) return;
-    const timer = window.setTimeout(() => setHighlighted(null), 1800);
+    const timer = window.setTimeout(() => setHighlighted(null), 3200);
     return () => window.clearTimeout(timer);
   }, [highlighted]);
 
